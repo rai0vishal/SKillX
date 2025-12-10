@@ -1,8 +1,8 @@
-🚀 SkillX – Skill Exchange & Gig Collaboration Platform
-
+**🚀 SkillX – Skill Exchange & Gig Collaboration Platform
+**
 SkillX is a full-stack MERN-based web platform that enables users to exchange skills, post gigs, apply for gigs, and collaborate professionally. It combines real-time interaction, secure authentication, and a scalable backend to create a complete freelancing and skill-sharing ecosystem.
 
-🌐 Live Concept
+**🌐 Live Concept**
 
 SkillX allows users to:
 
@@ -19,7 +19,7 @@ Accept/reject gig applications
 Track completed gigs and collaborations automatically
 
 🧩 Tech Stack
-🔹 Frontend
+**🔹 Frontend**
 
 React.js (Vite)
 
@@ -29,7 +29,7 @@ React Router DOM
 
 Fetch API
 
-🔹 Backend
+**🔹 Backend**
 
 Node.js
 
@@ -41,11 +41,11 @@ MongoDB with Mongoose ODM
 
 Firebase Authentication
 
-🔹 Database
+**🔹 Database**
 
 MongoDB Atlas / Local MongoDB
 
-📁 Project Structure
+**📁 Project Structure**
 SkillX/
 │
 ├── frontend/
