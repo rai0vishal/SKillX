@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-const API_BASE_URL = 'http://localhost:5000' // backend URL
+const API_BASE_URL = 'http://localhost:5000'
 
 const SkillExchange = () => {
+  const navigate = useNavigate()
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+  const currentEmail = storedUser.email
+
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Form state
   const [form, setForm] = useState({
     name: '',
     skillOffered: '',
@@ -15,8 +19,8 @@ const SkillExchange = () => {
     location: 'Remote',
     matchScore: '',
   })
-
   const [submitting, setSubmitting] = useState(false)
+  const [infoMessage, setInfoMessage] = useState(null)
 
   const fetchEntries = async () => {
     try {
@@ -49,10 +53,18 @@ const SkillExchange = () => {
     e.preventDefault()
     setSubmitting(true)
     setError(null)
+    setInfoMessage(null)
 
     try {
+      if (!currentEmail) {
+        setError('You must be signed in to create a skill exchange profile.')
+        setSubmitting(false)
+        return
+      }
+
       const payload = {
         ...form,
+        email: currentEmail,
         matchScore: form.matchScore ? Number(form.matchScore) : 80,
       }
 
@@ -66,10 +78,8 @@ const SkillExchange = () => {
 
       const newEntry = await res.json()
 
-      // Add to UI without reload
       setEntries((prev) => [newEntry, ...prev])
 
-      // Reset form
       setForm({
         name: '',
         skillOffered: '',
@@ -77,6 +87,8 @@ const SkillExchange = () => {
         location: 'Remote',
         matchScore: '',
       })
+
+      setInfoMessage('Profile saved successfully ✅')
     } catch (err) {
       console.error(err)
       setError('Could not create entry. Please try again.')
@@ -85,24 +97,75 @@ const SkillExchange = () => {
     }
   }
 
+  const handleViewProfile = (user) => {
+    if (!user.email) {
+      alert('This user has no linked profile email.')
+      return
+    }
+    navigate(`/user/${encodeURIComponent(user.email)}`)
+  }
+
+  const handleRequestExchange = async (user) => {
+    try {
+      if (!currentEmail) {
+        alert('You must be signed in to send a request.')
+        return
+      }
+      if (!user.email) {
+        alert('This user has no linked email for exchange requests.')
+        return
+      }
+
+      const message = `Hi ${user.name}, I would like to exchange my skills (${user.skillWanted}) with yours (${user.skillOffered}).`
+
+      const res = await fetch(`${API_BASE_URL}/api/exchange-requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromEmail: currentEmail,
+          toEmail: user.email,
+          message,
+        }),
+      })
+
+      if (!res.ok) throw new Error('Failed to send exchange request')
+
+      alert('Exchange request sent ✅')
+    } catch (err) {
+      console.error(err)
+      alert('Could not send exchange request. Please try again.')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 px-6 py-10">
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Skill Exchange
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-800">Skill Exchange</h1>
         <p className="text-gray-600 mt-1">
           Find people to exchange skills and grow together. Data is saved in MongoDB.
         </p>
       </div>
 
-      {/* Create Entry Form */}
-      <div className="max-w-6xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8">
+      {/* Form */}
+      <div className="max-w-6xl mx-auto bg-white p-6 rounded-xl shadow-md mb-4">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">
           Add Your Skill Exchange Profile
         </h2>
-        <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
+        {infoMessage && (
+          <div className="mb-3 text-sm bg-green-100 text-green-800 px-4 py-2 rounded-lg">
+            {infoMessage}
+          </div>
+        )}
+        {error && (
+          <div className="mb-3 text-sm bg-red-100 text-red-800 px-4 py-2 rounded-lg">
+            {error}
+          </div>
+        )}
+        <form
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          onSubmit={handleSubmit}
+        >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Name
@@ -145,7 +208,7 @@ const SkillExchange = () => {
               onChange={handleChange}
               required
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="e.g. UI/UX Design"
+              placeholder="e.g. UI/UX Designer"
             />
           </div>
 
@@ -184,7 +247,7 @@ const SkillExchange = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full md:w-auto px-5 py-2 text-sm rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-60"
+              className="px-5 py-2 text-sm rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-60"
             >
               {submitting ? 'Saving...' : 'Save Profile'}
             </button>
@@ -192,14 +255,9 @@ const SkillExchange = () => {
         </form>
       </div>
 
-      {/* Status */}
+      {/* Status + list */}
       <div className="max-w-6xl mx-auto mb-4">
         {loading && <p className="text-sm text-gray-600">Loading matches...</p>}
-        {error && (
-          <div className="text-sm bg-red-100 text-red-800 px-4 py-2 rounded-lg">
-            {error}
-          </div>
-        )}
         {!loading && !error && entries.length === 0 && (
           <p className="text-sm text-gray-600">
             No skill exchange profiles yet. Be the first to add yours!
@@ -208,29 +266,23 @@ const SkillExchange = () => {
       </div>
 
       {/* Cards */}
-      {!loading && !error && entries.length > 0 && (
+      {!loading && entries.length > 0 && (
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {entries.map((user) => (
             <div
               key={user._id}
               className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition"
             >
-              {/* User Info */}
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-lg">
                   {user.name.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800">
-                    {user.name}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    📍 {user.location}
-                  </p>
+                  <p className="font-semibold text-gray-800">{user.name}</p>
+                  <p className="text-xs text-gray-500">📍 {user.location}</p>
                 </div>
               </div>
 
-              {/* Skills */}
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-1">
                   <span className="font-medium text-gray-800">Offers:</span>{' '}
@@ -242,19 +294,23 @@ const SkillExchange = () => {
                 </p>
               </div>
 
-              {/* Match Score */}
               <div className="flex justify-between items-center mb-4">
                 <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
                   Match Score {user.matchScore ?? 80}%
                 </span>
               </div>
 
-              {/* Actions */}
               <div className="flex gap-3">
-                <button className="flex-1 text-sm border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition">
+                <button
+                  className="flex-1 text-sm border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition"
+                  onClick={() => handleViewProfile(user)}
+                >
                   View Profile
                 </button>
-                <button className="flex-1 text-sm bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
+                <button
+                  className="flex-1 text-sm bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+                  onClick={() => handleRequestExchange(user)}
+                >
                   Request Exchange
                 </button>
               </div>

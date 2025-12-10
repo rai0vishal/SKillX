@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const skillExchangeSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    email: { type: String, required: false }, // 👈 who owns this profile
     skillOffered: { type: String, required: true },
     skillWanted: { type: String, required: true },
     location: { type: String, default: 'Remote' },

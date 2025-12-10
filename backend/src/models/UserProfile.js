@@ -12,6 +12,8 @@ const userProfileSchema = new mongoose.Schema(
       gigsPosted: { type: Number, default: 0 },
       gigsCompleted: { type: Number, default: 0 },
       skillExchanges: { type: Number, default: 0 },
+      skillExchangesCompleted: { type: Number, default: 0 },  
+
     },
   },
   { timestamps: true }

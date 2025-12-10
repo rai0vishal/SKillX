@@ -7,6 +7,9 @@ import PostGig from './pages/PostGig'
 import SkillExchange from './pages/SkillExchange'
 import Profile from './pages/Profile'
 import GigList from './pages/GigList'
+import PublicProfile from './pages/PublicProfile'
+import GigDetails from './pages/GigDetails'
+
 
 import SignIn from './pages/auth/SignIn'
 import SignUp from './pages/auth/SignUp'
@@ -70,6 +73,23 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/gigs/:id" 
+            element={
+              <ProtectedRoute>
+                <GigDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/:email"
+            element={
+              <ProtectedRoute>
+                <PublicProfile />
+              </ProtectedRoute>
+            }
+          />
+
         </Routes>
       </main>
 

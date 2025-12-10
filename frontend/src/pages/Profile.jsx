@@ -22,6 +22,7 @@ const Profile = () => {
       gigsPosted: 0,
       gigsCompleted: 0,
       skillExchanges: 0,
+      skillExchangesCompleted: 0,
     },
   })
 
@@ -57,6 +58,8 @@ const Profile = () => {
           gigsPosted: data.stats?.gigsPosted ?? 0,
           gigsCompleted: data.stats?.gigsCompleted ?? 0,
           skillExchanges: data.stats?.skillExchanges ?? 0,
+          skillExchangesCompleted:
+            data.stats?.skillExchangesCompleted ?? 0,
         },
       })
     } catch (err) {
@@ -74,16 +77,6 @@ const Profile = () => {
 
   const handleFieldChange = (field, value) => {
     setProfile((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handleStatsChange = (field, value) => {
-    setProfile((prev) => ({
-      ...prev,
-      stats: {
-        ...prev.stats,
-        [field]: Number(value) || 0,
-      },
-    }))
   }
 
   const handleSave = async () => {
@@ -124,6 +117,8 @@ const Profile = () => {
           gigsPosted: data.stats?.gigsPosted ?? 0,
           gigsCompleted: data.stats?.gigsCompleted ?? 0,
           skillExchanges: data.stats?.skillExchanges ?? 0,
+          skillExchangesCompleted:
+            data.stats?.skillExchangesCompleted ?? 0,
         },
       })
 
@@ -153,6 +148,14 @@ const Profile = () => {
 
   const skillsString =
     Array.isArray(profile.skills) ? profile.skills.join(', ') : profile.skills
+
+  // helper so we don't repeat profile.stats everywhere
+  const stats = profile.stats || {
+    gigsPosted: 0,
+    gigsCompleted: 0,
+    skillExchanges: 0,
+    skillExchangesCompleted: 0,
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
@@ -195,7 +198,7 @@ const Profile = () => {
                 value={profile.role}
                 onChange={(e) => handleFieldChange('role', e.target.value)}
                 className="text-indigo-600 font-medium mt-1 bg-transparent border-b border-gray-200 focus:outline-none focus:border-indigo-500 text-center md:text-left text-sm md:text-base"
-                placeholder="Your Role (e.g. Full Stack Developer)"
+                placeholder="MERN Developer"
               />
 
               <p className="text-gray-500 text-sm mt-1">
@@ -233,51 +236,57 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Stats + Skills */}
+        {/* Stats + Skills (matches your screenshot) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          {/* Stats */}
+          {/* Activity Overview card (left, spans 2 columns) */}
           <div className="md:col-span-2 bg-white rounded-2xl shadow-md p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
               Activity Overview
             </h2>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <p className="text-sm text-gray-500">Gigs Posted</p>
-                <input
-                  type="number"
-                  value={profile.stats.gigsPosted}
-                  onChange={(e) =>
-                    handleStatsChange('gigsPosted', e.target.value)
-                  }
-                  className="mt-2 text-2xl font-bold text-indigo-600 bg-transparent border-b border-gray-200 focus:outline-none focus:border-indigo-500 text-center"
-                />
+
+            <div className="grid grid-cols-4 gap-6 text-center">
+              {/* Gigs Posted */}
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Gigs Posted</p>
+                <p className="text-2xl font-bold text-indigo-600">
+                  {stats.gigsPosted}
+                </p>
               </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-500">Gigs Completed</p>
-                <input
-                  type="number"
-                  value={profile.stats.gigsCompleted}
-                  onChange={(e) =>
-                    handleStatsChange('gigsCompleted', e.target.value)
-                  }
-                  className="mt-2 text-2xl font-bold text-green-600 bg-transparent border-b border-gray-200 focus:outline-none focus:border-indigo-500 text-center"
-                />
+
+              {/* Gigs Completed */}
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Gigs Completed</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {stats.gigsCompleted}
+                </p>
               </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-500">Skill Exchanges</p>
-                <input
-                  type="number"
-                  value={profile.stats.skillExchanges}
-                  onChange={(e) =>
-                    handleStatsChange('skillExchanges', e.target.value)
-                  }
-                  className="mt-2 text-2xl font-bold text-purple-600 bg-transparent border-b border-gray-200 focus:outline-none focus:border-indigo-500 text-center"
-                />
+
+              {/* Skill Exchanges Sent */}
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Skill Exchg. Sent</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {stats.skillExchanges}
+                </p>
+              </div>
+
+              {/* Skill Exchanges Completed */}
+              <div>
+                <p className="text-sm text-gray-500 mb-1">
+                  Skills Exchanged
+                </p>
+                <p className="text-2xl font-bold text-emerald-600">
+                  {stats.skillExchangesCompleted}
+                </p>
               </div>
             </div>
+
+            <p className="mt-4 text-xs text-gray-500">
+              These numbers are updated automatically from your gigs and skill
+              exchanges.
+            </p>
           </div>
 
-          {/* Skills */}
+          {/* Skills card (right) */}
           <div className="bg-white rounded-2xl shadow-md p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-3">
               Skills
@@ -308,12 +317,11 @@ const Profile = () => {
 
         {/* About */}
         <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">
-            About
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">About</h2>
           <p className="text-sm text-gray-600 leading-relaxed">
-            This is your profile section. You can keep your details up to date so others can
-            understand your background and collaborate better with you on SkillX.
+            This is your profile section. You can keep your details up to date
+            so others can understand your background and collaborate better with
+            you on SkillX.
           </p>
         </div>
       </div>

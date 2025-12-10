@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const API_BASE_URL = 'http://localhost:5000' // backend URL
 
 const GigList = () => {
+  const navigate = useNavigate()
+
   const [gigs, setGigs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -20,7 +23,7 @@ const GigList = () => {
       const data = await res.json()
       setGigs(data)
     } catch (err) {
-      console.error(err)
+      console.error('Error fetching gigs:', err)
       setError('Could not load gigs. Please try again.')
     } finally {
       setLoading(false)
@@ -43,7 +46,7 @@ const GigList = () => {
       // Remove gig from UI
       setGigs((prev) => prev.filter((g) => g._id !== id))
     } catch (err) {
-      console.error(err)
+      console.error('Error deleting gig:', err)
       alert('Error deleting gig')
     }
   }
@@ -87,7 +90,8 @@ const GigList = () => {
 
         {!loading && !error && gigs.length === 0 && (
           <p className="text-gray-600 text-sm">
-            No gigs found. Try posting one from the <span className="font-medium">Post Gig</span> page.
+            No gigs found. Try posting one from the{' '}
+            <span className="font-medium">Post Gig</span> page.
           </p>
         )}
       </div>
@@ -95,74 +99,90 @@ const GigList = () => {
       {/* Gig Cards */}
       {!loading && !error && gigs.length > 0 && (
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-          {gigs.map((gig) => (
-            <div
-              key={gig._id}
-              className="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition flex flex-col justify-between"
-            >
-              {/* Title */}
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-1">
-                  {gig.title}
-                </h2>
+          {gigs.map((gig) => {
+            // 🔹 Make sure skills is always an array
+            const skillList = Array.isArray(gig.skills)
+              ? gig.skills
+              : (gig.skills || '')
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
 
-                {/* Category + type */}
-                <p className="text-xs text-indigo-600 font-medium mb-2">
-                  {gig.category} • {gig.type}
-                </p>
+            return (
+              <div
+                key={gig._id}
+                className="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition flex flex-col justify-between"
+              >
+                {/* Title */}
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-1">
+                    {gig.title}
+                  </h2>
 
-                {/* Skills */}
-                {gig.skills && gig.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {gig.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Description */}
-                <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                  {gig.description}
-                </p>
-
-                {/* Details */}
-                <div className="text-sm text-gray-600 space-y-1 mb-4">
-                  <p>
-                    <span className="font-medium">Budget:</span> ₹{gig.budget}
+                  {/* Category + type */}
+                  <p className="text-xs text-indigo-600 font-medium mb-2">
+                    {gig.category || 'General'} • {gig.type || 'One-time Project'}
                   </p>
-                  <p>
-                    <span className="font-medium">Duration:</span> {gig.duration}
-                  </p>
-                  <p>
-                    <span className="font-medium">Location:</span> {gig.location}
-                  </p>
-                  {gig.postedBy && (
-                    <p className="text-xs text-gray-500">
-                      Posted by: {gig.postedBy}
-                    </p>
+
+                  {/* Skills */}
+                  {skillList.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {skillList.map((skill, index) => (
+                        <span
+                          key={index}
+                          className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   )}
+
+                  {/* Description */}
+                  <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                    {gig.description}
+                  </p>
+
+                  {/* Details */}
+                  <div className="text-sm text-gray-600 space-y-1 mb-4">
+                    <p>
+                      <span className="font-medium">Budget:</span>{' '}
+                      {gig.budget ? `₹${gig.budget}` : 'Not specified'}
+                    </p>
+                    <p>
+                      <span className="font-medium">Duration:</span>{' '}
+                      {gig.duration || 'Not specified'}
+                    </p>
+                    <p>
+                      <span className="font-medium">Location:</span>{' '}
+                      {gig.location || 'Remote'}
+                    </p>
+                    {gig.postedBy && (
+                      <p className="text-xs text-gray-500">
+                        Posted by: {gig.postedBy}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                  <button
+                    onClick={() => navigate(`/gigs/${gig._id}`)}
+                    className="text-sm text-indigo-600 font-medium hover:underline"
+                  >
+                    View Details
+                  </button>
+                  <button
+                    onClick={() => handleDelete(gig._id)}
+                    className="text-xs text-red-600 hover:text-red-700"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
-
-              {/* Actions */}
-              <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
-                <button className="text-sm text-indigo-600 font-medium hover:underline">
-                  View Details
-                </button>
-                <button
-                  onClick={() => handleDelete(gig._id)}
-                  className="text-xs text-red-600 hover:text-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

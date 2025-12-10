@@ -1,162 +1,141 @@
-import React, { useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+// src/components/Navbar.jsx
+import React, { useEffect, useState } from 'react'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { signOut } from 'firebase/auth'
+import { auth } from '../firebase/firebaseConfig'
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+  const [user, setUser] = useState(null)
 
-  const handleLogout = () => {
-    // TODO: clear your auth state / Firebase signOut
-    localStorage.removeItem('user')
-    navigate('/signin')
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
+    setUser(storedUser)
+  }, [location])
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      localStorage.removeItem('user')
+      setUser(null)
+      navigate('/signin')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
   }
 
-  const navLinkClass =
-    'text-sm font-medium text-gray-700 hover:text-indigo-600 transition'
-
-  const activeClass =
-    'text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 pb-1'
+  const navLinkBase =
+    'text-lg px-5 py-2.5 rounded-xl transition-all duration-200'
+  const navLinkInactive =
+    'text-gray-700 hover:text-indigo-600 hover:bg-indigo-50'
+  const navLinkActive =
+    'bg-indigo-100 text-indigo-700 font-bold shadow-sm'
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-20 bg-white shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <span className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg font-bold">
-            S
-          </span>
-          <span className="text-xl font-bold text-gray-800">SkillX</span>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-5">
+        
+        {/* ✅ LOGO (BIGGER) */}
+        <Link
+          to="/"
+          className="text-3xl font-extrabold text-indigo-600 tracking-wide"
+        >
+          SkillX
         </Link>
 
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-6">
+        {/* ✅ CENTER NAV TABS (BIGGER) */}
+        <div className="hidden md:flex items-center gap-4">
           <NavLink
             to="/dashboard"
-            className={({ isActive }) => (isActive ? activeClass : navLinkClass)}
+            className={({ isActive }) =>
+              `${navLinkBase} ${
+                isActive ? navLinkActive : navLinkInactive
+              }`
+            }
           >
             Dashboard
           </NavLink>
+
           <NavLink
             to="/post-gig"
-            className={({ isActive }) => (isActive ? activeClass : navLinkClass)}
+            className={({ isActive }) =>
+              `${navLinkBase} ${
+                isActive ? navLinkActive : navLinkInactive
+              }`
+            }
           >
             Post Gig
           </NavLink>
+
           <NavLink
             to="/gig-list"
-            className={({ isActive }) => (isActive ? activeClass : navLinkClass)}
+            className={({ isActive }) =>
+              `${navLinkBase} ${
+                isActive ? navLinkActive : navLinkInactive
+              }`
+            }
           >
             Gigs
           </NavLink>
+
           <NavLink
             to="/skill-exchage"
-            className={({ isActive }) => (isActive ? activeClass : navLinkClass)}
+            className={({ isActive }) =>
+              `${navLinkBase} ${
+                isActive ? navLinkActive : navLinkInactive
+              }`
+            }
           >
             Skill Exchange
           </NavLink>
+
           <NavLink
             to="/profile"
-            className={({ isActive }) => (isActive ? activeClass : navLinkClass)}
+            className={({ isActive }) =>
+              `${navLinkBase} ${
+                isActive ? navLinkActive : navLinkInactive
+              }`
+            }
           >
             Profile
           </NavLink>
         </div>
 
-        {/* Auth Buttons */}
-        <div className="hidden md:flex items-center gap-3">
-          <Link
-            to="/signin"
-            className="text-sm text-gray-700 hover:text-indigo-600"
-          >
-            Sign In
-          </Link>
-          <Link
-            to="/signup"
-            className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
-          >
-            Sign Up
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="text-xs border border-gray-300 px-3 py-1 rounded-lg hover:bg-gray-100"
-          >
-            Logout
-          </button>
-        </div>
+        {/* ✅ RIGHT AUTH SECTION (BIGGER BUTTONS) */}
+        <div className="flex items-center gap-4">
+          {user ? (
+            <>
+              <span className="hidden sm:inline text-sm text-gray-700 font-medium max-w-[220px] truncate">
+                👤 {user.name || user.email}
+              </span>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-300"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <span className="sr-only">Toggle menu</span>
-          <div className="space-y-1">
-            <span className="block w-5 h-0.5 bg-gray-700" />
-            <span className="block w-5 h-0.5 bg-gray-700" />
-            <span className="block w-5 h-0.5 bg-gray-700" />
-          </div>
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
-          <div className="px-4 py-3 flex flex-col gap-3">
-            <NavLink
-              to="/dashboard"
-              onClick={() => setIsOpen(false)}
-              className={navLinkClass}
-            >
-              Dashboard
-            </NavLink>
-            <NavLink
-              to="/post-gig"
-              onClick={() => setIsOpen(false)}
-              className={navLinkClass}
-            >
-              Post Gig
-            </NavLink>
-            <NavLink
-              to="/gig-list"
-              onClick={() => setIsOpen(false)}
-              className={navLinkClass}
-            >
-              Gigs
-            </NavLink>
-            <NavLink
-              to="/skill-exchage"
-              onClick={() => setIsOpen(false)}
-              className={navLinkClass}
-            >
-              Skill Exchange
-            </NavLink>
-            <NavLink
-              to="/profile"
-              onClick={() => setIsOpen(false)}
-              className={navLinkClass}
-            >
-              Profile
-            </NavLink>
-
-            <div className="border-t border-gray-200 pt-3 flex gap-3">
+              <button
+                onClick={handleLogout}
+                className="text-base bg-red-500 text-white px-6 py-2.5 rounded-xl hover:bg-red-600 transition shadow"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
               <Link
                 to="/signin"
-                onClick={() => setIsOpen(false)}
-                className="text-sm text-gray-700 hover:text-indigo-600"
+                className="text-base text-gray-700 font-medium hover:text-indigo-600"
               >
                 Sign In
               </Link>
+
               <Link
                 to="/signup"
-                onClick={() => setIsOpen(false)}
-                className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+                className="text-base bg-indigo-600 text-white px-6 py-2.5 rounded-xl hover:bg-indigo-700 transition shadow"
               >
                 Sign Up
               </Link>
-            </div>
-          </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </nav>
   )
 }

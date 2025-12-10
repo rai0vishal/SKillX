@@ -6,6 +6,12 @@ import dotenv from 'dotenv';
 import gigsRouter from './src/routes/gigs.js';
 import skillExchangeRouter from './src/routes/SkillExchange.js';
 import profileRouter from './src/routes/profile.js';
+import dashboardRouter from './src/routes/dashboard.js';
+import exchangeRequestsRouter from './src/routes/exchangeRequests.js';
+import gigApplicationsRouter from './src/routes/gigApplications.js'    // 👈 for gig applications
+
+
+
 
 dotenv.config();
 
@@ -29,6 +35,11 @@ app.get('/', (req, res) => {
 app.use('/api/gigs', gigsRouter);
 app.use('/api/skill-exchange', skillExchangeRouter);
 app.use('/api/profile', profileRouter);
+app.use('/api/dashboard', dashboardRouter); 
+app.use('/api/exchange-requests', exchangeRequestsRouter)   // now defined ✅
+app.use('/api/gig-applications', gigApplicationsRouter)
+
+
 
 // DB + server start
 const PORT = process.env.PORT || 5000;
