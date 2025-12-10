@@ -1,119 +1,250 @@
-# SkillX – An  Freelance & Skill-Exchange Platform for University Students
-Monetize Skills. Exchange Knowledge. Grow Together.
+🚀 SkillX – Skill Exchange & Gig Collaboration Platform
 
-## 🌐 1. Overview
+SkillX is a full-stack MERN-based web platform that enables users to exchange skills, post gigs, apply for gigs, and collaborate professionally. It combines real-time interaction, secure authentication, and a scalable backend to create a complete freelancing and skill-sharing ecosystem.
 
-SkillX is a community-driven platform designed to connect university students through freelance gigs and a unique skill-for-skill barter system.
-Unlike traditional freelancing sites (Fiverr, Upwork, Freelancer), SkillX is:
+🌐 Live Concept
 
-Zero-commission
+SkillX allows users to:
 
-Campus-exclusive
+Exchange skills with others
 
-AI-powered for smart matching
+Post and apply for freelance gigs
 
+Manage profiles with real-time activity stats
 
+Accept/reject skill exchange requests
 
-It enables students to either earn money from micro-gigs OR exchange expertise using a time-credit system — building an inclusive, fair, and learning-oriented micro-economy.
+Accept/reject gig applications
 
-## 🚀 2. Key Features
-🔥 SkillX Core Features
+Track completed gigs and collaborations automatically
 
+🧩 Tech Stack
+🔹 Frontend
 
-🔄 Skill-for-Skill Barter System (Time-Credit Economy)
+React.js (Vite)
 
-⭐ Reputation & Trust Scores (Weighted Rating System)
+Tailwind CSS
 
+React Router DOM
 
+Fetch API
 
-📊 User Dashboard & Activity Insights
+🔹 Backend
 
-🏆 Gamification (Badges, Leaderboard, Credits)
+Node.js
 
-🔐 Secure Firebase Authentication
+Express.js
 
-## 🏗 3. System Architecture
-React Frontend  →        Node.js Backend            →             MongoDB Database
-        ↑                     ↓                                         ↓
-        └────────────── Trust, Reputation & Governance Logic ───────────┘
+MongoDB with Mongoose ODM
 
-
-## 🛠 5. Tech Stack
-🎨 Frontend
-
-React.js
-
-TailwindCSS / Bootstrap
-
-Axios
-
-Firebase Auth (client)
-
-🖥 Backend
-
-Node.js + Express
-
-
-REST APIs
-
-
-## 🗄 Database
-
-MongoDB 
-
-## 🧩 6. Folder Structure
-SkillX/
-│
-├── frontend/          # React UI
-├── backend/           # Node.js APIs
-├── database/          # Schema & cloud rules
-├── docs/              # Report, diagrams, PPT
-└── README.md
-
-## 🧪 7. Installation & Setup
-Prerequisites
-
-Node.js (v16+)
+🔹 Authentication
 
 Firebase Authentication
 
+🔹 Database
 
-🔧 Step 1 — Clone Repo
-git clone  https://github.com/rai0vishal/SKillX.git
-cd SkillX
+MongoDB Atlas / Local MongoDB
 
-🎨 Step 2 — Setup Frontend
-cd frontend
-npm install
-npm start
+📁 Project Structure
+SkillX/
+│
+├── frontend/
+│   ├── src/
+│   │   ├── pages/
+│   │   ├── components/
+│   │   ├── auth/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   └── package.json
+│
+├── backend/
+│   ├── src/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   └── controllers/
+│   ├── index.js
+│   ├── seed.js
+│   └── package.json
+│
+└── README.md
 
-🖥 Step 3 — Setup Backend
+✨ Core Features
+👤 User Management
+
+Firebase Email/Password Authentication
+
+Secure Sign Up & Sign In
+
+Profile creation & editing
+
+Dynamic user activity tracking
+
+🔄 Skill Exchange System
+
+Create skill exchange profiles
+
+Send skill exchange requests
+
+Accept or reject requests
+
+Auto-update completed exchanges
+
+💼 Gig System
+
+Post gigs with details (title, budget, duration, etc.)
+
+Apply for gigs
+
+Gig owner can accept/reject applications
+
+Only gig owner can delete the gig
+
+Auto-increment completed gigs
+
+📊 Dashboard
+
+Displays:
+
+Total gigs
+
+Total skill exchanges
+
+Total user profiles
+
+Shows:
+
+User activity summary
+
+Exchange requests (sent & received)
+
+Gig applications
+
+📈 Profile Statistics (Auto Updated)
+
+Gigs Posted
+
+Gigs Completed
+
+Skill Exchanges Sent
+
+Skill Exchanges Completed
+
+🔐 Security Features
+
+Firebase authentication protection
+
+Email-based access control
+
+Role-based authorization for gig delete
+
+Secure REST API calls
+
+Data validation at backend
+
+⚙️ Installation Guide
+1️⃣ Clone Repository
+git clone https://github.com/rai0vishal/SKillX.git
+cd SKillX
+
+2️⃣ Backend Setup
 cd backend
 npm install
+
+
+Create .env file:
+
+MONGO_URI=mongodb://127.0.0.1:27017/skillx
+PORT=5000
+
+
+Start server:
+
 npm start
 
+3️⃣ Frontend Setup
+cd frontend
+npm install
+npm run dev
+
+🔥 Firebase Setup
+
+Create Firebase project
+
+Enable Email/Password Authentication
+
+Add config in:
+
+src/firebase/firebaseConfig.js
 
 
-## 🔌 8. API Workflow
-Example Matching Request:
+Using:
 
-POST /api/ai/match
+VITE_APIKEY=
+VITE_AUTHDOMAIN=
+VITE_PROJECTID=
+VITE_STORAGEBUCKET=
+VITE_MESSAGINGSENDERID=
+VITE_APPID=
 
-{
-  "skills": ["React", "NodeJS"],
-  "gigDescription": "Need help building a frontend dashboard"
-}
+🗄 Database Models
 
-Response:
-{
-  "matchScore": 0.84,
-  "topUsers": [...]
-}
+UserProfile
 
-## 🛡 9. Security Features
+Gig
 
+SkillExchange
 
-Firebase secure auth
+GigApplication
 
+ExchangeRequest
 
+⚡ System Workflow
 
+User registers via Firebase → Profile created in MongoDB
+
+User posts gig → gigsPosted auto-increments
+
+User applies to gig → owner receives request
+
+Owner accepts application → gigsCompleted increments for both users
+
+Skill exchange behaves similarly
+
+All stats auto-updated in real-time
+
+✅ Testing Performed
+
+Manual unit testing
+
+API Route testing using Postman
+
+Firebase authentication testing
+
+Dashboard data verification
+
+Gig & skill exchange flow testing
+
+🚀 Future Enhancements
+
+In-app real-time chat
+
+Payment gateway for paid gigs
+
+Admin dashboard
+
+Advanced recommendation system
+
+Push notifications
+
+AI-based skill matching
+
+👨‍💻 Developer
+
+Vishal Rai
+Final Year Project – SkillX
+GitHub:
+🔗 https://github.com/rai0vishal/SKillX
+
+📜 License
+
+This project is developed for academic and learning purposes only.
