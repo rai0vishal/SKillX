@@ -1,5 +1,5 @@
 // src/models/GigApplication.js
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const gigApplicationSchema = new mongoose.Schema(
   {
@@ -8,8 +8,16 @@ const gigApplicationSchema = new mongoose.Schema(
       ref: 'Gig',
       required: true,
     },
+    gigTitle: { type: String, required: true },
+
+    // who posted the gig (owner)
+    gigOwnerEmail: { type: String, required: true },
+
+    // who is applying
     applicantEmail: { type: String, required: true },
+
     message: { type: String, default: '' },
+
     status: {
       type: String,
       enum: ['pending', 'accepted', 'rejected'],
@@ -17,11 +25,8 @@ const gigApplicationSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
-)
+);
 
-const GigApplication = mongoose.model(
-  'GigApplication',
-  gigApplicationSchema
-)
+const GigApplication = mongoose.model('GigApplication', gigApplicationSchema);
 
-export default GigApplication
+export default GigApplication;

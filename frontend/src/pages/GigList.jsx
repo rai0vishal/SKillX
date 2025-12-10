@@ -1,14 +1,16 @@
+// src/pages/GigList.jsx
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 const API_BASE_URL = 'http://localhost:5000' // backend URL
 
 const GigList = () => {
-  const navigate = useNavigate()
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+  const userEmail = storedUser.email
 
   const [gigs, setGigs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [applyLoadingId, setApplyLoadingId] = useState(null)
 
   const fetchGigs = async () => {
     try {
@@ -23,7 +25,7 @@ const GigList = () => {
       const data = await res.json()
       setGigs(data)
     } catch (err) {
-      console.error('Error fetching gigs:', err)
+      console.error(err)
       setError('Could not load gigs. Please try again.')
     } finally {
       setLoading(false)
@@ -46,8 +48,48 @@ const GigList = () => {
       // Remove gig from UI
       setGigs((prev) => prev.filter((g) => g._id !== id))
     } catch (err) {
-      console.error('Error deleting gig:', err)
+      console.error(err)
       alert('Error deleting gig')
+    }
+  }
+
+  const handleApply = async (gig) => {
+    if (!userEmail) {
+      alert('Please sign in to apply for a gig.')
+      return
+    }
+
+    // optional: small message via prompt
+    const message =
+      window.prompt(
+        `Why do you want to apply for "${gig.title}"? (optional)`,
+        ''
+      ) || ''
+
+    setApplyLoadingId(gig._id)
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/gig-applications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gigId: gig._id,
+          applicantEmail: userEmail,
+          message,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to apply for gig')
+      }
+
+      alert('Application submitted successfully ✅')
+    } catch (err) {
+      console.error(err)
+      alert(err.message || 'Could not apply for this gig.')
+    } finally {
+      setApplyLoadingId(null)
     }
   }
 
@@ -100,13 +142,8 @@ const GigList = () => {
       {!loading && !error && gigs.length > 0 && (
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
           {gigs.map((gig) => {
-            // 🔹 Make sure skills is always an array
-            const skillList = Array.isArray(gig.skills)
-              ? gig.skills
-              : (gig.skills || '')
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean)
+            const isOwner =
+              userEmail && gig.postedBy && gig.postedBy === userEmail
 
             return (
               <div
@@ -121,13 +158,13 @@ const GigList = () => {
 
                   {/* Category + type */}
                   <p className="text-xs text-indigo-600 font-medium mb-2">
-                    {gig.category || 'General'} • {gig.type || 'One-time Project'}
+                    {gig.category} • {gig.type}
                   </p>
 
                   {/* Skills */}
-                  {skillList.length > 0 && (
+                  {gig.skills && gig.skills.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {skillList.map((skill, index) => (
+                      {gig.skills.map((skill, index) => (
                         <span
                           key={index}
                           className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full"
@@ -146,16 +183,16 @@ const GigList = () => {
                   {/* Details */}
                   <div className="text-sm text-gray-600 space-y-1 mb-4">
                     <p>
-                      <span className="font-medium">Budget:</span>{' '}
-                      {gig.budget ? `₹${gig.budget}` : 'Not specified'}
+                      <span className="font-medium">Budget:</span> ₹
+                      {gig.budget}
                     </p>
                     <p>
                       <span className="font-medium">Duration:</span>{' '}
-                      {gig.duration || 'Not specified'}
+                      {gig.duration}
                     </p>
                     <p>
                       <span className="font-medium">Location:</span>{' '}
-                      {gig.location || 'Remote'}
+                      {gig.location}
                     </p>
                     {gig.postedBy && (
                       <p className="text-xs text-gray-500">
@@ -167,18 +204,35 @@ const GigList = () => {
 
                 {/* Actions */}
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
-                  <button
-                    onClick={() => navigate(`/gigs/${gig._id}`)}
-                    className="text-sm text-indigo-600 font-medium hover:underline"
-                  >
-                    View Details
-                  </button>
-                  <button
-                    onClick={() => handleDelete(gig._id)}
-                    className="text-xs text-red-600 hover:text-red-700"
-                  >
-                    Delete
-                  </button>
+                  {/* Left side: View / Apply */}
+                  <div className="flex gap-2">
+                    <button className="text-sm text-indigo-600 font-medium hover:underline">
+                      View Details
+                    </button>
+
+                    {/* Apply (hidden for owner) */}
+                    {!isOwner && (
+                      <button
+                        onClick={() => handleApply(gig)}
+                        disabled={applyLoadingId === gig._id}
+                        className="text-sm text-emerald-600 font-medium hover:underline disabled:opacity-60"
+                      >
+                        {applyLoadingId === gig._id
+                          ? 'Applying...'
+                          : 'Apply'}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Right side: Delete (only owner) */}
+                  {isOwner && (
+                    <button
+                      onClick={() => handleDelete(gig._id)}
+                      className="text-xs text-red-600 hover:text-red-700"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             )

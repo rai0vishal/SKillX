@@ -12,22 +12,31 @@ const Dashboard = () => {
     totalProfiles: 0,
     user: null,
   })
+
   const [requests, setRequests] = useState({
     received: [],
     sent: [],
   })
+
+  // ✅ NEW: state for gig applications
+  const [gigApplications, setGigApplications] = useState({
+    received: [],
+    sent: [],
+  })
+
   const [loadingStats, setLoadingStats] = useState(true)
   const [loadingRequests, setLoadingRequests] = useState(true)
+  const [loadingGigApps, setLoadingGigApps] = useState(true)
   const [error, setError] = useState(null)
 
+  // ------------ DASHBOARD STATS ------------
   const fetchStats = async () => {
     try {
       setLoadingStats(true)
       const url = userEmail
-        ? `${API_BASE_URL}/api/dashboard?email=${encodeURIComponent(
-            userEmail,
-          )}`
+        ? `${API_BASE_URL}/api/dashboard?email=${encodeURIComponent(userEmail)}`
         : `${API_BASE_URL}/api/dashboard`
+
       const res = await fetch(url)
       if (!res.ok) throw new Error('Failed to fetch dashboard stats')
       const data = await res.json()
@@ -40,6 +49,7 @@ const Dashboard = () => {
     }
   }
 
+  // ------------ SKILL EXCHANGE REQUESTS ------------
   const fetchRequests = async () => {
     try {
       if (!userEmail) {
@@ -79,7 +89,6 @@ const Dashboard = () => {
       if (!res.ok) throw new Error('Failed to update request')
       const updated = await res.json()
 
-      // Update local state
       setRequests(prev => ({
         received: prev.received.map(r =>
           r._id === updated._id ? updated : r,
@@ -100,12 +109,77 @@ const Dashboard = () => {
     }
   }
 
+  // ------------ GIG APPLICATIONS (NEW) ------------
+  const fetchGigApplications = async () => {
+    try {
+      if (!userEmail) {
+        setLoadingGigApps(false)
+        return
+      }
+      setLoadingGigApps(true)
+      const res = await fetch(
+        `${API_BASE_URL}/api/gig-applications?email=${encodeURIComponent(
+          userEmail,
+        )}`,
+      )
+      if (!res.ok) throw new Error('Failed to fetch gig applications')
+
+      const data = await res.json()
+      setGigApplications({
+        received: data.received || [],
+        sent: data.sent || [],
+      })
+    } catch (err) {
+      console.error(err)
+      setError('Could not load gig applications. Please try again.')
+    } finally {
+      setLoadingGigApps(false)
+    }
+  }
+
+  const handleUpdateGigApplication = async (id, newStatus) => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/gig-applications/${id}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        },
+      )
+      if (!res.ok) throw new Error('Failed to update gig application')
+
+      const updated = await res.json()
+
+      setGigApplications(prev => ({
+        received: prev.received.map(a =>
+          a._id === updated._id ? updated : a,
+        ),
+        sent: prev.sent.map(a =>
+          a._id === updated._id ? updated : a,
+        ),
+      }))
+
+      if (newStatus === 'accepted') {
+        alert('You accepted this gig application ✅')
+      } else if (newStatus === 'rejected') {
+        alert('You rejected this gig application.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Could not update gig application. Please try again.')
+    }
+  }
+
+  // ------------ EFFECT ------------
   useEffect(() => {
     fetchStats()
     if (userEmail) {
       fetchRequests()
+      fetchGigApplications()
     } else {
       setLoadingRequests(false)
+      setLoadingGigApps(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userEmail])
@@ -140,7 +214,10 @@ const Dashboard = () => {
           <button
             onClick={() => {
               fetchStats()
-              if (userEmail) fetchRequests()
+              if (userEmail) {
+                fetchRequests()
+                fetchGigApplications()
+              }
             }}
             className="self-start text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
           >
@@ -272,7 +349,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Exchange Requests Section */}
+        {/* Skill Exchange Requests Section */}
         {userEmail && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Requests for you */}
@@ -413,6 +490,137 @@ const Dashboard = () => {
                           }
                         >
                           {req.status}
+                        </span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ✅ Gig Applications Section */}
+        {userEmail && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Applications for your gigs */}
+            <div className="bg-white rounded-2xl shadow-md p-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-3">
+                Gig Applications For Your Gigs
+              </h2>
+              {loadingGigApps ? (
+                <p className="text-sm text-gray-600">
+                  Loading gig applications...
+                </p>
+              ) : gigApplications.received.length === 0 ? (
+                <p className="text-sm text-gray-600">
+                  No one has applied to your gigs yet.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {gigApplications.received.map(app => (
+                    <div
+                      key={app._id}
+                      className="border border-gray-100 rounded-xl p-3 text-sm"
+                    >
+                      <p className="text-gray-800">
+                        <span className="font-medium">Gig:</span>{' '}
+                        {app.gigTitle}
+                      </p>
+                      <p className="text-gray-800">
+                        <span className="font-medium">From:</span>{' '}
+                        {app.applicantEmail}
+                      </p>
+                      {app.message && (
+                        <p className="text-gray-600 mt-1">
+                          Message: {app.message}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Status:{' '}
+                        <span
+                          className={
+                            app.status === 'accepted'
+                              ? 'text-green-600 font-medium'
+                              : app.status === 'rejected'
+                              ? 'text-red-600 font-medium'
+                              : 'text-yellow-600 font-medium'
+                          }
+                        >
+                          {app.status}
+                        </span>
+                      </p>
+                      {app.status === 'pending' && (
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            className="px-3 py-1 text-xs rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
+                            onClick={() =>
+                              handleUpdateGigApplication(app._id, 'accepted')
+                            }
+                          >
+                            Accept
+                          </button>
+                          <button
+                            className="px-3 py-1 text-xs rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+                            onClick={() =>
+                              handleUpdateGigApplication(app._id, 'rejected')
+                            }
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Applications you sent */}
+            <div className="bg-white rounded-2xl shadow-md p-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-3">
+                Gig Applications You Sent
+              </h2>
+              {loadingGigApps ? (
+                <p className="text-sm text-gray-600">
+                  Loading your applications...
+                </p>
+              ) : gigApplications.sent.length === 0 ? (
+                <p className="text-sm text-gray-600">
+                  You haven&apos;t applied to any gigs yet.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {gigApplications.sent.map(app => (
+                    <div
+                      key={app._id}
+                      className="border border-gray-100 rounded-xl p-3 text-sm"
+                    >
+                      <p className="text-gray-800">
+                        <span className="font-medium">Gig:</span>{' '}
+                        {app.gigTitle}
+                      </p>
+                      <p className="text-gray-800">
+                        <span className="font-medium">Owner:</span>{' '}
+                        {app.gigOwnerEmail}
+                      </p>
+                      {app.message && (
+                        <p className="text-gray-600 mt-1">
+                          Message: {app.message}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Status:{' '}
+                        <span
+                          className={
+                            app.status === 'accepted'
+                              ? 'text-green-600 font-medium'
+                              : app.status === 'rejected'
+                              ? 'text-red-600 font-medium'
+                              : 'text-yellow-600 font-medium'
+                          }
+                        >
+                          {app.status}
                         </span>
                       </p>
                     </div>
