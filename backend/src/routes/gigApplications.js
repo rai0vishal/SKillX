@@ -2,6 +2,7 @@
 import express from 'express';
 import GigApplication from '../models/GigApplication.js';
 import Gig from '../models/Gig.js';
+import Profile from '../models/UserProfile.js';  // ✅ for stats
 
 const router = express.Router();
 
@@ -32,7 +33,7 @@ router.post('/', async (req, res) => {
         .json({ message: 'You cannot apply to your own gig.' });
     }
 
-    // optional: prevent duplicate applications for same gig from same user
+    // optional: prevent duplicate applications
     const existing = await GigApplication.findOne({
       gigId,
       applicantEmail,
@@ -62,16 +63,12 @@ router.post('/', async (req, res) => {
 /**
  * GET /api/gig-applications?email=abc@gmail.com
  * Returns { received: [...], sent: [...] }
- *
- * received → people applying to your gigs
- * sent → gigs you have applied to
  */
 router.get('/', async (req, res) => {
   try {
     const { email } = req.query;
 
     if (!email) {
-      // if needed, you could also return all applications
       const all = await GigApplication.find().sort({ createdAt: -1 });
       return res.json({ received: [], sent: [], all });
     }
@@ -92,8 +89,7 @@ router.get('/', async (req, res) => {
 
 /**
  * PATCH /api/gig-applications/:id
- * Body: { status }
- * status in: 'pending' | 'accepted' | 'rejected'
+ * Body: { status }  // 'pending' | 'accepted' | 'rejected'
  */
 router.patch('/:id', async (req, res) => {
   try {
@@ -104,18 +100,48 @@ router.patch('/:id', async (req, res) => {
       return res.status(400).json({ message: 'Invalid status' });
     }
 
+    // get current application first
+    const appBefore = await GigApplication.findById(req.params.id);
+    if (!appBefore) {
+      return res.status(404).json({ message: 'Application not found' });
+    }
+
+    const wasAcceptedBefore = appBefore.status === 'accepted';
+
     const updated = await GigApplication.findByIdAndUpdate(
       req.params.id,
       { status },
       { new: true }
     );
 
-    if (!updated) {
-      return res.status(404).json({ message: 'Application not found' });
-    }
+    // ✅ If we are newly accepting this application → increment gigsCompleted
+    if (status === 'accepted' && !wasAcceptedBefore) {
+      try {
+        const ownerEmail = updated.gigOwnerEmail;
+        const applicantEmail = updated.applicantEmail;
 
-    // (optional) here you could also update profile stats, e.g.
-    // if (status === 'accepted') increment gigsCompleted for owner or applicant
+        // increment gigsCompleted for owner (client)
+        if (ownerEmail) {
+          await Profile.findOneAndUpdate(
+            { email: ownerEmail },
+            { $inc: { 'stats.gigsCompleted': 1 } },
+            { upsert: true, new: true }
+          );
+        }
+
+        // increment gigsCompleted for applicant (freelancer) – optional but nice
+        if (applicantEmail) {
+          await Profile.findOneAndUpdate(
+            { email: applicantEmail },
+            { $inc: { 'stats.gigsCompleted': 1 } },
+            { upsert: true, new: true }
+          );
+        }
+      } catch (err) {
+        console.error('Error updating profile stats (gigsCompleted +1):', err);
+        // non-blocking, status is still updated
+      }
+    }
 
     res.json(updated);
   } catch (error) {
