@@ -40,33 +40,6 @@ React Frontend  →  Node.js Backend  →  Python AI Service  →  Firestore Dat
         ↑                     ↓                     ↑                    ↓
         └────────────── Trust, Reputation & Governance Logic ───────────┘
 
-## 🧠 4. AI / NLP Modules
-
-Skill Matching Engine:
-
-Sentence-BERT
-
-Jaccard Similarity
-
-Cosine Similarity
-
-Max-Weight Bipartite Matching
-
-Fraud Detection:
-
-Isolation Forest
-
-NLP Text Classification
-
-Sentiment Analysis (VADER)
-
-Reputation Engine:
-
-Weighted Rating Algorithm
-
-Review Consistency Check
-
-Sentiment-Rating Validation
 
 ## 🛠 5. Tech Stack
 🎨 Frontend
@@ -83,36 +56,22 @@ Firebase Auth (client)
 
 Node.js + Express
 
-JWT / Firebase Admin SDK
 
 REST APIs
 
-Firestore Integration
 
-## 🤖 AI/NLP Microservice
 
-Python FastAPI
 
-SentenceTransformer (BERT)
-
-Scikit-learn (Isolation Forest)
-
-NLTK / VADER
-
-NumPy / Pandas
 
 ## 🗄 Database
 
-Firebase Firestore (NoSQL)
-
-MongoDB / PostgreSQL (optional hybrid)
+MongoDB 
 
 ## 🧩 6. Folder Structure
 SkillBridge/
 │
 ├── frontend/          # React UI
 ├── backend/           # Node.js APIs
-├── ai-service/        # FastAPI ML/NLP service
 ├── database/          # Schema & cloud rules
 ├── docs/              # Report, diagrams, PPT
 └── README.md
@@ -126,7 +85,7 @@ Python 3.8+
 
 Firebase Project
 
-Firestore Database
+
 
 🔧 Step 1 — Clone Repo
 git clone  https://github.com/Priyanshu0403/Skill-Bridge.git
@@ -142,10 +101,7 @@ cd backend
 npm install
 npm start
 
-🤖 Step 4 — Setup AI Microservice
-cd ai-service
-pip install -r requirements.txt
-uvicorn main:app --reload
+
 
 ## 🔌 8. API Workflow
 Example Matching Request:
@@ -171,37 +127,4 @@ Firebase secure auth
 
 Firestore rules for read/write access
 
-AI-based fraud detection
 
-Admin moderation
-
-## 📘 10. Documentation
-
-All project documents are available under docs/:
-
-Project Report
-
-Literature Review
-
-SRS
-
-Class Diagrams
-
-Sequence Diagrams
-
-DFD
-
-ERD
-
-
-## 🌱 11. Future Enhancements
-
-Blockchain-based certificates & skill verification
-
-Voice-based gig posting (NLP)
-
-In-platform wallet system
-
-Multi-campus federation
-
-Full mobile app (React Native / Flutter)
