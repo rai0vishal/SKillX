@@ -15,23 +15,31 @@ router.post('/join', async (req, res) => {
   try {
     const { sessionId, userEmail } = req.body;
 
+    console.log(`[Video Session] Join Request - SessionId: ${sessionId}, UserEmail: ${userEmail}`);
+
     if (!sessionId || !userEmail) {
+      console.warn(`[Video Session] Join Failed: Missing parameters. sessionId=${sessionId}, userEmail=${userEmail}`);
       return res.status(400).json({ message: 'sessionId and userEmail are required.' });
     }
 
     // Fetch the scheduled session
     const session = await Session.findById(sessionId);
     if (!session) {
+      console.warn(`[Video Session] Join Failed: Session ${sessionId} not found in DB.`);
       return res.status(404).json({ message: 'Session not found.' });
     }
+    
+    console.log(`[Video Session] Found Session: status=${session.status}, mode=${session.mode}`);
 
     // Authorization: must be a participant
     if (!session.participants.includes(userEmail)) {
+      console.warn(`[Video Session] Join Failed: Unauthorized user. ${userEmail} is not in participants list:`, session.participants);
       return res.status(403).json({ message: 'You are not a participant in this session.' });
     }
 
     // Status check: only allow joining Scheduled or Rescheduled sessions
     if (!['Scheduled', 'Rescheduled'].includes(session.status)) {
+      console.warn(`[Video Session] Join Failed: Invalid status (${session.status}). Only Scheduled or Rescheduled are allowed.`);
       return res.status(400).json({ message: `Session is ${session.status} and cannot be joined.` });
     }
 
@@ -41,9 +49,11 @@ router.post('/join', async (req, res) => {
 
     // Get or create the VideoSession room
     const roomId = `session_${sessionId}`;
+    const now = new Date();
     let videoSession = await VideoSession.findOne({ sessionId });
 
     if (!videoSession) {
+      console.log(`[Video Session] Room does not exist. Creating new VideoSession with roomId: ${roomId}`);
       videoSession = await VideoSession.create({
         sessionId,
         roomId,
@@ -52,7 +62,10 @@ router.post('/join', async (req, res) => {
         startedAt: now,
       });
     } else if (videoSession.status === 'ended') {
+      console.warn(`[Video Session] Join Failed: Room ${roomId} has already ended.`);
       return res.status(400).json({ message: 'This video session has already ended.' });
+    } else {
+      console.log(`[Video Session] Found existing room: ${roomId}, status: ${videoSession.status}`);
     }
 
     // Upsert attendance record for this join
@@ -66,12 +79,17 @@ router.post('/join', async (req, res) => {
     if (videoSession.status === 'waiting') {
       videoSession.status = 'active';
       await videoSession.save();
+      console.log(`[Video Session] Room ${roomId} status changed to 'active'`);
     }
 
+    console.log(`[Video Session] Join Successful: roomId=${roomId}`);
     res.json({ videoSession, roomId });
   } catch (error) {
-    console.error('Error joining video session:', error);
-    res.status(500).json({ message: 'Failed to join video session.' });
+    console.error('[Video Session] Exception caught during join:', error);
+    res.status(500).json({ 
+      message: 'Failed to join video session.', 
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message 
+    });
   }
 });
 
