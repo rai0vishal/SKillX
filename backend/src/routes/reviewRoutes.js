@@ -1,0 +1,116 @@
+import express from 'express';
+import Review from '../models/Review.js';
+import Session from '../models/Session.js';
+import UserProfile from '../models/UserProfile.js';
+
+const router = express.Router();
+
+/**
+ * POST /api/reviews
+ * Submit a new review for a completed session
+ */
+router.post('/', async (req, res) => {
+  try {
+    const { reviewerEmail, reviewedUserEmail, sessionId, rating, feedback } = req.body;
+
+    if (!reviewerEmail || !reviewedUserEmail || !sessionId || !rating) {
+      return res.status(400).json({ message: 'reviewerEmail, reviewedUserEmail, sessionId, and rating are required.' });
+    }
+
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5.' });
+    }
+
+    if (feedback && feedback.length > 500) {
+      return res.status(400).json({ message: 'Feedback must be 500 characters or less.' });
+    }
+
+    // Verify session exists and is completed
+    const session = await Session.findById(sessionId);
+    if (!session) {
+      return res.status(404).json({ message: 'Session not found.' });
+    }
+    if (session.status !== 'Completed') {
+      return res.status(400).json({ message: 'You can only review completed sessions.' });
+    }
+
+    // Verify reviewer is a participant
+    if (!session.participants.includes(reviewerEmail)) {
+      return res.status(403).json({ message: 'You are not a participant of this session.' });
+    }
+
+    // Prevent duplicate reviews
+    if (session.reviewedBy && session.reviewedBy.includes(reviewerEmail)) {
+      return res.status(409).json({ message: 'You have already reviewed this session.' });
+    }
+
+    // Create the review
+    const review = await Review.create({
+      reviewerEmail,
+      reviewedUserEmail,
+      sessionId,
+      rating,
+      feedback: feedback || '',
+    });
+
+    // Mark this user as having reviewed the session
+    session.reviewedBy.push(reviewerEmail);
+    await session.save();
+
+    // Recalculate the reviewed user's average rating
+    const allReviews = await Review.find({ reviewedUserEmail });
+    const totalReviews = allReviews.length;
+    const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
+
+    await UserProfile.findOneAndUpdate(
+      { email: reviewedUserEmail },
+      {
+        $set: {
+          'stats.averageRating': Math.round(avgRating * 10) / 10,
+          'stats.totalReviews': totalReviews,
+        },
+      }
+    );
+
+    res.status(201).json(review);
+  } catch (error) {
+    // Handle MongoDB duplicate key error from the compound index
+    if (error.code === 11000) {
+      return res.status(409).json({ message: 'You have already reviewed this session.' });
+    }
+    console.error('Error creating review:', error);
+    res.status(500).json({ message: 'Failed to create review.' });
+  }
+});
+
+/**
+ * GET /api/reviews/user/:email
+ * Get all reviews for a specific user (reviews they received)
+ */
+router.get('/user/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const reviews = await Review.find({ reviewedUserEmail: email }).sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (error) {
+    console.error('Error fetching user reviews:', error);
+    res.status(500).json({ message: 'Failed to fetch reviews.' });
+  }
+});
+
+/**
+ * GET /api/reviews/session/:sessionId
+ * Get all reviews for a specific session
+ */
+router.get('/session/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const reviews = await Review.find({ sessionId }).sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (error) {
+    console.error('Error fetching session reviews:', error);
+    res.status(500).json({ message: 'Failed to fetch session reviews.' });
+  }
+});
+
+export default router;

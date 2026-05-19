@@ -1,0 +1,5 @@
+/* ✅ Optional App-level styles (you can keep this empty for Tailwind projects) */
+
+.app-container {
+  min-height: 100vh;
+}

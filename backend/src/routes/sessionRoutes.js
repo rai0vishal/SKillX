@@ -1,0 +1,173 @@
+import express from 'express';
+import Session from '../models/Session.js';
+
+const router = express.Router();
+
+/**
+ * POST /api/sessions
+ * Create a new session
+ */
+router.post('/', async (req, res) => {
+  try {
+    const { participants, chatRoomId, date, time, duration, mode, notes } = req.body;
+
+    if (!participants || participants.length !== 2) {
+      return res.status(400).json({ message: 'Exactly 2 participants are required.' });
+    }
+    if (!chatRoomId || !date || !time) {
+      return res.status(400).json({ message: 'chatRoomId, date, and time are required.' });
+    }
+
+    // Validate date is not in the past
+    const sessionDateTime = new Date(`${date}T${time}`);
+    if (sessionDateTime < new Date()) {
+      return res.status(400).json({ message: 'Cannot schedule a session in the past.' });
+    }
+
+    // Prevent duplicate: same participants + same chatRoom + same date/time + active status
+    const duplicate = await Session.findOne({
+      chatRoomId,
+      date,
+      time,
+      status: { $in: ['Scheduled', 'Rescheduled'] },
+    });
+    if (duplicate) {
+      return res.status(409).json({ message: 'A session already exists at this date and time for this conversation.' });
+    }
+
+    const session = await Session.create({
+      participants,
+      chatRoomId,
+      date,
+      time,
+      duration: duration || '60 mins',
+      mode: mode || 'Remote',
+      notes: notes || '',
+      status: 'Scheduled',
+    });
+
+    res.status(201).json(session);
+  } catch (error) {
+    console.error('Error creating session:', error);
+    res.status(500).json({ message: 'Failed to create session.' });
+  }
+});
+
+/**
+ * GET /api/sessions?email=...
+ * Get all sessions for a user
+ */
+router.get('/', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ message: 'Email query parameter is required.' });
+    }
+
+    const sessions = await Session.find({ participants: email }).sort({ date: 1, time: 1 });
+    res.json(sessions);
+  } catch (error) {
+    console.error('Error fetching sessions:', error);
+    res.status(500).json({ message: 'Failed to fetch sessions.' });
+  }
+});
+
+/**
+ * GET /api/sessions/room/:chatRoomId
+ * Get sessions for a specific chat room
+ */
+router.get('/room/:chatRoomId', async (req, res) => {
+  try {
+    const { chatRoomId } = req.params;
+    const sessions = await Session.find({
+      chatRoomId,
+      status: { $in: ['Scheduled', 'Rescheduled'] },
+    }).sort({ date: 1, time: 1 });
+
+    res.json(sessions);
+  } catch (error) {
+    console.error('Error fetching room sessions:', error);
+    res.status(500).json({ message: 'Failed to fetch room sessions.' });
+  }
+});
+
+/**
+ * PUT /api/sessions/:id/reschedule
+ * Reschedule a session
+ */
+router.put('/:id/reschedule', async (req, res) => {
+  try {
+    const { date, time, duration, mode, notes } = req.body;
+
+    if (!date || !time) {
+      return res.status(400).json({ message: 'New date and time are required to reschedule.' });
+    }
+
+    const sessionDateTime = new Date(`${date}T${time}`);
+    if (sessionDateTime < new Date()) {
+      return res.status(400).json({ message: 'Cannot reschedule to a past date.' });
+    }
+
+    const session = await Session.findById(req.params.id);
+    if (!session) {
+      return res.status(404).json({ message: 'Session not found.' });
+    }
+
+    session.date = date;
+    session.time = time;
+    if (duration) session.duration = duration;
+    if (mode) session.mode = mode;
+    if (notes !== undefined) session.notes = notes;
+    session.status = 'Rescheduled';
+    await session.save();
+
+    res.json(session);
+  } catch (error) {
+    console.error('Error rescheduling session:', error);
+    res.status(500).json({ message: 'Failed to reschedule session.' });
+  }
+});
+
+/**
+ * PUT /api/sessions/:id/cancel
+ * Cancel a session
+ */
+router.put('/:id/cancel', async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.id);
+    if (!session) {
+      return res.status(404).json({ message: 'Session not found.' });
+    }
+
+    session.status = 'Cancelled';
+    await session.save();
+
+    res.json(session);
+  } catch (error) {
+    console.error('Error cancelling session:', error);
+    res.status(500).json({ message: 'Failed to cancel session.' });
+  }
+});
+
+/**
+ * PUT /api/sessions/:id/complete
+ * Mark a session as completed
+ */
+router.put('/:id/complete', async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.id);
+    if (!session) {
+      return res.status(404).json({ message: 'Session not found.' });
+    }
+
+    session.status = 'Completed';
+    await session.save();
+
+    res.json(session);
+  } catch (error) {
+    console.error('Error completing session:', error);
+    res.status(500).json({ message: 'Failed to complete session.' });
+  }
+});
+
+export default router;
