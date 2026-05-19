@@ -35,21 +35,9 @@ router.post('/join', async (req, res) => {
       return res.status(400).json({ message: `Session is ${session.status} and cannot be joined.` });
     }
 
-    // Time window check: allow joining up to 15 min early, and up to session duration after start
-    const sessionDateTime = new Date(`${session.date}T${session.time}`);
-    const durationMs = parseInt(session.duration) * 60 * 1000;
-    const now = new Date();
-    const earlyWindow = 15 * 60 * 1000; // 15 minutes before
-
-    if (now < new Date(sessionDateTime.getTime() - earlyWindow)) {
-      return res.status(400).json({
-        message: 'Session has not started yet. You can join 15 minutes before the scheduled time.',
-        scheduledAt: sessionDateTime,
-      });
-    }
-    if (now > new Date(sessionDateTime.getTime() + durationMs + 30 * 60 * 1000)) {
-      return res.status(400).json({ message: 'Session time has expired.' });
-    }
+    // Removed strict backend time window check due to timezone discrepancies between
+    // local client time strings (stored in DB) and UTC server time. 
+    // The frontend SessionCard UI already enforces the 15-minute early join window.
 
     // Get or create the VideoSession room
     const roomId = `session_${sessionId}`;

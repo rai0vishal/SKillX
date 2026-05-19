@@ -18,11 +18,10 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'chatRoomId, date, and time are required.' });
     }
 
-    // Validate date is not in the past
-    const sessionDateTime = new Date(`${date}T${time}`);
-    if (sessionDateTime < new Date()) {
-      return res.status(400).json({ message: 'Cannot schedule a session in the past.' });
-    }
+    // Note: We skip strict backend past-date validation here because 'date' and 'time'
+    // are stored without timezone info. The UTC backend might incorrectly flag valid 
+    // future local times as "past" for users behind UTC.
+    // Frontend UI should enforce reasonable date constraints.
 
     // Prevent duplicate: same participants + same chatRoom + same date/time + active status
     const duplicate = await Session.findOne({
@@ -103,10 +102,7 @@ router.put('/:id/reschedule', async (req, res) => {
       return res.status(400).json({ message: 'New date and time are required to reschedule.' });
     }
 
-    const sessionDateTime = new Date(`${date}T${time}`);
-    if (sessionDateTime < new Date()) {
-      return res.status(400).json({ message: 'Cannot reschedule to a past date.' });
-    }
+    // Note: Skipped strict backend past-date validation to avoid timezone false positives.
 
     const session = await Session.findById(req.params.id);
     if (!session) {
