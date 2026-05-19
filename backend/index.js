@@ -20,7 +20,7 @@ import { Server } from 'socket.io';
 import Message from './src/models/Message.js';
 dotenv.config();
 
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+const allowedOrigins = [process.env.CLIENT_URL || 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
 if (process.env.CLIENT_URL) {
   allowedOrigins.push(process.env.CLIENT_URL);
   // Also push without trailing slash if present
@@ -153,9 +153,13 @@ app.use(
 );
 app.use(express.json());
 
-// Test route
+// Health check route
 app.get('/', (req, res) => {
-  res.send('SkillX backend is running ✅');
+  res.status(200).json({
+    status: 'success',
+    message: 'SkillX backend is running ✅',
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Routes
@@ -171,16 +175,31 @@ app.use('/api/sessions', sessionRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/video-session', videoSessionRouter);
+
+// Global Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error('Unhandled Error:', err.stack);
+  res.status(500).json({
+    message: 'Internal Server Error',
+    // Hide detailed errors in production
+    error: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message
+  });
+});
 // DB + server start
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/skillx';
+
+if (process.env.NODE_ENV === 'production' && !process.env.MONGO_URI) {
+  console.error('❌ FATAL ERROR: MONGO_URI is not defined in production.');
+  process.exit(1);
+}
 
 mongoose
   .connect(MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
     server.listen(PORT, () => {
-      console.log(`✅ Server running at http://localhost:${PORT}`);
+      console.log(`✅ Server running on port ${PORT}`);
     });
   })
   .catch((err) => {
