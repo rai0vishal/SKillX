@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import LoadingSpinner from '../components/LoadingSpinner';
 
 import { API_BASE_URL } from '../config/api.js';
 
@@ -130,7 +131,7 @@ const GigDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-        <p className="text-sm text-gray-600">Loading gig details...</p>
+        <LoadingSpinner message="Fetching your data…" />
       </div>
     )
   }
@@ -148,7 +149,7 @@ const GigDetails = () => {
     : []
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
+    <main role="main" aria-label="Gig Details" className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
       <div className="w-full max-w-3xl space-y-6">
         <button
           onClick={() => navigate(-1)}
@@ -254,9 +255,7 @@ const GigDetails = () => {
               Requests for this Gig
             </h2>
             {loadingApps ? (
-              <p className="text-sm text-gray-600">
-                Loading requests...
-              </p>
+              <LoadingSpinner message="Fetching your data…" />
             ) : applications.length === 0 ? (
               <p className="text-sm text-gray-600">
                 No one has requested to work on this gig yet.
@@ -325,7 +324,7 @@ const GigDetails = () => {
           </div>
         )}
       </div>
-    </div>
+    </main>
   )
 }
 

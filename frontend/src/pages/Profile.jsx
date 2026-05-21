@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 import { API_BASE_URL } from '../config/api.js';
 
@@ -198,18 +199,38 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
+    <main role="main" aria-label="Profile page" className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
       <div className="w-full max-w-4xl">
         
         {/* Profile Completion Indicator */}
         {availabilityMissing && (
           <div 
-            className="mb-4 bg-white rounded-xl shadow-sm border-l-4 border-red-500 p-4 flex items-center justify-between cursor-pointer hover:bg-red-50 transition"
+            style={{
+              background: '#fffbeb',
+              border: '1px solid #fcd34d',
+              borderLeft: '4px solid #f59e0b',
+              borderRadius: '8px',
+              padding: '10px 16px',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer'
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Fix missing availability"
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                document.getElementById('availability-section')?.scrollIntoView({ behavior: 'smooth' })
+              }
+            }}
             onClick={() => document.getElementById('availability-section')?.scrollIntoView({ behavior: 'smooth' })}
           >
             <div>
-              <p className="font-bold text-gray-800">Profile 🔴 Completion: 78%</p>
-              <p className="text-sm text-red-600 font-medium">Missing: 🔴 Availability not added</p>
+              <p style={{ color: '#92400e', fontWeight: 600 }}>Profile Completion: 78%</p>
+              <p style={{ color: '#b45309', fontSize: '0.82rem' }}>Missing: Availability not added</p>
             </div>
             <span className="text-gray-400">Fix now →</span>
           </div>
@@ -217,7 +238,7 @@ const Profile = () => {
 
         {/* Status messages */}
         {loading && (
-          <p className="text-sm text-gray-600 mb-3">Loading profile...</p>
+          <LoadingSpinner message="Fetching your data…" />
         )}
         {error && (
           <div className="mb-3 text-sm bg-red-100 text-red-800 px-4 py-2 rounded-lg">
@@ -272,24 +293,50 @@ const Profile = () => {
 
               <p className="text-gray-500 text-sm mt-1">
                 📍{' '}
-                <input
-                  type="text"
-                  value={profile.location}
-                  onChange={(e) =>
-                    handleFieldChange('location', e.target.value)
-                  }
-                  className="bg-transparent border-b border-gray-200 focus:outline-none focus:border-indigo-500 text-center md:text-left text-sm"
-                  placeholder="Your Location"
-                />
+                <span style={{ position: 'relative', display: 'inline-block' }}>
+                  <input
+                    type="text"
+                    value={profile.location}
+                    onChange={(e) =>
+                      handleFieldChange('location', e.target.value)
+                    }
+                    className="bg-transparent border-b border-gray-200 focus:outline-none focus:border-indigo-500 text-center md:text-left text-sm"
+                    placeholder="Your Location"
+                    style={{ paddingRight: '24px' }}
+                  />
+                  <span role="img" aria-label="Editable field" style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    fontSize: '0.75rem',
+                    color: '#9ca3af',
+                    pointerEvents: 'none'
+                  }}>
+                    ✏️
+                  </span>
+                </span>
               </p>
 
-              <textarea
-                value={profile.bio}
-                onChange={(e) => handleFieldChange('bio', e.target.value)}
-                rows={3}
-                className="w-full mt-4 text-sm text-gray-600 bg-transparent border border-gray-200 rounded-lg p-2 focus:outline-none focus:border-indigo-500"
-                placeholder="Write a short bio about yourself..."
-              />
+              <div style={{ position: 'relative', marginTop: '16px' }}>
+                <textarea
+                  value={profile.bio}
+                  onChange={(e) => handleFieldChange('bio', e.target.value)}
+                  rows={3}
+                  className="w-full text-sm text-gray-600 bg-transparent border border-gray-200 rounded-lg p-2 focus:outline-none focus:border-indigo-500"
+                  placeholder="Write a short bio about yourself..."
+                />
+                <span role="img" aria-label="Editable field" style={{
+                  position: 'absolute',
+                  bottom: '28px',
+                  right: '10px',
+                  fontSize: '0.75rem',
+                  color: '#9ca3af',
+                  pointerEvents: 'none'
+                }}>
+                  ✏️ click to edit
+                </span>
+              </div>
 
               {/* Save button */}
               <div className="flex flex-col sm:flex-row gap-3 mt-5 justify-center md:justify-start">
@@ -360,6 +407,27 @@ const Profile = () => {
             <h2 className="text-lg font-semibold text-gray-800 mb-3">
               Skills
             </h2>
+            {skillsString && skillsString.split(',').filter(s => s.trim()).length > 0 && (
+              <div role="list" aria-label="Your skills" style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px',
+                marginBottom: '10px'
+              }}>
+                {skillsString.split(',').filter(s => s.trim()).map((skill, i) => (
+                  <span key={i} role="listitem" aria-label={`Skill: ${skill.trim()}`} style={{
+                    background: '#ede9fe',
+                    color: '#5b21b6',
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    fontSize: '0.78rem',
+                    fontWeight: 500
+                  }}>
+                    {skill.trim()}
+                  </span>
+                ))}
+              </div>
+            )}
             <textarea
               value={skillsString}
               onChange={(e) => handleFieldChange('skills', e.target.value)}
@@ -367,20 +435,6 @@ const Profile = () => {
               className="w-full text-sm text-gray-700 bg-transparent border border-gray-200 rounded-lg p-2 focus:outline-none focus:border-indigo-500"
               placeholder="Comma separated skills e.g. React, Node.js, MongoDB"
             />
-            <div className="flex flex-wrap gap-2 mt-3">
-              {skillsString
-                .split(',')
-                .map((s) => s.trim())
-                .filter(Boolean)
-                .map((skill, index) => (
-                  <span
-                    key={index}
-                    className="bg-indigo-50 text-indigo-700 text-xs px-3 py-1 rounded-full"
-                  >
-                    {skill}
-                  </span>
-                ))}
-            </div>
           </div>
         </div>
 
@@ -456,7 +510,7 @@ const Profile = () => {
                           onChange={(e) => updateSlot(i, 'endTime', e.target.value)}
                           className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-indigo-400"
                         />
-                        <button onClick={() => removeSlot(i)} className="text-red-400 hover:text-red-600 text-sm ml-2">✕</button>
+                        <button onClick={() => removeSlot(i)} aria-label="Remove slot" className="text-red-400 hover:text-red-600 text-sm ml-2">✕</button>
                       </div>
                     ))}
                     <button onClick={addSlot} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 self-start mt-1 bg-indigo-50 px-2 py-1 rounded-md">
@@ -528,7 +582,7 @@ const Profile = () => {
                           onChange={(e) => updateCustomSlot(i, 'endTime', e.target.value)}
                           className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-indigo-400"
                         />
-                        <button onClick={() => removeCustomSlot(i)} className="text-red-400 hover:text-red-600 text-sm ml-2">✕</button>
+                        <button onClick={() => removeCustomSlot(i)} aria-label="Remove custom slot" className="text-red-400 hover:text-red-600 text-sm ml-2">✕</button>
                       </div>
                     ))}
                     <button onClick={addCustomSlot} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 self-start mt-1 bg-indigo-50 px-2 py-1 rounded-md">
@@ -564,7 +618,7 @@ const Profile = () => {
           </h2>
 
           {loadingReviews ? (
-            <p className="text-sm text-gray-500">Loading reviews...</p>
+            <LoadingSpinner message="Fetching your data…" />
           ) : reviews.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <p className="text-sm">No reviews yet.</p>
@@ -616,7 +670,7 @@ const Profile = () => {
           )}
         </div>
       </div>
-    </div>
+    </main>
   )
 }
 

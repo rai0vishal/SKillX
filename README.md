@@ -1,250 +1,343 @@
-**🚀 SkillX – Skill Exchange & Gig Collaboration Platform
-**
-SkillX is a full-stack MERN-based web platform that enables users to exchange skills, post gigs, apply for gigs, and collaborate professionally. It combines real-time interaction, secure authentication, and a scalable backend to create a complete freelancing and skill-sharing ecosystem.
+<div align="center">
 
-**🌐 Live Concept**
+# SkillX
 
-SkillX allows users to:
+SkillX is a production-grade, AI-powered peer-to-peer skill exchange and gig collaboration ecosystem. Designed to bridge the gap between continuous learning and practical application, it enables users to seamlessly trade skills, collaborate on technical gigs in real-time, and grow through AI-driven roadmaps and contextual workspaces.
 
-Exchange skills with others
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+![Socket.io](https://img.shields.io/badge/Socket.io-black?style=for-the-badge&logo=socket.io&badgeColor=010101)
+![WebRTC](https://img.shields.io/badge/WebRTC-333333?style=for-the-badge&logo=webrtc&logoColor=white)
+![Gemini AI](https://img.shields.io/badge/Gemini%20AI-8E75B2?style=for-the-badge&logo=google&logoColor=white)
+![Firebase](https://img.shields.io/badge/firebase-a08021?style=for-the-badge&logo=firebase&logoColor=ffcd34)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-Post and apply for freelance gigs
+</div>
 
-Manage profiles with real-time activity stats
+---
 
-Accept/reject skill exchange requests
+## 📌 Problem Statement
 
-Accept/reject gig applications
+In today's fast-paced digital ecosystem, continuous learning and collaboration are essential. However, the current landscape is fragmented. 
+* **Difficult Skill Discovery**: Finding reliable peers willing to barter highly specific technical skills is challenging.
+* **Disconnected Learning**: Theoretical learning is rarely coupled with practical application environments.
+* **Lack of Collaborative Exchange**: Most platforms are transactional rather than collaborative, lacking built-in tools for real-time engagement.
+* **Difficulty Finding Opportunities**: Entry-level professionals struggle to find flexible gigs or skill-building collaborative projects to boost their portfolios.
 
-Track completed gigs and collaborations automatically
+---
 
-🧩 Tech Stack
-**🔹 Frontend**
+## 🎯 Solution
 
-React.js (Vite)
+SkillX solves these challenges by providing a centralized, intelligent ecosystem where skill exchange is contextual, collaborative, and rewarding. By integrating an AI-driven matching algorithm, users are instantly paired with complementary peers. Beyond just matching, SkillX facilitates the entire collaboration lifecycle—from contextual chat threads and dynamic scheduling, to real-time WebRTC video sessions and shared collaborative workspaces—creating a continuous loop of learning, building, and authentic feedback.
 
-Tailwind CSS
+---
 
-React Router DOM
+## ✨ Features
 
-Fetch API
+### Core Features
+- **User Authentication**: Secure JWT & Firebase-based auth system.
+- **Dynamic User Profiles**: Comprehensive profiles with dynamic completion tracking.
+- **Skill Matching Algorithm**: Intelligent pairing based on offered and desired skills.
+- **Gig Marketplace**: Post, browse, and participate in collaborative project gigs.
+- **Reviews & Ratings**: Reputation building through a verifiable trust score system.
 
-**🔹 Backend**
+### AI Features
+- **AI Learning Roadmaps**: Gemini-powered personalized learning paths based on user goals.
+- **AI Gig Enhancer**: Smart description generation to improve gig visibility and clarity.
+- **Smart Recommendations**: AI-driven user and gig suggestions.
 
-Node.js
+### Collaboration Features
+- **Contextual Chat Threads**: Dedicated, context-aware messaging for both skill exchanges and gig coordination.
+- **WebRTC Video Sessions**: High-quality, real-time video conferencing for 1:1 mentorship.
+- **Shared Workspace**: Integrated environment featuring resource sharing, collaborative notes, and task tracking.
 
-Express.js
+### Scheduling Features
+- **Smart Scheduling**: Dynamic availability slots tailored to user timezones.
+- **Session Countdowns**: Real-time tracking of upcoming collaborative sessions.
+- **Conflict Detection**: Prevention of double-booking across gig and exchange sessions.
 
-MongoDB with Mongoose ODM
+### User Experience Features
+- **Dashboard Analytics**: Visual tracking of activities, gigs completed, and skill growth.
+- **Gamification & Badges**: Achievement system rewarding continuous collaboration.
+- **Real-time Notifications**: Instant alerts for messages, requests, and session updates.
 
-🔹 Authentication
+### Admin Features
+- **Role-Based Access Control (RBAC)**: Secure separation between User and Admin privileges.
+- **Platform Analytics**: High-level overview of platform engagement and growth metrics.
+- **Moderation System**: Tools for user management and content moderation.
 
-Firebase Authentication
+---
 
-**🔹 Database**
+## 🏗 System Architecture
 
-MongoDB Atlas / Local MongoDB
+The SkillX platform leverages a scalable, event-driven architecture to handle real-time collaboration.
 
-**📁 Project Structure**
+**Frontend Client (React.js)**
+↓
+*(REST API & WebSocket Connections)*
+↓
+**API Gateway / Middleware Layer**
+↓
+**Backend Micro-services (Express.js)**
+↓
+**Database Layer (MongoDB)**
+↓
+**Real-time Communication (Socket.io & WebRTC)**
+↓
+**Cloud Services (Firebase, Cloudinary, Gemini AI)**
+
+---
+
+## 📂 Project Structure
+
+```text
 SkillX/
-│
 ├── frontend/
-│   ├── src/
-│   │   ├── pages/
-│   │   ├── components/
-│   │   ├── auth/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── package.json
-│
-├── backend/
-│   ├── src/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   └── controllers/
-│   ├── index.js
-│   ├── seed.js
-│   └── package.json
-│
-└── README.md
+│   ├── components/      # Reusable UI components
+│   ├── pages/           # Page-level components & routing views
+│   ├── redux/           # Global state management slices
+│   ├── hooks/           # Custom React hooks (e.g., useSocket)
+│   └── services/        # API client integrations
+└── backend/
+    ├── controllers/     # Request handlers and business logic
+    ├── models/          # Mongoose schemas and database models
+    ├── routes/          # Express route definitions
+    ├── middleware/      # Auth, validation, and error handling
+    ├── services/        # External integrations (AI, Cloudinary)
+    ├── socket/          # Socket.io event handlers and WebRTC signaling
+    └── config/          # Environment and database configurations
+```
 
-✨ Core Features
-👤 User Management
+---
 
-Firebase Email/Password Authentication
+## 🔄 Complete User Workflow
 
-Secure Sign Up & Sign In
+```text
+[ User Registration ] ➔ [ Profile Creation & Skill Selection ]
+                                      ↓
+                         [ Smart Matching Algorithm ]
+                                      ↓
+                     [ Skill Exchange & Gig Requests ]
+                                      ↓
+                   [ Context-Aware Chat & Negotiation ]
+                                      ↓
+                     [ Smart Scheduling & Calendaring ]
+                                      ↓
+                     [ WebRTC Video & Shared Workspace ]
+                                      ↓
+                       [ Reviews, Ratings & Badges ]
+```
 
-Profile creation & editing
+---
 
-Dynamic user activity tracking
+## 🧠 Major Technical Implementations
 
-🔄 Skill Exchange System
+### Skill Matching Algorithm
+Implemented a weighted intersection algorithm that evaluates the overlap between a user's `skillsWanted` and other users' `skillsOffered`. The algorithm calculates a percentage-based match score in real-time, boosting profiles that have high trust scores and recent activity.
 
-Create skill exchange profiles
+### Context-based Chat System
+Engineered a scalable chat infrastructure where every conversation carries a context payload (`type: 'GIG' | 'EXCHANGE'`). This ensures that users jumping between different gigs and skill barters maintain strict separation of concerns, complete with contextual UI headers and linked references to the original request.
 
-Send skill exchange requests
+### Smart Scheduling System
+Developed a robust scheduling engine that handles weekly availability matrixes and custom date overrides. The system includes backend conflict detection logic to ensure overlapping sessions are impossible, converting all local times to UTC for database storage and translating them back to local browser time seamlessly.
 
-Accept or reject requests
+### WebRTC Session System
+Built a custom signaling server using Socket.io to facilitate peer-to-peer WebRTC connections. The implementation handles complex state changes including ICE candidate exchange, SDP offer/answer negotiations, and media stream tracking for robust 1:1 video collaboration without third-party API dependencies.
 
-Auto-update completed exchanges
+### AI Roadmap Generator
+Integrated the Google Gemini API to parse a user's current tech stack and desired career goals. The prompt engineering pipeline formats the AI's response into structured JSON, which the frontend renders as an interactive, step-by-step learning roadmap tree.
 
-💼 Gig System
+### RBAC System
+Secured the platform using JWT-based Role-Based Access Control. Middleware layers actively inspect token payloads for `role` claims, ensuring that administrative endpoints (like user suspension or global analytics) immediately reject unauthorized access with `403 Forbidden` responses.
 
-Post gigs with details (title, budget, duration, etc.)
+---
 
-Apply for gigs
+## 🛠 Tech Stack
 
-Gig owner can accept/reject applications
+| Technology | Purpose |
+| :--- | :--- |
+| **React.js** | Dynamic UI construction and component state management. |
+| **Redux Toolkit** | Global state management for user sessions and caching. |
+| **Tailwind CSS** | Utility-first styling for a highly responsive, modern interface. |
+| **Node.js & Express.js** | High-performance backend runtime and API routing. |
+| **MongoDB & Mongoose** | Flexible NoSQL database and schema modeling. |
+| **Socket.io** | Low-latency, bidirectional event communication for chat/notifications. |
+| **WebRTC** | Peer-to-peer, real-time video and audio streaming. |
+| **Firebase Auth** | Robust social and email/password authentication. |
+| **Gemini AI API** | Large Language Model integration for AI roadmaps and gig enhancement. |
+| **Cloudinary** | Cloud-native media storage for profile pictures and workspace assets. |
 
-Only gig owner can delete the gig
+---
 
-Auto-increment completed gigs
+## 📸 Screenshots
 
-📊 Dashboard
+### Dashboard
+![Dashboard Placeholder](https://via.placeholder.com/800x450/4f46e5/ffffff?text=Dashboard+View)
 
-Displays:
+### Profile & Learning Roadmaps
+![Profile Placeholder](https://via.placeholder.com/800x450/7c3aed/ffffff?text=User+Profile)
 
-Total gigs
+### Skill Exchange Ecosystem
+![Skill Exchange Placeholder](https://via.placeholder.com/800x450/059669/ffffff?text=Skill+Exchange+Matching)
 
-Total skill exchanges
+### Contextual Chat
+![Chat Placeholder](https://via.placeholder.com/800x450/2563eb/ffffff?text=Context-based+Messaging)
 
-Total user profiles
+### Collaborative Workspace & Video Session
+![Workspace Placeholder](https://via.placeholder.com/800x450/db2777/ffffff?text=WebRTC+Session+&+Workspace)
 
-Shows:
+*(Replace placeholders with actual project screenshots prior to deployment)*
 
-User activity summary
+---
 
-Exchange requests (sent & received)
+## 🔌 API Overview
 
-Gig applications
+### Authentication APIs
+* `POST /api/auth/register` - Create new user account
+* `POST /api/auth/login` - Authenticate and retrieve JWT
 
-📈 Profile Statistics (Auto Updated)
+### Profile APIs
+* `GET /api/profile/:email` - Fetch detailed user profile
+* `PUT /api/profile` - Update user information and availability
 
-Gigs Posted
+### Skill Exchange APIs
+* `GET /api/skill-exchange/recommendations` - Get AI-driven match suggestions
+* `POST /api/exchange-requests` - Send a skill exchange request
 
-Gigs Completed
+### Chat APIs
+* `POST /api/chat/create` - Initialize a context-based chat room
+* `GET /api/chat/:roomId/messages` - Retrieve message history
 
-Skill Exchanges Sent
+### Session APIs
+* `POST /api/sessions/schedule` - Book a new collaboration session
+* `PUT /api/sessions/:id/status` - Update session status (Complete/Cancel)
 
-Skill Exchanges Completed
+### Review APIs
+* `POST /api/reviews` - Submit a rating and feedback for a peer
 
-🔐 Security Features
+### Admin APIs
+* `GET /api/admin/analytics` - Fetch platform-wide statistics (Protected)
 
-Firebase authentication protection
+---
 
-Email-based access control
+## ⚙ Installation & Setup
 
-Role-based authorization for gig delete
+### Prerequisites
+* Node.js (v16+)
+* MongoDB instance (Local or Atlas)
+* API Keys (Firebase, Gemini, Cloudinary)
 
-Secure REST API calls
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/skillx.git
+cd skillx
+```
 
-Data validation at backend
-
-⚙️ Installation Guide
-1️⃣ Clone Repository
-git clone https://github.com/rai0vishal/SKillX.git
-cd SKillX
-
-2️⃣ Backend Setup
+### 2. Backend Setup
+```bash
 cd backend
 npm install
+npm run dev
+```
 
-
-Create .env file:
-
-MONGO_URI=mongodb://127.0.0.1:27017/skillx
-PORT=5000
-
-
-Start server:
-
-npm start
-
-3️⃣ Frontend Setup
-cd frontend
+### 3. Frontend Setup
+```bash
+cd ../frontend
 npm install
 npm run dev
+```
 
-🔥 Firebase Setup
+The platform will now be running on `http://localhost:5173` (Frontend) and `http://localhost:5000` (Backend).
 
-Create Firebase project
+---
 
-Enable Email/Password Authentication
+## 🌐 Environment Variables
 
-Add config in:
+Create a `.env` file in the `backend` directory:
 
-src/firebase/firebaseConfig.js
+```env
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/skillx
+JWT_SECRET=your_super_secret_jwt_key
 
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_SECRET=your_api_secret
 
-Using:
+GEMINI_API_KEY=your_google_gemini_key
+FIREBASE_API_KEY=your_firebase_web_api_key
 
-VITE_APIKEY=
-VITE_AUTHDOMAIN=
-VITE_PROJECTID=
-VITE_STORAGEBUCKET=
-VITE_MESSAGINGSENDERID=
-VITE_APPID=
+PORT=5000
+```
 
-🗄 Database Models
+Create a `.env` file in the `frontend` directory:
 
-UserProfile
+```env
+VITE_API_BASE_URL=http://localhost:5000
+VITE_SOCKET_URL=http://localhost:5000
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+```
 
-Gig
+---
 
-SkillExchange
+## 🔐 Security Features
 
-GigApplication
+* **JWT Authentication**: Short-lived access tokens with secure payload verification.
+* **Protected Routes**: Frontend routing guards to block unauthenticated views.
+* **Role-based Access Control**: Hardened backend endpoints strictly verifying Admin/User payloads.
+* **Permission Handling**: Users can only modify their own profiles and delete their own gigs.
+* **Input Validation**: Sanitization of incoming request bodies to prevent NoSQL injection.
+* **Secure API Access**: CORS policies restricted to trusted frontend origins.
 
-ExchangeRequest
+---
 
-⚡ System Workflow
+## 📈 Performance Optimizations
 
-User registers via Firebase → Profile created in MongoDB
+* **Pagination**: Implemented on Gig lists and Notification history to reduce initial load payloads.
+* **Memoization**: React `useMemo` and `useCallback` employed heavily in real-time WebRTC and Socket components to prevent unnecessary re-renders.
+* **Lazy Loading**: Code splitting via dynamic imports for heavier routes (e.g., Video Session rooms).
+* **Debouncing**: Search inputs and complex form fields utilize debouncing to minimize backend query overload.
+* **Socket Optimization**: Event listeners are strictly attached and cleaned up in `useEffect` lifecycle methods to prevent memory leaks.
+* **MongoDB Indexing**: Compound indexes applied to `skillsOffered`, `skillsWanted`, and `email` fields to ensure sub-millisecond query execution.
 
-User posts gig → gigsPosted auto-increments
+---
 
-User applies to gig → owner receives request
+## 🚧 Future Scope
 
-Owner accepts application → gigsCompleted increments for both users
+* **Mobile Application**: Porting the core matching and chat experience to React Native for iOS/Android.
+* **Push Notifications**: Integrating Firebase Cloud Messaging (FCM) for offline browser and mobile alerts.
+* **Workspace Extensions**: Integrating live code editors (like Monaco) directly into the shared workspace.
+* **AI Enhancements**: Expanding Gemini integration for automated code reviews and live interview question generation during WebRTC sessions.
 
-Skill exchange behaves similarly
+---
 
-All stats auto-updated in real-time
+## 👨‍💻 Author
 
-✅ Testing Performed
+**Vishal Rai**  
+*B.Tech CSE*  
 
-Manual unit testing
+* **GitHub**: [github.com/rai0vishal](https://github.com/rai0vishal)
+* **LinkedIn**: [linkedin.com/in/rai0vishal](https://linkedin.com/in/rai0vishal)
 
-API Route testing using Postman
+---
 
-Firebase authentication testing
+## 🤝 Contributing
 
-Dashboard data verification
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/rai0vishal/skillx/issues). If you're looking to contribute:
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-Gig & skill exchange flow testing
+---
 
-🚀 Future Enhancements
+## ⭐ Support
 
-In-app real-time chat
+If you found this project helpful, please give it a ⭐ on GitHub! It helps the repository grow and reach more developers looking for collaborative ecosystems.
 
-Payment gateway for paid gigs
-
-Admin dashboard
-
-Advanced recommendation system
-
-Push notifications
-
-AI-based skill matching
-
-👨‍💻 Developer
-
-Vishal Rai
-Final Year Project – SkillX
-GitHub:
-🔗 https://github.com/rai0vishal/SKillX
-
-📜 License
-
-This project is developed for academic and learning purposes only.
+<div align="center">
+  <sub>Built with ❤️ for the Developer Community</sub>
+</div>

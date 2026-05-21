@@ -14,30 +14,43 @@ const Achievements = ({ badges, loading }) => {
     );
   }
 
+  const ALL_BADGES = [
+    { id: 'first_exchange', name: 'First Exchange', icon: '🏆', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+    { id: 'session_master', name: 'Session Master', icon: '🔥', color: 'bg-red-100 text-red-700 border-red-200' },
+    { id: 'top_rated', name: 'Top Rated User', icon: '⭐', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+    { id: 'skill_explorer', name: 'Skill Explorer', icon: '🚀', color: 'bg-purple-100 text-purple-700 border-purple-200' },
+  ];
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <span>🎖️</span> Achievements & Badges
+      <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+        Achievements & Badges
       </h3>
       
-      {badges.length === 0 ? (
-        <div className="text-center py-6 text-gray-400 text-sm">
-          <p>No badges earned yet.</p>
-          <p className="text-xs mt-1">Complete your first session to earn a badge!</p>
-        </div>
-      ) : (
-        <div className="flex flex-wrap gap-4">
-          {badges.map((badge) => (
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {ALL_BADGES.map((badgeDef) => {
+          const isUnlocked = badges.some((b) => b.id === badgeDef.id);
+          
+          return (
             <div 
-              key={badge.id} 
-              className={`flex flex-col items-center justify-center p-4 rounded-xl border border-gray-50 hover:-translate-y-1 transition-transform shadow-sm ${badge.color} bg-opacity-20`}
+              key={badgeDef.id} 
+              className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-300 ${
+                isUnlocked 
+                  ? `${badgeDef.color} shadow-sm hover:-translate-y-1` 
+                  : 'bg-gray-50 border-gray-100 opacity-50 grayscale'
+              }`}
             >
-              <div className="text-3xl mb-2">{badge.icon}</div>
-              <p className="text-xs font-bold text-center max-w-[80px] leading-tight">{badge.name}</p>
+              <div className="text-3xl mb-2">{badgeDef.icon}</div>
+              <p className={`text-xs font-bold text-center leading-tight ${isUnlocked ? '' : 'text-gray-500'}`}>
+                {badgeDef.name}
+              </p>
+              {!isUnlocked && (
+                <p className="text-[9px] text-gray-400 mt-1 uppercase tracking-widest font-semibold">Locked</p>
+              )}
             </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 };

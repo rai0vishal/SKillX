@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import LoadingSpinner from '../components/LoadingSpinner';
 
 import { API_BASE_URL } from '../config/api.js';
 
@@ -71,7 +72,7 @@ const PublicProfile = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-sm text-gray-600">Loading profile...</p>
+        <LoadingSpinner message="Fetching your data…" />
       </div>
     )
   }
@@ -89,7 +90,7 @@ const PublicProfile = () => {
   const skills = profile.skills || []
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
+    <main role="main" aria-label="Public Profile" className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-6 md:p-8">
         <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
           {/* Avatar */}
@@ -144,7 +145,7 @@ const PublicProfile = () => {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }
 

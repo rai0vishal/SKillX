@@ -20,6 +20,7 @@ import SignUp from './pages/auth/SignUp'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'   // 👈 add this
+import ErrorBoundary from './components/ErrorBoundary';
 
 const App = () => {
   return (
@@ -29,102 +30,112 @@ const App = () => {
 
       {/* Content area (grows) */}
       <main className="pt-24 px-4 pb-6 flex-1">
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 16px',
+          width: '100%',
+          boxSizing: 'border-box'
+        }}>
+          <ErrorBoundary>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
 
-          {/* Protected routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/search"
-            element={
-              <ProtectedRoute>
-                <Search />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/post-gig"
-            element={
-              <ProtectedRoute>
-                <PostGig />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/skill-exchage"
-            element={
-              <ProtectedRoute>
-                <SkillExchange />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/gig-list"
-            element={
-              <ProtectedRoute>
-                <GigList />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/gigs/:id" 
-            element={
-              <ProtectedRoute>
-                <GigDetails />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/user/:email"
-            element={
-              <ProtectedRoute>
-                <PublicProfile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/chat"
-            element={
-              <ProtectedRoute>
-                <Chat />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/session/:id"
-            element={
-              <ProtectedRoute>
-                <VideoSession />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+              {/* Protected routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/search"
+                element={
+                  <ProtectedRoute>
+                    <Search />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/post-gig"
+                element={
+                  <ProtectedRoute>
+                    <PostGig />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/skill-exchage"
+                element={
+                  <ProtectedRoute>
+                    <SkillExchange />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/gig-list"
+                element={
+                  <ProtectedRoute>
+                    <GigList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/gigs/:id" 
+                element={
+                  <ProtectedRoute>
+                    <GigDetails />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user/:email"
+                element={
+                  <ProtectedRoute>
+                    <PublicProfile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/chat"
+                element={
+                  <ProtectedRoute>
+                    <Chat />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/session/:id"
+                element={
+                  <ProtectedRoute>
+                    <VideoSession />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </ErrorBoundary>
+        </div>
       </main>
 
       {/* Footer at bottom */}

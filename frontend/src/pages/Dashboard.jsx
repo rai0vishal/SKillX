@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import LoadingSpinner from '../components/LoadingSpinner';
 import LearningRoadmap from '../components/LearningRoadmap'
 import MyLearningHub from '../components/MyLearningHub'
 import SessionCard from '../components/SessionCard'
@@ -16,6 +17,7 @@ import UpcomingSessionsModal from '../components/session/UpcomingSessionsModal'
 import { API_BASE_URL } from '../config/api.js'
 
 const Dashboard = () => {
+  const navigate = useNavigate()
   const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
   const userEmail = storedUser.email
   const [hubRefreshKey, setHubRefreshKey] = useState(0)
@@ -63,7 +65,7 @@ const Dashboard = () => {
   })
   const [loadingAnalytics, setLoadingAnalytics] = useState(true)
 
-  const [loadingStats, setLoadingStats] = useState(true)
+
   const [loadingRequests, setLoadingRequests] = useState(true)
   const [loadingGigApps, setLoadingGigApps] = useState(true)
   const [loadingSessions, setLoadingSessions] = useState(true)
@@ -72,7 +74,6 @@ const Dashboard = () => {
   // ------------ DASHBOARD STATS ------------
   const fetchStats = async () => {
     try {
-      setLoadingStats(true)
       const url = userEmail
         ? `${API_BASE_URL}/api/dashboard?email=${encodeURIComponent(userEmail)}`
         : `${API_BASE_URL}/api/dashboard`
@@ -84,8 +85,6 @@ const Dashboard = () => {
     } catch (err) {
       console.error(err)
       setError('Could not load dashboard data. Please try again.')
-    } finally {
-      setLoadingStats(false)
     }
   }
 
@@ -347,8 +346,70 @@ const Dashboard = () => {
   ).length
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
+    <main role="main" aria-label="Dashboard" className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
       <div className="w-full max-w-6xl space-y-8">
+        {/* Welcome Banner */}
+        {userEmail && (
+          <div style={{
+            background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
+            borderRadius: '12px',
+            padding: '20px 24px',
+            marginBottom: '0',
+            color: '#fff'
+          }}>
+            <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 700 }}>
+              👋 Welcome back, {storedUser?.name?.split(' ')[0] || 'there'}!
+            </h2>
+            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', opacity: 0.85 }}>
+              Here's what's happening with your skill exchanges today.
+            </p>
+          </div>
+        )}
+
+        {/* Quick-Action Cards */}
+        {userEmail && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '12px',
+            marginBottom: '0'
+          }}>
+            {[
+              { icon: '🤝', label: 'Browse Exchanges', desc: 'Find skills to trade', path: '/skill-exchage' },
+              { icon: '👤', label: 'Update Profile', desc: 'Keep your skills fresh', path: '/profile' },
+              { icon: '🔔', label: 'Notifications', desc: 'See latest activity', path: '/dashboard' }
+            ].map((item, i) => (
+              <div
+                key={i}
+                role="button"
+                tabIndex={0}
+                aria-label={item.label}
+                onClick={() => navigate(item.path)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(item.path);
+                  }
+                }}
+                style={{
+                  background: '#fff',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '10px',
+                  padding: '14px 16px',
+                  cursor: 'pointer',
+                  transition: 'box-shadow 0.15s',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
+                }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(124,58,237,0.12)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'}
+              >
+                <div style={{ fontSize: '1.4rem', marginBottom: '6px' }}>{item.icon}</div>
+                <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#111827' }}>{item.label}</div>
+                <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '2px' }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        )}
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -415,33 +476,88 @@ const Dashboard = () => {
 
         {/* --- OVERVIEW TAB --- */}
         {userEmail && activeTab === 'overview' && (
-          <div className="space-y-8">
-            <SessionCountdownCard 
-              userEmail={userEmail} 
-              onViewAll={() => setIsUpcomingModalOpen(true)} 
-            />
+          <div className="space-y-6">
             
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <span>📈</span> Your Activity Analytics
-              </h2>
+            {/* Top Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 flex flex-col gap-4">
+                <SessionCountdownCard 
+                  userEmail={userEmail} 
+                  onViewAll={() => setIsUpcomingModalOpen(true)} 
+                />
+                
+                {/* Quick Actions (New) */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Actions</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <Link to="/post-gig" className="flex flex-col items-center justify-center p-3 rounded-lg border border-indigo-100 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors text-center shadow-sm hover:shadow">
+                      <span className="text-xl mb-1">📝</span>
+                      <span className="text-xs font-bold">Post Gig</span>
+                    </Link>
+                    <Link to="/search" className="flex flex-col items-center justify-center p-3 rounded-lg border border-emerald-100 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors text-center shadow-sm hover:shadow">
+                      <span className="text-xl mb-1">🔍</span>
+                      <span className="text-xs font-bold">Find Skills</span>
+                    </Link>
+                    <Link to="/chat" className="flex flex-col items-center justify-center p-3 rounded-lg border border-purple-100 bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors text-center shadow-sm hover:shadow">
+                      <span className="text-xl mb-1">📅</span>
+                      <span className="text-xs font-bold">Schedule</span>
+                    </Link>
+                    <button onClick={() => setActiveTab('network')} className="flex flex-col items-center justify-center p-3 rounded-lg border border-blue-100 bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors text-center shadow-sm hover:shadow">
+                      <span className="text-xl mb-1">🌐</span>
+                      <span className="text-xs font-bold">Network</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Summary / Profile Stats */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Quick Summary</h3>
+                <div className="flex-1 flex flex-col justify-center gap-6">
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 text-2xl font-bold mb-3 shadow-inner">
+                      {userEmail.charAt(0).toUpperCase()}
+                    </div>
+                    <h2 className="text-lg font-bold text-gray-800">{userEmail.split('@')[0]}</h2>
+                    <p className="text-xs text-gray-500 mt-1">SkillX Member</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-6">
+                    <div className="text-center">
+                      <p className="text-2xl font-black text-gray-800">{userStats.gigsCompleted}</p>
+                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mt-1">Gigs Done</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-black text-gray-800">{userStats.skillExchanges}</p>
+                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mt-1">Exchanges</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Middle Section: Analytics & Charts */}
+            <div className="mt-8">
               <AnalyticsCards data={analyticsData.user || {}} loading={loadingAnalytics} />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <WeeklyChart data={analyticsData.activity} loading={loadingAnalytics} />
                 <SkillDistributionChart data={analyticsData.skills} loading={loadingAnalytics} />
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <RecentActivity activities={analyticsData.recentActivity} loading={loadingAnalytics} />
-                <Achievements badges={analyticsData.badges} loading={loadingAnalytics} />
-              </div>
+            </div>
+
+            {/* Bottom Section: Activity & Achievements */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <RecentActivity activities={analyticsData.recentActivity} loading={loadingAnalytics} />
+              <Achievements badges={analyticsData.badges} loading={loadingAnalytics} />
             </div>
 
             {!loadingSessions && upcomingSessions.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                  <span>📅</span> Upcoming Sessions
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-6">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex justify-between items-center">
+                  <span>Upcoming Sessions List</span>
+                  <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs font-bold">{upcomingSessions.length}</span>
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {upcomingSessions.map(session => (
                     <SessionCard
                       key={session._id}
@@ -516,7 +632,7 @@ const Dashboard = () => {
               <div className="bg-white rounded-2xl shadow-md p-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-3">Skill Exchange Requests For You</h2>
                 {loadingRequests ? (
-                  <p className="text-sm text-gray-600">Loading your requests...</p>
+                  <LoadingSpinner message="Fetching your data…" />
                 ) : requests.received.length === 0 ? (
                   <p className="text-sm text-gray-600">No one has requested a skill exchange with you yet.</p>
                 ) : (
@@ -553,7 +669,7 @@ const Dashboard = () => {
               <div className="bg-white rounded-2xl shadow-md p-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-3">Skill Exchange Requests You Sent</h2>
                 {loadingRequests ? (
-                  <p className="text-sm text-gray-600">Loading your sent requests...</p>
+                  <LoadingSpinner message="Fetching your data…" />
                 ) : requests.sent.length === 0 ? (
                   <p className="text-sm text-gray-600">You haven&apos;t sent any skill exchange requests yet.</p>
                 ) : (
@@ -580,7 +696,7 @@ const Dashboard = () => {
               <div className="bg-white rounded-2xl shadow-md p-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-3">Gig Applications For Your Gigs</h2>
                 {loadingGigApps ? (
-                  <p className="text-sm text-gray-600">Loading gig applications...</p>
+                  <LoadingSpinner message="Fetching your data…" />
                 ) : gigApplications.received.length === 0 ? (
                   <p className="text-sm text-gray-600">No one has applied to your gigs yet.</p>
                 ) : (
@@ -605,7 +721,7 @@ const Dashboard = () => {
               <div className="bg-white rounded-2xl shadow-md p-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-3">Gig Applications You Sent</h2>
                 {loadingGigApps ? (
-                  <p className="text-sm text-gray-600">Loading your applications...</p>
+                  <LoadingSpinner message="Fetching your data…" />
                 ) : gigApplications.sent.length === 0 ? (
                   <p className="text-sm text-gray-600">You haven&apos;t applied to any gigs yet.</p>
                 ) : (
@@ -664,7 +780,7 @@ const Dashboard = () => {
         sessionId={reviewingSession?._id}
         reviewedUserEmail={reviewingSession?.reviewedUserEmail}
       />
-    </div>
+    </main>
   )
 }
 

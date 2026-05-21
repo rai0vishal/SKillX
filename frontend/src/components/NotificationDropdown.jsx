@@ -22,9 +22,23 @@ const NotificationDropdown = ({
       });
 
   return (
-    <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
-      <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+    <div role="region" aria-label="Notifications panel" className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+      <div className="p-4 border-b border-gray-100 bg-gray-50/50" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h3 className="font-bold text-gray-800 text-lg">Notifications</h3>
+        <button
+          onClick={onMarkAllRead}
+          style={{
+            background: 'none',
+            border: 'none',
+            fontSize: '0.78rem',
+            color: '#7c3aed',
+            cursor: 'pointer',
+            fontWeight: 500,
+            padding: '2px 0'
+          }}
+        >
+          Mark all as read
+        </button>
       </div>
 
       <NotificationTabs activeTab={activeTab} onTabChange={onTabChange} />
@@ -48,13 +62,44 @@ const NotificationDropdown = ({
             <p className="text-sm">No notifications here</p>
           </div>
         ) : (
-          filteredNotifications.map(notification => (
-            <NotificationCard 
-              key={notification._id} 
-              notification={notification} 
-              onClick={onNotificationClick}
-            />
-          ))
+          (() => {
+            const today = new Date().toDateString();
+            const todayItems = filteredNotifications.filter(n => new Date(n.createdAt).toDateString() === today);
+            const earlierItems = filteredNotifications.filter(n => new Date(n.createdAt).toDateString() !== today);
+
+            return (
+              <>
+                {todayItems.length > 0 && (
+                  <>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '8px 16px 4px' }}>
+                      Today
+                    </div>
+                    {todayItems.map(notification => (
+                      <NotificationCard 
+                        key={notification._id} 
+                        notification={notification} 
+                        onClick={onNotificationClick}
+                      />
+                    ))}
+                  </>
+                )}
+                {earlierItems.length > 0 && (
+                  <>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '8px 16px 4px' }}>
+                      Earlier
+                    </div>
+                    {earlierItems.map(notification => (
+                      <NotificationCard 
+                        key={notification._id} 
+                        notification={notification} 
+                        onClick={onNotificationClick}
+                      />
+                    ))}
+                  </>
+                )}
+              </>
+            );
+          })()
         )}
       </div>
 

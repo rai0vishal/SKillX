@@ -53,12 +53,22 @@ const UserResultCard = ({ user }) => {
                 style={{ width: `${Math.min(trustScore || 0, 100)}%` }}
               ></div>
             </div>
-            <span className="text-xs font-bold text-gray-700">{trustScore || 0}</span>
+            {!trustScore || trustScore === 0 ? (
+              <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>Building trust</span>
+            ) : (
+              <span className="text-xs font-bold text-gray-700">{trustScore}</span>
+            )}
           </div>
         </div>
         <div>
           <p className="text-[10px] text-gray-400 font-semibold uppercase">Exchanges</p>
-          <p className="text-xs font-bold text-gray-700 mt-1">{stats?.skillExchangesCompleted || 0} completed</p>
+          <div className="mt-1">
+            {(!stats?.skillExchangesCompleted || stats.skillExchangesCompleted === 0) ? (
+              <span className="inline-flex items-center bg-amber-50 text-amber-700 px-2 py-1 rounded-lg text-sm font-bold">New Member</span>
+            ) : (
+              <span className="text-xs font-bold text-gray-700">{stats.skillExchangesCompleted} completed</span>
+            )}
+          </div>
         </div>
       </div>
 

@@ -78,39 +78,44 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
   const hasRoles = userRoles.mentorSkills.length > 0 || userRoles.learnerSkills.length > 0;
 
   return (
-    <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-5 hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start mb-4">
+    <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 hover:shadow-md transition-shadow group flex flex-col justify-between h-full">
+      <div className="flex justify-between items-start mb-3">
         <div>
-          <h4 className="font-bold text-gray-800 flex items-center gap-2">
+          <h4 className="font-bold text-gray-800 flex items-center gap-1.5 text-sm">
             📅 {new Date(session.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-            <span className="text-gray-400 font-normal">at</span>
-            {new Date(`1970-01-01T${session.time}`).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
           </h4>
-          <p className="text-sm text-gray-500 mt-1">
-            {session.duration} • {session.mode}
+          <p style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '4px' }}>
+            with {session.partnerName || session.partner?.name || session.participants?.find(p => p !== userEmail)?.split('@')[0] || 'Unknown'}
+          </p>
+          <p className="text-[11px] text-gray-500 mt-1 font-medium">
+            {new Date(`1970-01-01T${session.time}`).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })} • {session.duration} • {session.mode}
           </p>
 
           {hasRoles && (
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="flex flex-wrap gap-1 mt-2">
               {userRoles.mentorSkills.map((skill, idx) => (
-                <span key={`mentor-${idx}`} className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">
+                <span key={`mentor-${idx}`} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">
                   {skill} Mentor
                 </span>
               ))}
               {userRoles.learnerSkills.map((skill, idx) => (
-                <span key={`learner-${idx}`} className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-100 text-teal-700 border border-teal-200">
+                <span key={`learner-${idx}`} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-700">
                   {skill} Learner
                 </span>
               ))}
             </div>
           )}
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${getStatusColor(session.status)}`}>
-            {session.status}
+        <div className="flex flex-col items-end gap-1.5">
+          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${getStatusColor(session.status)}`}>
+            {session.status === 'Pending'
+              ? session.requestedBy === userEmail
+                ? 'Awaiting their confirmation'
+                : 'Confirm your slot'
+              : session.status}
           </span>
           {isActive && timeLeft && (
-            <span className={`text-xs font-medium ${timeLeft === 'Session Started' ? 'text-green-600 animate-pulse' : 'text-orange-500'}`}>
+            <span className={`text-[10px] font-bold ${timeLeft === 'Session Started' ? 'text-green-600 animate-pulse' : 'text-orange-500'}`}>
               ⏳ {timeLeft}
             </span>
           )}

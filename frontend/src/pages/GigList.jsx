@@ -1,5 +1,5 @@
-// src/pages/GigList.jsx
 import React, { useEffect, useState } from 'react'
+import LoadingSpinner from '../components/LoadingSpinner';
 
 import { API_BASE_URL } from '../config/api.js';
 
@@ -98,7 +98,7 @@ const GigList = () => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-100 px-6 py-10">
+    <main role="main" aria-label="Gig List" className="min-h-screen bg-gray-100 px-6 py-10">
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-8 flex items-center justify-between">
         <div>
@@ -121,7 +121,7 @@ const GigList = () => {
       {/* Loading / Error / Empty states */}
       <div className="max-w-6xl mx-auto">
         {loading && (
-          <p className="text-gray-600 text-sm">Loading gigs...</p>
+          <LoadingSpinner message="Fetching your data…" />
         )}
 
         {error && (
@@ -239,7 +239,7 @@ const GigList = () => {
           })}
         </div>
       )}
-    </div>
+    </main>
   )
 }
 
