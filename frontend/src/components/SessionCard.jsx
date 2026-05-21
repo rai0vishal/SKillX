@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
-const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, userEmail }) => {
+const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, userEmail, onAccept, onSuggestAlternative }) => {
   const [timeLeft, setTimeLeft] = useState('');
+  const location = useLocation();
+  const isChat = location.pathname.includes('/chat');
 
   useEffect(() => {
     if (session.status !== 'Scheduled' && session.status !== 'Rescheduled') {
@@ -55,8 +57,10 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
   };
 
   const isActive = session.status === 'Scheduled' || session.status === 'Rescheduled';
+  const isPending = session.status === 'Pending';
   const isCompleted = session.status === 'Completed';
   const hasReviewed = session.reviewedBy && session.reviewedBy.includes(userEmail);
+  const isReceiver = session.requestedBy && session.requestedBy !== userEmail;
 
   // Join button logic — only Video Sessions within the 15-min early window
   const isVideoSession = session.mode === 'Video Session';
@@ -70,6 +74,9 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
     return now >= sessionTime - earlyWindow && now <= sessionTime + lateWindow;
   })();
 
+  const userRoles = session.exchangeRoles?.[userEmail] || { mentorSkills: [], learnerSkills: [] };
+  const hasRoles = userRoles.mentorSkills.length > 0 || userRoles.learnerSkills.length > 0;
+
   return (
     <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-5 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
@@ -82,6 +89,21 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
           <p className="text-sm text-gray-500 mt-1">
             {session.duration} • {session.mode}
           </p>
+
+          {hasRoles && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {userRoles.mentorSkills.map((skill, idx) => (
+                <span key={`mentor-${idx}`} className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">
+                  {skill} Mentor
+                </span>
+              ))}
+              {userRoles.learnerSkills.map((skill, idx) => (
+                <span key={`learner-${idx}`} className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-100 text-teal-700 border border-teal-200">
+                  {skill} Learner
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex flex-col items-end gap-2">
           <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${getStatusColor(session.status)}`}>
@@ -155,6 +177,43 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
               ✕
             </button>
           </div>
+        </div>
+      )}
+
+      {isPending && isChat && (
+        <div className="flex gap-2 pt-2 border-t border-gray-50 mt-4">
+          {isReceiver ? (
+            <>
+              <button
+                onClick={() => onAccept(session._id)}
+                className="flex-1 text-sm font-semibold py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors shadow-sm"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => onSuggestAlternative(session)}
+                className="flex-1 text-sm font-semibold py-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
+              >
+                Suggest Alternative
+              </button>
+              <button
+                onClick={() => onCancel(session._id)}
+                className="px-3 text-sm font-semibold py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+              >
+                Reject
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-1 items-center justify-between">
+              <span className="text-sm font-medium text-gray-500 italic">Waiting for response...</span>
+              <button
+                onClick={() => onCancel(session._id)}
+                className="text-xs font-semibold py-1.5 px-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+              >
+                Cancel Request
+              </button>
+            </div>
+          )}
         </div>
       )}
 

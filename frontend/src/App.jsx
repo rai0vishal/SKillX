@@ -11,6 +11,8 @@ import PublicProfile from './pages/PublicProfile'
 import GigDetails from './pages/GigDetails'
 import Chat from './pages/Chat'
 import VideoSession from './pages/VideoSession'
+import AdminDashboard from './pages/AdminDashboard'
+import Search from './pages/Search'
 
 import SignIn from './pages/auth/SignIn'
 import SignUp from './pages/auth/SignUp'
@@ -39,6 +41,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/search"
+            element={
+              <ProtectedRoute>
+                <Search />
               </ProtectedRoute>
             }
           />
@@ -103,6 +113,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <VideoSession />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />

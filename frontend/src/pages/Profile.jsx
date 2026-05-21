@@ -26,7 +26,11 @@ const Profile = () => {
       skillExchanges: 0,
       skillExchangesCompleted: 0,
     },
+    availability: [],
+    customAvailability: [],
   })
+  
+  const [availabilityMissing, setAvailabilityMissing] = useState(false)
 
   // Load profile from backend
   const fetchProfile = async () => {
@@ -65,7 +69,11 @@ const Profile = () => {
           averageRating: data.stats?.averageRating ?? 0,
           totalReviews: data.stats?.totalReviews ?? 0,
         },
+        status: data.status || 'active',
+        availability: data.availability || [],
+        customAvailability: data.customAvailability || [],
       })
+      setAvailabilityMissing(!data.availability || data.availability.length === 0)
     } catch (err) {
       console.error(err)
       setError('Could not load profile. Please try again.')
@@ -146,7 +154,11 @@ const Profile = () => {
           averageRating: data.stats?.averageRating ?? 0,
           totalReviews: data.stats?.totalReviews ?? 0,
         },
+        status: data.status || 'active',
+        availability: data.availability || [],
+        customAvailability: data.customAvailability || [],
       })
+      setAvailabilityMissing(!data.availability || data.availability.length === 0)
 
       setMessage('Profile saved successfully ✅')
     } catch (err) {
@@ -188,6 +200,21 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
       <div className="w-full max-w-4xl">
+        
+        {/* Profile Completion Indicator */}
+        {availabilityMissing && (
+          <div 
+            className="mb-4 bg-white rounded-xl shadow-sm border-l-4 border-red-500 p-4 flex items-center justify-between cursor-pointer hover:bg-red-50 transition"
+            onClick={() => document.getElementById('availability-section')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            <div>
+              <p className="font-bold text-gray-800">Profile 🔴 Completion: 78%</p>
+              <p className="text-sm text-red-600 font-medium">Missing: 🔴 Availability not added</p>
+            </div>
+            <span className="text-gray-400">Fix now →</span>
+          </div>
+        )}
+
         {/* Status messages */}
         {loading && (
           <p className="text-sm text-gray-600 mb-3">Loading profile...</p>
@@ -227,13 +254,21 @@ const Profile = () => {
                 placeholder="Your Name"
               />
 
-              <input
-                type="text"
-                value={profile.role}
-                onChange={(e) => handleFieldChange('role', e.target.value)}
-                className="text-indigo-600 font-medium mt-1 bg-transparent border-b border-gray-200 focus:outline-none focus:border-indigo-500 text-center md:text-left text-sm md:text-base"
-                placeholder="MERN Developer"
-              />
+              <div className="flex items-center justify-center md:justify-start gap-2 mt-2">
+                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                  profile.role === 'admin' 
+                    ? 'bg-purple-100 text-purple-700 border border-purple-200' 
+                    : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
+                }`}>
+                  {['user', 'admin'].includes(profile.role?.toLowerCase()) ? profile.role : 'USER'}
+                </span>
+                
+                {profile.status === 'suspended' && (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200">
+                    SUSPENDED
+                  </span>
+                )}
+              </div>
 
               <p className="text-gray-500 text-sm mt-1">
                 📍{' '}
@@ -357,6 +392,164 @@ const Profile = () => {
             so others can understand your background and collaborate better with
             you on SkillX.
           </p>
+        </div>
+
+        {/* Availability Section */}
+        <div id="availability-section" className="bg-white rounded-2xl shadow-md p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">📅 Availability</h2>
+            <button 
+              onClick={handleSave}
+              disabled={saving}
+              className="text-xs bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-100 transition"
+            >
+              {saving ? 'Saving...' : 'Save Availability'}
+            </button>
+          </div>
+          <p className="text-sm text-gray-500 mb-4">Set your preferred times for sessions. This helps others schedule with you easily without forcing you to manually confirm times.</p>
+          
+          <div className="space-y-4">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => {
+              const dayAvail = profile.availability?.find(a => a.day === day) || { day, slots: [] };
+              
+              const addSlot = () => {
+                const newAvail = [...(profile.availability || [])];
+                const index = newAvail.findIndex(a => a.day === day);
+                if (index >= 0) {
+                  newAvail[index].slots.push({ startTime: '09:00', endTime: '10:00' });
+                } else {
+                  newAvail.push({ day, slots: [{ startTime: '09:00', endTime: '10:00' }] });
+                }
+                setProfile(prev => ({ ...prev, availability: newAvail }));
+              };
+              
+              const updateSlot = (slotIndex, field, value) => {
+                const newAvail = [...profile.availability];
+                const dayIndex = newAvail.findIndex(a => a.day === day);
+                newAvail[dayIndex].slots[slotIndex][field] = value;
+                setProfile(prev => ({ ...prev, availability: newAvail }));
+              };
+              
+              const removeSlot = (slotIndex) => {
+                const newAvail = [...profile.availability];
+                const dayIndex = newAvail.findIndex(a => a.day === day);
+                newAvail[dayIndex].slots.splice(slotIndex, 1);
+                setProfile(prev => ({ ...prev, availability: newAvail }));
+              };
+
+              return (
+                <div key={day} className="flex flex-col sm:flex-row sm:items-start gap-4 border-b border-gray-50 pb-4">
+                  <div className="w-16 pt-1 font-bold text-gray-700">{day}</div>
+                  <div className="flex-1 flex flex-col gap-2">
+                    {dayAvail.slots.map((slot, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input 
+                          type="time" 
+                          value={slot.startTime} 
+                          onChange={(e) => updateSlot(i, 'startTime', e.target.value)}
+                          className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-indigo-400"
+                        />
+                        <span className="text-gray-400">-</span>
+                        <input 
+                          type="time" 
+                          value={slot.endTime} 
+                          onChange={(e) => updateSlot(i, 'endTime', e.target.value)}
+                          className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-indigo-400"
+                        />
+                        <button onClick={() => removeSlot(i)} className="text-red-400 hover:text-red-600 text-sm ml-2">✕</button>
+                      </div>
+                    ))}
+                    <button onClick={addSlot} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 self-start mt-1 bg-indigo-50 px-2 py-1 rounded-md">
+                      + Add Slot
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          <hr className="my-6 border-gray-100" />
+          
+          <h3 className="text-md font-semibold text-gray-800 mb-4">One-off Custom Dates</h3>
+          <p className="text-sm text-gray-500 mb-4">Add specific dates where your availability differs from your weekly schedule.</p>
+          
+          <div className="space-y-4">
+            {(profile.customAvailability || []).map((custom, dayIndex) => {
+              const addCustomSlot = () => {
+                const newCustom = [...(profile.customAvailability || [])];
+                newCustom[dayIndex].slots.push({ startTime: '09:00', endTime: '10:00' });
+                setProfile(prev => ({ ...prev, customAvailability: newCustom }));
+              };
+
+              const updateCustomDate = (value) => {
+                const newCustom = [...(profile.customAvailability || [])];
+                newCustom[dayIndex].date = value;
+                setProfile(prev => ({ ...prev, customAvailability: newCustom }));
+              };
+
+              const updateCustomSlot = (slotIndex, field, value) => {
+                const newCustom = [...(profile.customAvailability || [])];
+                newCustom[dayIndex].slots[slotIndex][field] = value;
+                setProfile(prev => ({ ...prev, customAvailability: newCustom }));
+              };
+
+              const removeCustomSlot = (slotIndex) => {
+                const newCustom = [...(profile.customAvailability || [])];
+                newCustom[dayIndex].slots.splice(slotIndex, 1);
+                if (newCustom[dayIndex].slots.length === 0) {
+                  newCustom.splice(dayIndex, 1);
+                }
+                setProfile(prev => ({ ...prev, customAvailability: newCustom }));
+              };
+
+              return (
+                <div key={dayIndex} className="flex flex-col sm:flex-row sm:items-start gap-4 border-b border-gray-50 pb-4">
+                  <div className="w-32 pt-1">
+                    <input 
+                      type="date"
+                      value={custom.date}
+                      onChange={(e) => updateCustomDate(e.target.value)}
+                      className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-indigo-400 w-full"
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col gap-2">
+                    {custom.slots.map((slot, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input 
+                          type="time" 
+                          value={slot.startTime} 
+                          onChange={(e) => updateCustomSlot(i, 'startTime', e.target.value)}
+                          className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-indigo-400"
+                        />
+                        <span className="text-gray-400">-</span>
+                        <input 
+                          type="time" 
+                          value={slot.endTime} 
+                          onChange={(e) => updateCustomSlot(i, 'endTime', e.target.value)}
+                          className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-indigo-400"
+                        />
+                        <button onClick={() => removeCustomSlot(i)} className="text-red-400 hover:text-red-600 text-sm ml-2">✕</button>
+                      </div>
+                    ))}
+                    <button onClick={addCustomSlot} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 self-start mt-1 bg-indigo-50 px-2 py-1 rounded-md">
+                      + Add Slot
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+            <button 
+              onClick={() => {
+                const newCustom = [...(profile.customAvailability || [])];
+                const today = new Date().toISOString().split('T')[0];
+                newCustom.push({ date: today, slots: [{ startTime: '09:00', endTime: '10:00' }] });
+                setProfile(prev => ({ ...prev, customAvailability: newCustom }));
+              }} 
+              className="text-sm font-bold text-indigo-600 hover:text-indigo-800 self-start mt-2 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100"
+            >
+              + Add Custom Date
+            </button>
+          </div>
         </div>
 
         {/* Reviews Received */}

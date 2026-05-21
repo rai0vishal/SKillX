@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 
 import { API_BASE_URL } from '../../config/api.js';
 
-const NotesPanel = ({ sessionId, userEmail }) => {
+const NotesPanel = memo(({ sessionId, userEmail }) => {
   const [content, setContent] = useState('');
   const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | saved | error
   const debounceRef = useRef(null);
@@ -44,23 +44,32 @@ const NotesPanel = ({ sessionId, userEmail }) => {
 
   useEffect(() => () => clearTimeout(debounceRef.current), []);
 
-  const statusText = {
-    idle: '',
-    saving: '💾 Saving…',
-    saved: '✅ Saved',
-    error: '❌ Save failed',
+  const statusConfig = {
+    idle: { text: '', color: 'text-gray-500' },
+    saving: { text: '💾 Saving…', color: 'text-yellow-400' },
+    saved: { text: '✅ Saved', color: 'text-emerald-400' },
+    error: { text: '❌ Save failed', color: 'text-red-400' },
   };
 
+  const { text: statusText, color: statusColor } = statusConfig[saveStatus];
+  const charCount = content.length;
+
   return (
-    <div className="flex flex-col h-full bg-gray-900 border-l border-gray-700">
+    <div className="flex flex-col h-full bg-gray-900">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-700 flex-shrink-0 flex items-center justify-between">
+      <div className="px-4 py-3.5 border-b border-gray-700/60 flex-shrink-0 flex items-center justify-between">
         <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-          📝 Session Notes
+          <span className="text-base">📝</span>
+          Session Notes
         </h3>
-        <span className={`text-xs ${saveStatus === 'error' ? 'text-red-400' : saveStatus === 'saved' ? 'text-green-400' : 'text-gray-400'}`}>
-          {statusText[saveStatus]}
-        </span>
+        <div className="flex items-center gap-2">
+          {statusText && (
+            <span className={`text-xs font-medium ${statusColor} transition-colors`}>
+              {statusText}
+            </span>
+          )}
+          <span className="text-[10px] text-gray-600">{charCount > 0 ? `${charCount} chars` : ''}</span>
+        </div>
       </div>
 
       {/* Notes textarea */}
@@ -68,16 +77,21 @@ const NotesPanel = ({ sessionId, userEmail }) => {
         <textarea
           value={content}
           onChange={handleChange}
-          placeholder="Take notes here… They auto-save every 1.5 seconds."
-          className="w-full h-full bg-gray-800 text-gray-100 text-sm rounded-xl p-3 resize-none outline-none border border-gray-600 focus:border-indigo-500 placeholder-gray-500 leading-relaxed transition"
+          placeholder="Take notes here… They auto-save every 1.5 seconds.&#10;&#10;💡 Tips:&#10;• Key takeaways&#10;• Action items&#10;• Questions to follow up"
+          className="w-full h-full bg-gray-800/80 text-gray-100 text-sm rounded-xl p-4 resize-none outline-none border border-gray-700 focus:border-indigo-500 placeholder-gray-600 leading-relaxed transition-colors"
         />
       </div>
 
-      <div className="px-4 py-2 border-t border-gray-700 flex-shrink-0">
-        <p className="text-gray-500 text-[10px]">Notes are saved per-session and visible only to you.</p>
+      <div className="px-4 py-2 border-t border-gray-700/40 flex-shrink-0 flex items-center justify-between">
+        <p className="text-gray-600 text-[10px]">Notes are saved per-session and visible only to you</p>
+        <div className="flex items-center gap-1">
+          <div className={`w-1.5 h-1.5 rounded-full ${saveStatus === 'saving' ? 'bg-yellow-500 animate-pulse' : saveStatus === 'saved' ? 'bg-emerald-500' : saveStatus === 'error' ? 'bg-red-500' : 'bg-gray-600'}`} />
+        </div>
       </div>
     </div>
   );
-};
+});
+
+NotesPanel.displayName = 'NotesPanel';
 
 export default NotesPanel;

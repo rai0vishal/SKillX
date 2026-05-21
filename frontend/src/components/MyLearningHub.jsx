@@ -18,7 +18,7 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userEmail, refreshKey]);
 
-  const loadRoadmaps = async () => {
+  async function loadRoadmaps() {
     try {
       setIsLoading(true);
       setError(null);

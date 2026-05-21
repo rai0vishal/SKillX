@@ -22,13 +22,18 @@ router.post('/join', async (req, res) => {
       return res.status(400).json({ message: 'sessionId and userEmail are required.' });
     }
 
+    if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+      console.warn(`[Video Session] Join Failed: Invalid sessionId format (${sessionId}).`);
+      return res.status(400).json({ message: 'Invalid session ID format.' });
+    }
+
     // Fetch the scheduled session
     const session = await Session.findById(sessionId);
     if (!session) {
       console.warn(`[Video Session] Join Failed: Session ${sessionId} not found in DB.`);
       return res.status(404).json({ message: 'Session not found.' });
     }
-    
+
     console.log(`[Video Session] Found Session: status=${session.status}, mode=${session.mode}`);
 
     // Authorization: must be a participant
@@ -47,26 +52,29 @@ router.post('/join', async (req, res) => {
     // local client time strings (stored in DB) and UTC server time. 
     // The frontend SessionCard UI already enforces the 15-minute early join window.
 
-    // Get or create the VideoSession room
+    // Get or create the VideoSession room atomically to prevent race condition 500 errors
     const roomId = `session_${sessionId}`;
     const now = new Date();
-    let videoSession = await VideoSession.findOne({ sessionId });
 
-    if (!videoSession) {
-      console.log(`[Video Session] Room does not exist. Creating new VideoSession with roomId: ${roomId}`);
-      videoSession = await VideoSession.create({
-        sessionId,
-        roomId,
-        participants: session.participants,
-        status: 'waiting',
-        startedAt: now,
-      });
-    } else if (videoSession.status === 'ended') {
+    let videoSession = await VideoSession.findOneAndUpdate(
+      { sessionId },
+      {
+        $setOnInsert: {
+          roomId,
+          participants: session.participants,
+          status: 'waiting',
+          startedAt: now,
+        }
+      },
+      { upsert: true, new: true }
+    );
+
+    if (videoSession.status === 'ended') {
       console.warn(`[Video Session] Join Failed: Room ${roomId} has already ended.`);
       return res.status(400).json({ message: 'This video session has already ended.' });
-    } else {
-      console.log(`[Video Session] Found existing room: ${roomId}, status: ${videoSession.status}`);
     }
+
+    console.log(`[Video Session] Room accessed: ${roomId}, status: ${videoSession.status}`);
 
     // Upsert attendance record for this join
     await SessionAttendance.findOneAndUpdate(
@@ -86,9 +94,9 @@ router.post('/join', async (req, res) => {
     res.json({ videoSession, roomId });
   } catch (error) {
     console.error('[Video Session] Exception caught during join:', error);
-    res.status(500).json({ 
-      message: 'Failed to join video session.', 
-      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message 
+    res.status(500).json({
+      message: 'Failed to join video session.',
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message
     });
   }
 });
