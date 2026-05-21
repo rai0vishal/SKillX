@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 import { API_BASE_URL } from '../config/api.js';
 
@@ -180,13 +181,27 @@ const SkillExchange = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 px-6 py-10">
+    <main role="main" aria-label="Skill Exchange" className="min-h-screen bg-gray-100 px-6 py-10">
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Skill Exchange</h1>
         <p className="text-gray-600 mt-1">
           Find people to exchange skills and grow together. Data is saved in MongoDB.
         </p>
+
+        {/* Explainer block */}
+        <div style={{
+          background: '#f5f3ff',
+          border: '1px solid #ddd6fe',
+          borderLeft: '4px solid #7c3aed',
+          borderRadius: '8px',
+          padding: '12px 16px',
+          marginTop: '16px'
+        }}>
+          <p style={{ margin: 0, fontSize: '0.875rem', color: '#4c1d95', lineHeight: 1.6 }}>
+            <strong>How Skill Exchange works:</strong> Offer a skill you have, find someone who needs it — and get something you need in return. No money changes hands. Match Score shows how well your skills align with theirs.
+          </p>
+        </div>
       </div>
 
       {/* Form */}
@@ -299,11 +314,21 @@ const SkillExchange = () => {
 
       {/* Status + list */}
       <div className="max-w-6xl mx-auto mb-4">
-        {loading && <p className="text-sm text-gray-600">Loading matches...</p>}
+        {loading && <LoadingSpinner message="Fetching your data…" />}
         {!loading && !error && entries.filter(user => user.email !== currentEmail).length === 0 && (
-          <p className="text-sm text-gray-600">
-            No skill exchange profiles yet. Be the first to add yours!
-          </p>
+          <div style={{
+            textAlign: 'center',
+            padding: '48px 24px',
+            color: '#9ca3af'
+          }}>
+            <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔍</div>
+            <div style={{ fontWeight: 600, fontSize: '1rem', color: '#6b7280', marginBottom: '6px' }}>
+              No matches found yet
+            </div>
+            <div style={{ fontSize: '0.85rem' }}>
+              Try updating your skills on your Profile to improve your match score.
+            </div>
+          </div>
         )}
       </div>
 
@@ -352,9 +377,19 @@ const SkillExchange = () => {
                         <p className="text-xs text-gray-500">📍 {user.location}</p>
                       </div>
                     </div>
-                    <span className="text-xs font-bold bg-green-100 text-green-700 px-3 py-1.5 rounded-full shadow-sm">
-                      {user.matchScore ?? 80}% Match
-                    </span>
+                    <div style={{ textAlign: 'center' }}>
+                      <span className="text-xs font-bold bg-green-100 text-green-700 px-3 py-1.5 rounded-full shadow-sm">
+                        {user.matchScore ?? 80}% Match
+                      </span>
+                      <div style={{
+                        fontSize: '0.68rem',
+                        color: '#6b7280',
+                        marginTop: '2px',
+                        lineHeight: 1.3
+                      }}>
+                        skill<br/>match
+                      </div>
+                    </div>
                   </div>
 
                   <div className="mb-4">
@@ -434,9 +469,19 @@ const SkillExchange = () => {
               </div>
 
               <div className="flex justify-between items-center mb-4">
-                <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                  Match Score {user.matchScore ?? 80}%
-                </span>
+                <div style={{ textAlign: 'center' }}>
+                  <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                    Match Score {user.matchScore ?? 80}%
+                  </span>
+                  <div style={{
+                    fontSize: '0.68rem',
+                    color: '#6b7280',
+                    marginTop: '2px',
+                    lineHeight: 1.3
+                  }}>
+                    skill<br/>match
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-3">
@@ -457,7 +502,7 @@ const SkillExchange = () => {
           ))}
         </div>
       )}
-    </div>
+    </main>
   )
 }
 

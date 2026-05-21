@@ -38,7 +38,7 @@ const NotificationCard = ({ notification, onClick }) => {
         <p className={`text-sm text-gray-800 ${!notification.isRead ? 'font-semibold' : ''}`}>
           {notification.message}
         </p>
-        <p className="text-xs text-gray-500 mt-1">{timeAgo(notification.createdAt)}</p>
+        <span style={{ fontSize: '0.72rem', color: '#9ca3af' }}>{timeAgo(notification.createdAt)}</span>
       </div>
       {!notification.isRead && (
         <div className="w-2 h-2 bg-indigo-600 rounded-full mt-2 flex-shrink-0"></div>

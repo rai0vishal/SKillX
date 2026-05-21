@@ -12,9 +12,19 @@ const WeeklyChart = ({ data, loading }) => {
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-80">
-      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <span>📊</span> Weekly Exchange Activity
-      </h3>
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">
+            Weekly Exchange Activity
+          </h3>
+          <p className="text-2xl font-black text-gray-800">
+            {data && data.length > 0 ? data.reduce((acc, curr) => acc + (curr.sessions || 0), 0) : 0} <span className="text-sm font-medium text-gray-500 font-sans">exchanges this week</span>
+          </p>
+        </div>
+        <div className="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded">
+          No trend data yet
+        </div>
+      </div>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>

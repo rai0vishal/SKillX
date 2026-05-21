@@ -22,34 +22,41 @@ const RecentActivity = ({ activities, loading }) => {
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-        <span>⚡</span> Recent Activity
+      <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+        Recent Activity
       </h3>
 
       {activities.length === 0 ? (
-        <div className="text-center py-6 text-gray-400 text-sm">
-          No recent activity to show.
+        <div style={{
+          textAlign: 'center',
+          padding: '36px 16px',
+          background: '#fafafa',
+          borderRadius: '10px',
+          border: '1px dashed #e5e7eb'
+        }}>
+          <div style={{ fontSize: '1.8rem', marginBottom: '10px' }}>🌱</div>
+          <div style={{ fontWeight: 600, color: '#6b7280', fontSize: '0.9rem', marginBottom: '4px' }}>
+            No activity yet
+          </div>
+          <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>
+            Start a skill exchange to see your activity here.
+          </div>
         </div>
       ) : (
-        <div className="relative border-l-2 border-gray-100 ml-4 space-y-8 pb-4">
+        <div className="space-y-4">
           {activities.map((activity) => (
-            <div key={activity.id} className="relative pl-6">
-              {/* Timeline Dot */}
-              <div className={`absolute -left-5 top-0 w-10 h-10 rounded-full flex items-center justify-center text-lg border-4 border-white ${activity.color} shadow-sm z-10`}>
+            <div key={activity.id} className="flex gap-3 group">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm ${activity.color} shadow-sm group-hover:scale-110 transition-transform`}>
                 {activity.icon}
               </div>
-
-              {/* Content */}
-              <div className="bg-gray-50 rounded-xl p-4 ml-2 hover:bg-gray-100 transition-colors">
-                <p className="font-semibold text-gray-800">{activity.title}</p>
-                <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
-                <p className="text-xs text-gray-400 mt-2 font-medium">
+              <div className="flex-1">
+                <p className="text-sm font-bold text-gray-800 leading-tight mb-0.5">{activity.title}</p>
+                <p className="text-xs text-gray-600 line-clamp-1">{activity.description}</p>
+                <p className="text-[10px] text-gray-400 mt-1 font-medium">
                   {new Date(activity.date).toLocaleDateString(undefined, { 
-                    month: 'short', 
                     day: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit'
-                  })}
+                    month: 'short',
+                  })} • {new Date(activity.date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
             </div>

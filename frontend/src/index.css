@@ -25,3 +25,68 @@ body {
   background-color: #f1f5f9; /* slate-100 */
   color: #0f172a; /* slate-900 */
 }
+
+/* Mobile responsiveness global fixes */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  /* Stack any side-by-side grid to single column on mobile */
+  .grid-cols-2, .grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Reduce heading sizes on mobile */
+  h1 { font-size: 1.4rem !important; }
+  h2 { font-size: 1.2rem !important; }
+  h3 { font-size: 1rem !important; }
+
+  /* Full width buttons on mobile */
+  .btn-primary {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Hide sidebar on tablet/mobile if applicable */
+  .sidebar {
+    display: none;
+  }
+
+  /* Make conversation list full width on mobile */
+  .conversation-list {
+    width: 100% !important;
+  }
+}
+
+/* Global focus styles */
+
+/* Remove default and replace with custom */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Buttons specifically */
+button:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Inputs and textareas */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 0px;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}

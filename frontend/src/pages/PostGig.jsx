@@ -17,6 +17,7 @@ const PostGig = () => {
 
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
+  const [isDirty, setIsDirty] = useState(false)
 
   // AI Enhancement state
   const [enhancedText, setEnhancedText] = useState(null)
@@ -26,6 +27,7 @@ const PostGig = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    setIsDirty(true)
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
@@ -81,6 +83,7 @@ const PostGig = () => {
       })
       setEnhancedText(null)
       setRegenCount(0)
+      setIsDirty(false)
     } catch (err) {
       console.error(err)
       setMessage({ type: 'error', text: 'Something went wrong while posting gig ❌' })
@@ -157,7 +160,7 @@ const PostGig = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center px-4 py-10">
+    <main role="main" aria-label="Post a Gig" className="min-h-screen bg-gray-100 flex justify-center px-4 py-10">
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8">
         {/* Header */}
         <div className="mb-6">
@@ -259,38 +262,12 @@ const PostGig = () => {
 
           {/* Description */}
           <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Gig Description (Optional details for AI)
-              </label>
-              <div className="flex flex-col items-end">
-                <button
-                  type="button"
-                  onClick={handleEnhance}
-                  disabled={isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                    isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-sm hover:shadow-md hover:-translate-y-0.5'
-                  }`}
-                >
-                  {isEnhancing ? (
-                    <>
-                      <svg className="animate-spin h-3.5 w-3.5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Generating...
-                    </>
-                  ) : (
-                    <>✨ Generate AI Description</>
-                  )}
-                </button>
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Uses: Title + Category + Skills + Description
-                </p>
-              </div>
-            </div>
+            <label className="block text-sm font-medium text-gray-700">
+              Gig Description
+            </label>
+            <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '2px', marginBottom: '6px' }}>
+              Describe the work, timeline, and expectations. Used to generate AI suggestions.
+            </p>
             <textarea
               rows="4"
               name="description"
@@ -300,6 +277,39 @@ const PostGig = () => {
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
             />
+            <button
+              type="button"
+              onClick={handleEnhance}
+              disabled={isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()}
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginTop: '8px',
+                background: (isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? '#e5e7eb' : '#f5f3ff',
+                border: '1px solid ' + ((isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? '#d1d5db' : '#ede9fe'),
+                borderRadius: '8px',
+                color: (isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? '#9ca3af' : '#7c3aed',
+                fontWeight: 500,
+                fontSize: '0.88rem',
+                cursor: (isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              {isEnhancing ? (
+                <>
+                  <svg className="animate-spin" style={{ height: '14px', width: '14px' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Generating...
+                </>
+              ) : (
+                <>✨ Generate Description with AI</>
+              )}
+            </button>
           </div>
 
           {/* AI Enhancement Error */}
@@ -411,6 +421,20 @@ const PostGig = () => {
             </select>
           </div>
 
+          {/* Draft indicator */}
+          {isDirty && (
+            <p style={{
+              fontSize: '0.78rem',
+              color: '#9ca3af',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              <span>●</span> Draft in progress — submit when ready
+            </p>
+          )}
+
           {/* Buttons */}
           <div className="flex justify-end gap-3 pt-4">
             <button
@@ -429,6 +453,7 @@ const PostGig = () => {
                 setEnhancedText(null)
                 setRegenCount(0)
                 setEnhanceError(null)
+                setIsDirty(false)
               }}
               className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
             >
@@ -444,7 +469,7 @@ const PostGig = () => {
           </div>
         </form>
       </div>
-    </div>
+    </main>
   )
 }
 

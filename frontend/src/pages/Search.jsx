@@ -11,6 +11,7 @@ const Search = () => {
   const [query, setQuery] = useState('');
   
   // Results & Pagination
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   const [results, setResults] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -139,11 +140,20 @@ const Search = () => {
           ) : results.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {results.map(item => (
-                  activeTab === 'users' ? 
-                    <UserResultCard key={item._id} user={item} /> : 
-                    <GigResultCard key={item._id} gig={item} />
-                ))}
+                {activeTab === 'users' 
+                  ? results.filter(user => user._id !== currentUser._id).length > 0
+                    ? results.filter(user => user._id !== currentUser._id).map(item => (
+                        <UserResultCard key={item._id} user={item} />
+                      ))
+                    : <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                        <div className="text-6xl mb-4">🔍</div>
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">No results found</h3>
+                        <p className="text-gray-500 max-w-md mx-auto">We couldn't find any users matching your search criteria.</p>
+                      </div>
+                  : results.map(item => (
+                      <GigResultCard key={item._id} gig={item} />
+                    ))
+                }
               </div>
 
               {/* Pagination */}
