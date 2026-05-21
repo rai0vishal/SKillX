@@ -3,15 +3,30 @@ import React, { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
 import { auth } from '../firebase/firebaseConfig'
+import { API_BASE_URL } from '../config/api.js'
+import NotificationBell from './NotificationBell'
 
 const Navbar = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [user, setUser] = useState(null)
 
+  const [isAdmin, setIsAdmin] = useState(false)
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
     setUser(storedUser)
+    
+    if (storedUser?.email) {
+      fetch(`${API_BASE_URL}/api/profile/${storedUser.email}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(profile => {
+          if (profile) setIsAdmin(profile.role === 'admin')
+        })
+        .catch(err => console.error('Error fetching role for navbar:', err))
+    } else {
+      setIsAdmin(false)
+    }
   }, [location])
 
   const handleLogout = async () => {
@@ -111,12 +126,29 @@ const Navbar = () => {
           >
             Messages
           </NavLink>
+
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `${navLinkBase} ${
+                  isActive ? navLinkActive : navLinkInactive
+                }`
+              }
+            >
+              Admin Panel
+            </NavLink>
+          )}
         </div>
 
         {/* ✅ RIGHT AUTH SECTION (BIGGER BUTTONS) */}
         <div className="flex items-center gap-4">
           {user ? (
             <>
+              <Link to="/search" className="p-2 text-xl hover:bg-gray-100 rounded-full transition" title="Search">
+                🔍
+              </Link>
+              <NotificationBell />
               <span className="hidden sm:inline text-sm text-gray-700 font-medium max-w-[220px] truncate">
                 👤 {user.name || user.email}
               </span>

@@ -1,7 +1,23 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import Session from '../models/Session.js';
+import { calculateExchangeRoles } from '../services/roleService.js';
+import { getUpcomingSession, getAllUpcomingSessions } from '../controllers/sessionController.js';
+import { emitSessionUpdate } from '../socket/notificationSocket.js';
 
 const router = express.Router();
+
+/**
+ * GET /api/sessions/upcoming
+ * Get the nearest upcoming session for a user
+ */
+router.get('/upcoming', getUpcomingSession);
+
+/**
+ * GET /api/sessions/all-upcoming
+ * Get all upcoming sessions for a user sorted chronologically
+ */
+router.get('/all-upcoming', getAllUpcomingSessions);
 
 /**
  * POST /api/sessions
@@ -34,6 +50,8 @@ router.post('/', async (req, res) => {
       return res.status(409).json({ message: 'A session already exists at this date and time for this conversation.' });
     }
 
+    const exchangeRoles = await calculateExchangeRoles(participants[0], participants[1]);
+
     const session = await Session.create({
       participants,
       chatRoomId,
@@ -43,6 +61,7 @@ router.post('/', async (req, res) => {
       mode: mode || 'Remote',
       notes: notes || '',
       status: 'Scheduled',
+      exchangeRoles,
     });
 
     res.status(201).json(session);
@@ -98,11 +117,12 @@ router.put('/:id/reschedule', async (req, res) => {
   try {
     const { date, time, duration, mode, notes } = req.body;
 
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid session ID.' });
+    }
     if (!date || !time) {
       return res.status(400).json({ message: 'New date and time are required to reschedule.' });
     }
-
-    // Note: Skipped strict backend past-date validation to avoid timezone false positives.
 
     const session = await Session.findById(req.params.id);
     if (!session) {
@@ -117,6 +137,8 @@ router.put('/:id/reschedule', async (req, res) => {
     session.status = 'Rescheduled';
     await session.save();
 
+    emitSessionUpdate(session.participants, { _id: session._id, status: session.status, date, time });
+
     res.json(session);
   } catch (error) {
     console.error('Error rescheduling session:', error);
@@ -130,6 +152,9 @@ router.put('/:id/reschedule', async (req, res) => {
  */
 router.put('/:id/cancel', async (req, res) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid session ID.' });
+    }
     const session = await Session.findById(req.params.id);
     if (!session) {
       return res.status(404).json({ message: 'Session not found.' });
@@ -137,6 +162,8 @@ router.put('/:id/cancel', async (req, res) => {
 
     session.status = 'Cancelled';
     await session.save();
+
+    emitSessionUpdate(session.participants, { _id: session._id, status: session.status });
 
     res.json(session);
   } catch (error) {
@@ -146,11 +173,40 @@ router.put('/:id/cancel', async (req, res) => {
 });
 
 /**
+ * PUT /api/sessions/:id/accept
+ * Accept a pending session
+ */
+router.put('/:id/accept', async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid session ID.' });
+    }
+    const session = await Session.findById(req.params.id);
+    if (!session) {
+      return res.status(404).json({ message: 'Session not found.' });
+    }
+
+    session.status = 'Scheduled';
+    await session.save();
+
+    emitSessionUpdate(session.participants, { _id: session._id, status: session.status });
+
+    res.json(session);
+  } catch (error) {
+    console.error('Error accepting session:', error);
+    res.status(500).json({ message: 'Failed to accept session.' });
+  }
+});
+
+/**
  * PUT /api/sessions/:id/complete
  * Mark a session as completed
  */
 router.put('/:id/complete', async (req, res) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid session ID.' });
+    }
     const session = await Session.findById(req.params.id);
     if (!session) {
       return res.status(404).json({ message: 'Session not found.' });
@@ -158,6 +214,8 @@ router.put('/:id/complete', async (req, res) => {
 
     session.status = 'Completed';
     await session.save();
+
+    emitSessionUpdate(session.participants, { _id: session._id, status: session.status });
 
     res.json(session);
   } catch (error) {

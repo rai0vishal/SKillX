@@ -32,8 +32,8 @@ router.post('/', async (req, res) => {
     const skillsArray = Array.isArray(skills)
       ? skills
       : typeof skills === 'string'
-      ? skills.split(',').map((s) => s.trim()).filter(Boolean)
-      : [];
+        ? skills.split(',').map((s) => s.trim()).filter(Boolean)
+        : [];
 
     const updatedProfile = await UserProfile.findOneAndUpdate(
       { email },

@@ -10,6 +10,8 @@ import WeeklyChart from '../components/analytics/WeeklyChart'
 import SkillDistributionChart from '../components/analytics/SkillDistributionChart'
 import Achievements from '../components/analytics/Achievements'
 import RecentActivity from '../components/analytics/RecentActivity'
+import SessionCountdownCard from '../components/session/SessionCountdownCard'
+import UpcomingSessionsModal from '../components/session/UpcomingSessionsModal'
 
 import { API_BASE_URL } from '../config/api.js'
 
@@ -44,6 +46,7 @@ const Dashboard = () => {
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
   const [editingSession, setEditingSession] = useState(null)
   const [isSubmittingSession, setIsSubmittingSession] = useState(false)
+  const [isUpcomingModalOpen, setIsUpcomingModalOpen] = useState(false)
 
   // Review states
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
@@ -219,7 +222,7 @@ const Dashboard = () => {
       const res = await fetch(`${API_BASE_URL}/api/sessions?email=${encodeURIComponent(userEmail)}`)
       if (!res.ok) throw new Error('Failed to fetch sessions')
       const data = await res.json()
-      setUpcomingSessions(data.filter(s => s.status === 'Scheduled' || s.status === 'Rescheduled'))
+      setUpcomingSessions(data.filter(s => ['Scheduled', 'Rescheduled', 'Pending'].includes(s.status)))
     } catch (err) {
       console.error(err)
     } finally {
@@ -230,7 +233,7 @@ const Dashboard = () => {
   const handleSessionSubmit = async (sessionData) => {
     setIsSubmittingSession(true)
     try {
-      if (editingSession) {
+      if (editingSession && editingSession._id) {
         const res = await fetch(`${API_BASE_URL}/api/sessions/${editingSession._id}/reschedule`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -238,6 +241,7 @@ const Dashboard = () => {
         })
         if (!res.ok) throw new Error(await res.text())
         setIsSessionModalOpen(false)
+        setEditingSession(null)
         fetchUpcomingSessions()
       }
     } catch (error) {
@@ -412,6 +416,11 @@ const Dashboard = () => {
         {/* --- OVERVIEW TAB --- */}
         {userEmail && activeTab === 'overview' && (
           <div className="space-y-8">
+            <SessionCountdownCard 
+              userEmail={userEmail} 
+              onViewAll={() => setIsUpcomingModalOpen(true)} 
+            />
+            
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <span>📈</span> Your Activity Analytics
@@ -439,6 +448,11 @@ const Dashboard = () => {
                       session={session}
                       userEmail={userEmail}
                       onReschedule={(s) => {
+                        setEditingSession(s)
+                        setIsSessionModalOpen(true)
+                      }}
+                      onAccept={(id) => handleSessionAction(id, 'accept')}
+                      onSuggestAlternative={(s) => {
                         setEditingSession(s)
                         setIsSessionModalOpen(true)
                       }}
@@ -633,6 +647,12 @@ const Dashboard = () => {
         onSubmit={handleSessionSubmit}
         isSubmitting={isSubmittingSession}
         initialData={editingSession}
+      />
+
+      <UpcomingSessionsModal 
+        isOpen={isUpcomingModalOpen} 
+        onClose={() => setIsUpcomingModalOpen(false)} 
+        userEmail={userEmail} 
       />
 
       {/* Review Modal */}

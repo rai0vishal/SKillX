@@ -15,6 +15,11 @@ import sessionRouter from './src/routes/sessionRoutes.js';
 import reviewRouter from './src/routes/reviewRoutes.js';
 import analyticsRouter from './src/routes/analyticsRoutes.js';
 import videoSessionRouter from './src/routes/videoSessionRoutes.js';
+import adminRouter from './src/routes/adminRoutes.js';
+import notificationRouter from './src/routes/notificationRoutes.js';
+import workspaceRouter from './src/routes/workspaceRoutes.js';
+import searchRouter from './src/routes/searchRoutes.js';
+import scheduleRouter from './src/routes/scheduleRoutes.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import Message from './src/models/Message.js';
@@ -40,7 +45,10 @@ const io = new Server(server, {
   },
 });
 
+import { initNotificationSocket } from './src/socket/notificationSocket.js';
+
 const onlineUsers = new Map(); // socket.id -> email
+initNotificationSocket(io, onlineUsers);
 
 io.on('connection', (socket) => {
   console.log('✅ A user connected via Socket.io:', socket.id);
@@ -175,6 +183,11 @@ app.use('/api/sessions', sessionRouter);
 app.use('/api/reviews', reviewRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/video-session', videoSessionRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/notifications', notificationRouter);
+app.use('/api/workspace', workspaceRouter);
+app.use('/api/search', searchRouter);
+app.use('/api/schedule', scheduleRouter);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {

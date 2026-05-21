@@ -1,10 +1,17 @@
 import mongoose from 'mongoose';
+import { PERMISSIONS } from '../services/permissionService.js';
 
 const userProfileSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
     name: { type: String, required: true },
-    role: { type: String, default: '' },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    status: { type: String, enum: ['active', 'suspended'], default: 'active' },
+    permissions: { 
+      type: [String], 
+      enum: Object.values(PERMISSIONS),
+      default: [] 
+    },
     location: { type: String, default: '' },
     bio: { type: String, default: '' },
     skills: { type: [String], default: [] },
@@ -16,6 +23,28 @@ const userProfileSchema = new mongoose.Schema(
       averageRating: { type: Number, default: 0 },
       totalReviews: { type: Number, default: 0 },
     },
+    availability: [
+      {
+        day: { type: String, enum: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+        slots: [
+          {
+            startTime: String,
+            endTime: String
+          }
+        ]
+      }
+    ],
+    customAvailability: [
+      {
+        date: { type: String, required: true }, // Format: YYYY-MM-DD
+        slots: [
+          {
+            startTime: String,
+            endTime: String
+          }
+        ]
+      }
+    ]
   },
   { timestamps: true }
 );
