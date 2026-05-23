@@ -1,5 +1,7 @@
-import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Toaster } from 'sonner'
 
 import LandingPage from './pages/LandingPage'
 import Dashboard from './pages/Dashboard'
@@ -19,127 +21,171 @@ import SignUp from './pages/auth/SignUp'
 
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
-import Footer from './components/Footer'   // 👈 add this
-import ErrorBoundary from './components/ErrorBoundary';
+import ErrorBoundary from './components/ErrorBoundary'
+import { useTheme } from './hooks/useTheme'
+
+/* Page transition variants */
+const pageVariants = {
+  initial: { opacity: 0, y: 16 },
+  animate: {
+    opacity: 1, y: 0,
+    transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+  },
+  exit: {
+    opacity: 0, y: -8,
+    transition: { duration: 0.15 },
+  },
+}
+
+const PageWrapper = ({ children }) => (
+  <motion.div
+    variants={pageVariants}
+    initial="initial"
+    animate="animate"
+    exit="exit"
+  >
+    {children}
+  </motion.div>
+)
 
 const App = () => {
+  const location = useLocation()
+  const { theme } = useTheme()
+
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col">
-      {/* Fixed navbar */}
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-page)' }}>
+      {/* Toast provider — renders bottom-right */}
+      <Toaster
+        position="bottom-right"
+        theme={theme}
+        richColors
+        expand
+        closeButton
+        toastOptions={{
+          style: {
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '14px',
+          },
+        }}
+      />
+
+      {/* Sticky navbar */}
       <Navbar />
 
-      {/* Content area (grows) */}
-      <main className="pt-24 px-4 pb-6 flex-1">
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '0 16px',
-          width: '100%',
-          boxSizing: 'border-box'
-        }}>
-          <ErrorBoundary>
-            <Routes>
+      {/* Content area */}
+      <main style={{ flex: 1, paddingTop: 0, paddingBottom: 24 }}>
+        <ErrorBoundary>
+          <AnimatePresence mode="wait" initial={false}>
+            <Routes location={location} key={location.pathname}>
               {/* Public routes */}
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/signin" element={<SignIn />} />
-              <Route path="/signup" element={<SignUp />} />
+              <Route path="/" element={<PageWrapper><LandingPage /></PageWrapper>} />
+              <Route path="/signin" element={<PageWrapper><div className="max-w-7xl mx-auto px-4 pt-8"><SignIn /></div></PageWrapper>} />
+              <Route path="/signup" element={<PageWrapper><div className="max-w-7xl mx-auto px-4 pt-8"><SignUp /></div></PageWrapper>} />
 
               {/* Protected routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/search"
-                element={
-                  <ProtectedRoute>
-                    <Search />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/post-gig"
-                element={
-                  <ProtectedRoute>
-                    <PostGig />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/skill-exchage"
-                element={
-                  <ProtectedRoute>
-                    <SkillExchange />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/gig-list"
-                element={
-                  <ProtectedRoute>
-                    <GigList />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/gigs/:id" 
-                element={
-                  <ProtectedRoute>
-                    <GigDetails />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/user/:email"
-                element={
-                  <ProtectedRoute>
-                    <PublicProfile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/chat"
-                element={
-                  <ProtectedRoute>
-                    <Chat />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/session/:id"
-                element={
-                  <ProtectedRoute>
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
+                      <Dashboard />
+                    </div>
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/search" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
+                      <Search />
+                    </div>
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/post-gig" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
+                      <PostGig />
+                    </div>
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/skill-exchange" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
+                      <SkillExchange />
+                    </div>
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              {/* Redirect old typo URL */}
+              <Route path="/skill-exchage" element={<Navigate to="/skill-exchange" replace />} />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
+                      <Profile />
+                    </div>
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/gig-list" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
+                      <GigList />
+                    </div>
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/gigs/:id" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
+                      <GigDetails />
+                    </div>
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/user/:email" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
+                      <PublicProfile />
+                    </div>
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/chat" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
+                      <Chat />
+                    </div>
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/session/:id" element={
+                <ProtectedRoute>
+                  <PageWrapper>
                     <VideoSession />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
+                      <AdminDashboard />
+                    </div>
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
             </Routes>
-          </ErrorBoundary>
-        </div>
+          </AnimatePresence>
+        </ErrorBoundary>
       </main>
-
-      {/* Footer at bottom */}
-      <Footer />
     </div>
   )
 }

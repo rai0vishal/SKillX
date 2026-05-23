@@ -1,25 +1,615 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import {
+  ArrowLeftRight,
+  CalendarDays,
+  MessageCircle,
+  Sparkles,
+  Star,
+  Award,
+  Play,
+  ChevronRight,
+  Code2,
+  Link2,
+  Share2,
+  CheckCircle2,
+  Zap,
+} from 'lucide-react'
+import AnimatedCounter from '../components/ui/AnimatedCounter'
 
+/* ── Animation variants ──────────────────────────────────── */
+const fadeUp = {
+  hidden:  { opacity: 0, y: 32 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.4, 0, 0.2, 1] } },
+}
+const stagger = { visible: { transition: { staggerChildren: 0.1 } } }
+
+/* ── Floating hero card component ───────────────────────── */
+const HeroCard = ({ style, className, children }) => (
+  <div
+    className={`card-glass rounded-2xl p-4 ${className}`}
+    style={{ boxShadow: '0 8px 32px rgba(91,79,232,0.15)', ...style }}
+  >
+    {children}
+  </div>
+)
+
+/* ── Star rating row ─────────────────────────────────────── */
+const StarRow = ({ count = 5 }) => (
+  <div className="flex gap-0.5">
+    {Array.from({ length: count }).map((_, i) => (
+      <Star key={i} size={13} fill="#F59E0B" color="#F59E0B" aria-hidden="true" />
+    ))}
+  </div>
+)
+
+/* ══════════════════════════════════════════════════════════
+   LANDING PAGE
+══════════════════════════════════════════════════════════ */
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-r from-indigo-600 to-purple-700 flex items-center justify-center">
-      <div className="bg-white p-10 rounded-2xl shadow-xl max-w-md w-full text-center">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">
-          Welcome to SkillX 🚀
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Exchange skills, post gigs, and grow together.
-        </p>
+    <div style={{ background: 'var(--bg-page)', color: 'var(--text-primary)', overflowX: 'hidden' }}>
 
-        <div className="flex flex-col gap-4">
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition">
-            Get Started
-          </button>
-          <button className="border border-indigo-600 text-indigo-600 py-2 rounded-lg hover:bg-indigo-50 transition">
-            Explore Skills
-          </button>
+      {/* ── SECTION 1: HERO ───────────────────────────────── */}
+      <section
+        id="hero"
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          background: 'radial-gradient(ellipse 80% 60% at 50% 0%, #EEF2FF 0%, var(--bg-page) 70%)',
+          padding: '80px 24px 60px',
+          textAlign: 'center',
+        }}
+      >
+        {/* Background blobs */}
+        <div
+          className="animate-blob"
+          style={{
+            position: 'absolute', top: '10%', left: '5%', width: 320, height: 320,
+            borderRadius: '50%', background: 'rgba(91,79,232,0.06)', filter: 'blur(60px)',
+            pointerEvents: 'none',
+          }}
+          aria-hidden="true"
+        />
+        <div
+          className="animate-blob-delayed"
+          style={{
+            position: 'absolute', bottom: '10%', right: '5%', width: 280, height: 280,
+            borderRadius: '50%', background: 'rgba(236,72,153,0.06)', filter: 'blur(60px)',
+            pointerEvents: 'none',
+          }}
+          aria-hidden="true"
+        />
+
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+          style={{ maxWidth: 680, position: 'relative', zIndex: 1 }}
+        >
+          {/* Announcement pill */}
+          <motion.div variants={fadeUp} style={{ marginBottom: 24, display: 'inline-block' }}>
+            <a
+              href="#features"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '5px 14px',
+                borderRadius: 9999,
+                border: '1px solid var(--border-strong)',
+                background: 'var(--primary-light)',
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--primary)',
+                textDecoration: 'none',
+                transition: 'all 150ms',
+              }}
+            >
+              <Sparkles size={12} aria-hidden="true" />
+              ✦ Now with AI-powered gig matching
+              <ChevronRight size={12} aria-hidden="true" />
+            </a>
+          </motion.div>
+
+          {/* H1 */}
+          <motion.h1
+            variants={fadeUp}
+            className="text-hero"
+            style={{ margin: '0 0 20px', color: 'var(--text-primary)' }}
+          >
+            <span className="gradient-text">Exchange Skills.</span>
+            <br />Grow Together.
+          </motion.h1>
+
+          {/* Subheading */}
+          <motion.p
+            variants={fadeUp}
+            style={{
+              fontSize: 18, lineHeight: 1.7, color: 'var(--text-secondary)',
+              maxWidth: 520, margin: '0 auto 36px',
+            }}
+          >
+            SkillX connects you with people who have what you need — and need what you have.
+            No money. Just skills.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            variants={fadeUp}
+            style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 20 }}
+          >
+            <Link
+              to="/signup"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '14px 28px', borderRadius: 10, fontWeight: 700, fontSize: 15,
+                background: 'var(--primary)', color: '#fff',
+                textDecoration: 'none', boxShadow: '0 4px 14px rgba(91,79,232,0.4)',
+                transition: 'all 200ms',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-hover)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.transform = 'translateY(0)' }}
+            >
+              Get Started Free
+              <ChevronRight size={16} aria-hidden="true" />
+            </Link>
+            <a
+              href="#how-it-works"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '14px 28px', borderRadius: 10, fontWeight: 600, fontSize: 15,
+                background: 'transparent', color: 'var(--text-secondary)',
+                border: '1.5px solid var(--border)', textDecoration: 'none',
+                transition: 'all 200ms',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'var(--primary-light)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent' }}
+            >
+              <Play size={15} aria-hidden="true" />
+              See How It Works
+            </a>
+          </motion.div>
+
+          {/* Social proof */}
+          <motion.p variants={fadeUp} style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+            Join <strong style={{ color: 'var(--text-primary)' }}>500+</strong> learners already exchanging skills
+          </motion.p>
+        </motion.div>
+
+        {/* Floating cards mockup */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+          style={{
+            position: 'relative', marginTop: 60, width: '100%', maxWidth: 560,
+            height: 220, zIndex: 1,
+          }}
+          aria-hidden="true"
+        >
+          <HeroCard
+            className="animate-float-slow absolute left-0 bottom-0"
+            style={{ width: 220, zIndex: 1 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 16 }}>👩‍💻</span>
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Priya S.</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Offers: React</div>
+              </div>
+            </div>
+            <div className="badge badge-exchange">Wants: UI Design</div>
+          </HeroCard>
+
+          <HeroCard
+            className="animate-float absolute left-1/2 -translate-x-1/2 top-0"
+            style={{ width: 240, zIndex: 3 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <ArrowLeftRight size={18} color="var(--primary)" aria-hidden="true" />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>Match Found!</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)' }}>
+              <span>React ↔ UI Design</span>
+              <CheckCircle2 size={14} color="var(--success)" aria-hidden="true" />
+            </div>
+            <div style={{ marginTop: 8, height: 3, borderRadius: 9999, background: 'var(--border)' }}>
+              <div style={{ width: '80%', height: '100%', borderRadius: 9999, background: 'var(--primary)' }} />
+            </div>
+          </HeroCard>
+
+          <HeroCard
+            className="animate-float-delayed absolute right-0 bottom-0"
+            style={{ width: 220, zIndex: 1 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 16 }}>🎨</span>
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Arjun M.</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Offers: Design</div>
+              </div>
+            </div>
+            <div className="badge badge-active">Wants: React</div>
+          </HeroCard>
+        </motion.div>
+      </section>
+
+      {/* ── SECTION 2: HOW IT WORKS ───────────────────────── */}
+      <section
+        id="how-it-works"
+        style={{ padding: '96px 24px', background: 'var(--bg-surface)', textAlign: 'center' }}
+      >
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <motion.div
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
+          >
+            <motion.p
+              variants={fadeUp}
+              style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: 12 }}
+            >
+              How It Works
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 64, color: 'var(--text-primary)' }}
+            >
+              Exchange skills in 3 simple steps
+            </motion.h2>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32, position: 'relative' }}>
+              {/* Connector line */}
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute', top: 28, left: 'calc(16.67% + 20px)', right: 'calc(16.67% + 20px)',
+                  height: 2, borderTop: '2px dashed var(--border-strong)',
+                }}
+              />
+
+              {[
+                { num: '01', Icon: Zap, title: 'Post Your Skill', desc: 'Tell the community what you can offer and what you want to learn.' },
+                { num: '02', Icon: ArrowLeftRight, title: 'Find Your Match', desc: 'Our AI finds people who need what you offer and offer what you need.' },
+                { num: '03', Icon: CalendarDays, title: 'Start Exchanging', desc: 'Schedule sessions, chat, video call, and grow together — for free.' },
+              ].map(({ num, Icon, title, desc }, i) => (
+                <motion.div key={i} variants={fadeUp} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+                  <div
+                    style={{
+                      width: 56, height: 56, borderRadius: '50%',
+                      background: 'var(--primary)', color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 15, fontWeight: 700, position: 'relative', zIndex: 1,
+                    }}
+                  >
+                    {num}
+                  </div>
+                  <Icon size={32} color="var(--primary)" aria-hidden="true" />
+                  <div>
+                    <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>{title}</h3>
+                    <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)' }}>{desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </div>
-      </div>
+      </section>
+
+      {/* ── SECTION 3: FEATURES ───────────────────────────── */}
+      <section
+        id="features"
+        style={{ padding: '96px 24px', background: 'var(--bg-page)', textAlign: 'center' }}
+      >
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
+            <motion.p variants={fadeUp} style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: 12 }}>
+              Features
+            </motion.p>
+            <motion.h2 variants={fadeUp} style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 64, color: 'var(--text-primary)' }}>
+              Everything you need to grow
+            </motion.h2>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+              {[
+                { Icon: ArrowLeftRight, title: 'Skill Exchange Matching', desc: 'Smart matching finds the perfect exchange partner for your exact needs.', color: '#5B4FE8', bg: '#EEF2FF' },
+                { Icon: CalendarDays,   title: 'Schedule Sessions',      desc: 'Book and manage learning sessions with built-in scheduling.',           color: '#0EA5E9', bg: '#E0F2FE' },
+                { Icon: MessageCircle,  title: 'Real-time Chat',         desc: 'Communicate instantly with your exchange partners via live chat.',       color: '#10B981', bg: '#ECFDF5' },
+                { Icon: Sparkles,       title: 'AI Gig Suggestions',     desc: 'AI-powered recommendations for gigs tailored to your skill set.',       color: '#EC4899', bg: '#FDF2F8' },
+                { Icon: Star,           title: 'Ratings & Reviews',      desc: 'Build your reputation with authentic ratings after every session.',     color: '#F59E0B', bg: '#FFFBEB' },
+                { Icon: Award,          title: 'Achievement Badges',     desc: 'Earn recognition badges as you complete more skill exchanges.',          color: '#14B8A6', bg: '#F0FDFA' },
+              ].map(({ Icon, title, desc, color, bg }, i) => (
+                <motion.div
+                  key={i}
+                  variants={fadeUp}
+                  className="card card-spring"
+                  style={{ textAlign: 'left', cursor: 'default' }}
+                  whileHover={{ y: -4, scale: 1.01 }}
+                >
+                  <div
+                    style={{
+                      width: 48, height: 48, borderRadius: 12,
+                      background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      marginBottom: 16,
+                    }}
+                    aria-hidden="true"
+                  >
+                    <Icon size={24} color={color} strokeWidth={1.8} aria-hidden="true" />
+                  </div>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>{title}</h3>
+                  <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)' }}>{desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── SECTION 4: STATS ──────────────────────────────── */}
+      <section
+        id="stats"
+        style={{ padding: '80px 24px', background: 'var(--primary-dark)', color: '#fff', textAlign: 'center' }}
+      >
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <motion.div
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
+          >
+            <motion.h2 variants={fadeUp} style={{ fontSize: 28, fontWeight: 700, marginBottom: 48, color: '#fff' }}>
+              Trusted by a growing community
+            </motion.h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32 }}>
+              {[
+                { value: 500,   suffix: '+', label: 'Active Users' },
+                { value: 1200,  suffix: '+', label: 'Exchanges Done' },
+                { value: 50,    suffix: '+', label: 'Skills Available' },
+                { value: 4.8,   suffix: '★', label: 'Avg. Rating' },
+              ].map(({ value, suffix, label }, i) => (
+                <motion.div key={i} variants={fadeUp}>
+                  <div style={{ fontSize: 44, fontWeight: 800, lineHeight: 1 }}>
+                    <AnimatedCounter to={value} suffix={suffix} />
+                  </div>
+                  <div style={{ fontSize: 13, marginTop: 8, color: 'rgba(255,255,255,0.7)' }}>{label}</div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── SECTION 5: TESTIMONIALS ───────────────────────── */}
+      <section
+        id="testimonials"
+        style={{ padding: '96px 24px', background: 'var(--bg-surface)' }}
+      >
+        <div style={{ maxWidth: 1000, margin: '0 auto', textAlign: 'center' }}>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
+            <motion.p variants={fadeUp} style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: 12 }}>
+              Testimonials
+            </motion.p>
+            <motion.h2 variants={fadeUp} style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 48, color: 'var(--text-primary)' }}>
+              What learners are saying
+            </motion.h2>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+              {[
+                {
+                  name: 'Priya Sharma', role: 'Frontend Developer',
+                  quote: 'SkillX helped me learn UI/UX design in exchange for teaching React. The skill exchange model is genius — I gained a full design education without spending a rupee!',
+                  initials: 'PS', stars: 5,
+                },
+                {
+                  name: 'Arjun Mehta', role: 'Product Designer',
+                  quote: "I exchanged my Figma skills for Python. Matched with a developer in 24 hours and we've been learning from each other for 3 months now. Absolutely love this platform!",
+                  initials: 'AM', stars: 5,
+                },
+                {
+                  name: 'Sneha Patel', role: 'Data Analyst',
+                  quote: 'The session scheduling and video call features are seamless. I taught Excel and learned SQL — this platform is doing something truly different.',
+                  initials: 'SP', stars: 5,
+                },
+              ].map(({ name, role, quote, initials, stars }, i) => (
+                <motion.div
+                  key={i}
+                  variants={fadeUp}
+                  className="card card-hover"
+                  style={{ textAlign: 'left' }}
+                >
+                  <StarRow count={stars} />
+                  <p style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--text-secondary)', margin: '14px 0 20px', fontStyle: 'italic' }}>
+                    "{quote}"
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div
+                      style={{
+                        width: 36, height: 36, borderRadius: '50%',
+                        background: 'var(--primary-light)', color: 'var(--primary)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, fontSize: 13, flexShrink: 0,
+                      }}
+                    >
+                      {initials}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{role}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── SECTION 6: CTA BANNER ─────────────────────────── */}
+      <section style={{ padding: '80px 24px', background: 'var(--bg-page)' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55 }}
+            style={{
+              background: 'linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%)',
+              borderRadius: 24, padding: '64px 48px', textAlign: 'center',
+              position: 'relative', overflow: 'hidden',
+            }}
+          >
+            {/* Animated blobs */}
+            <div
+              className="animate-blob"
+              aria-hidden="true"
+              style={{
+                position: 'absolute', top: '-30%', right: '-10%', width: 300, height: 300,
+                borderRadius: '50%', background: 'rgba(255,255,255,0.08)', filter: 'blur(30px)',
+                pointerEvents: 'none',
+              }}
+            />
+            <div
+              className="animate-blob-delayed"
+              aria-hidden="true"
+              style={{
+                position: 'absolute', bottom: '-20%', left: '-5%', width: 250, height: 250,
+                borderRadius: '50%', background: 'rgba(236,72,153,0.2)', filter: 'blur(40px)',
+                pointerEvents: 'none',
+              }}
+            />
+
+            <h2 style={{ fontSize: 36, fontWeight: 700, color: '#fff', marginBottom: 16, position: 'relative' }}>
+              Ready to start exchanging?
+            </h2>
+            <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.8)', marginBottom: 32, position: 'relative' }}>
+              Join thousands of learners sharing knowledge — completely free.
+            </p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', position: 'relative' }}>
+              <Link
+                to="/signup"
+                style={{
+                  padding: '12px 28px', borderRadius: 10, fontWeight: 700, fontSize: 15,
+                  background: '#fff', color: 'var(--primary)', textDecoration: 'none',
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  transition: 'all 200ms',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.2)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.15)' }}
+              >
+                Get Started Free
+                <ChevronRight size={16} aria-hidden="true" />
+              </Link>
+              <Link
+                to="/gig-list"
+                style={{
+                  padding: '12px 28px', borderRadius: 10, fontWeight: 600, fontSize: 15,
+                  background: 'rgba(255,255,255,0.15)', color: '#fff',
+                  border: '1.5px solid rgba(255,255,255,0.4)',
+                  textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8,
+                  transition: 'all 200ms',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.25)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
+              >
+                View Gigs
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── FOOTER ────────────────────────────────────────── */}
+      <footer
+        style={{
+          background: 'var(--bg-surface)',
+          borderTop: '1px solid var(--border)',
+          padding: '48px 24px 24px',
+        }}
+      >
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 48, marginBottom: 40 }}>
+            {/* Brand */}
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)', marginBottom: 10 }}>
+                Skill<span className="gradient-text">X</span>
+              </div>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)', maxWidth: 280 }}>
+                A platform to exchange skills, post gigs, and grow together — completely free.
+              </p>
+              <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                {[
+                                  { Icon: Code2,  label: 'GitHub',   href: 'https://github.com/rai0vishal/SKillX' },
+                  { Icon: Link2,  label: 'LinkedIn', href: '#' },
+                  { Icon: Share2, label: 'Twitter',  href: '#' },
+                ].map(({ Icon, label, href }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    style={{
+                      width: 34, height: 34, borderRadius: 8,
+                      border: '1px solid var(--border)', background: 'var(--bg-surface-2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: 'var(--text-secondary)', textDecoration: 'none',
+                      transition: 'all 150ms',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--primary-light)' }}
+                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-surface-2)' }}
+                  >
+                    <Icon size={15} aria-hidden="true" />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick links */}
+            <div>
+              <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16, letterSpacing: '0.01em' }}>Quick Links</h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { to: '/dashboard',    label: 'Dashboard' },
+                  { to: '/post-gig',     label: 'Post Gig' },
+                  { to: '/gig-list',     label: 'Browse Gigs' },
+                  { to: '/skill-exchange', label: 'Skill Exchange' },
+                ].map(({ to, label }) => (
+                  <li key={to}>
+                    <Link
+                      to={to}
+                      style={{ fontSize: 14, color: 'var(--text-muted)', textDecoration: 'none', transition: 'color 150ms' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)' }}
+                      onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16, letterSpacing: '0.01em' }}>Contact</h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <li style={{ fontSize: 14, color: 'var(--text-muted)' }}>support@skillx.com</li>
+                <li style={{ fontSize: 14, color: 'var(--text-muted)' }}>+91 98765 43210</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 20, textAlign: 'center', fontSize: 12, color: 'var(--text-muted)' }}>
+            © {new Date().getFullYear()} SkillX. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

@@ -1,51 +1,118 @@
 import React from 'react';
+import { Award, Trophy, Star, Rocket, Lock } from 'lucide-react';
+import Skeleton from '../ui/Skeleton';
+
+const ALL_BADGES = [
+  {
+    id: 'first_exchange',
+    name: 'First Exchange',
+    desc: 'Complete your first skill exchange',
+    Icon: Trophy,
+    bg: '#FFFBEB',
+    color: '#F59E0B',
+    border: '#FDE68A',
+  },
+  {
+    id: 'session_master',
+    name: 'Session Master',
+    desc: 'Complete 10+ sessions',
+    Icon: Award,
+    bg: '#FEF2F2',
+    color: '#EF4444',
+    border: '#FECACA',
+  },
+  {
+    id: 'top_rated',
+    name: 'Top Rated',
+    desc: 'Maintain 4.8★ or higher',
+    Icon: Star,
+    bg: '#EEF2FF',
+    color: '#5B4FE8',
+    border: '#C7D2FE',
+  },
+  {
+    id: 'skill_explorer',
+    name: 'Skill Explorer',
+    desc: 'Exchange 3+ different skills',
+    Icon: Rocket,
+    bg: '#F0FDFA',
+    color: '#14B8A6',
+    border: '#99F6E4',
+  },
+];
 
 const Achievements = ({ badges, loading }) => {
   if (loading) {
     return (
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 min-h-[200px] animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-        <div className="flex gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="w-16 h-16 bg-gray-200 rounded-full"></div>
+      <div className="card">
+        <Skeleton height="13px" width="50%" className="mb-4" />
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} height="88px" />
           ))}
         </div>
       </div>
     );
   }
 
-  const ALL_BADGES = [
-    { id: 'first_exchange', name: 'First Exchange', icon: '🏆', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
-    { id: 'session_master', name: 'Session Master', icon: '🔥', color: 'bg-red-100 text-red-700 border-red-200' },
-    { id: 'top_rated', name: 'Top Rated User', icon: '⭐', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-    { id: 'skill_explorer', name: 'Skill Explorer', icon: '🚀', color: 'bg-purple-100 text-purple-700 border-purple-200' },
-  ];
-
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+    <div className="card">
+      <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 16 }}>
         Achievements & Badges
       </h3>
-      
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {ALL_BADGES.map((badgeDef) => {
-          const isUnlocked = badges.some((b) => b.id === badgeDef.id);
-          
+          const isUnlocked = badges.some(b => b.id === badgeDef.id);
+          const { Icon } = badgeDef;
+
           return (
-            <div 
-              key={badgeDef.id} 
-              className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-all duration-300 ${
-                isUnlocked 
-                  ? `${badgeDef.color} shadow-sm hover:-translate-y-1` 
-                  : 'bg-gray-50 border-gray-100 opacity-50 grayscale'
-              }`}
+            <div
+              key={badgeDef.id}
+              style={{
+                position: 'relative', overflow: 'hidden',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', gap: 8,
+                padding: '16px 12px',
+                borderRadius: 'var(--radius-md)',
+                border: `1px solid ${isUnlocked ? badgeDef.border : 'var(--border)'}`,
+                background: isUnlocked ? badgeDef.bg : 'var(--bg-surface-2)',
+                transition: 'all var(--transition-base)',
+                ...(isUnlocked ? { cursor: 'default' } : { opacity: 0.6, filter: 'grayscale(0.6)' }),
+              }}
+              className={isUnlocked ? 'card-hover' : ''}
             >
-              <div className="text-3xl mb-2">{badgeDef.icon}</div>
-              <p className={`text-xs font-bold text-center leading-tight ${isUnlocked ? '' : 'text-gray-500'}`}>
-                {badgeDef.name}
-              </p>
+              {/* Icon */}
+              <div
+                style={{
+                  width: 40, height: 40, borderRadius: '50%',
+                  background: isUnlocked ? badgeDef.color : 'var(--border)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+                aria-hidden="true"
+              >
+                <Icon size={20} color={isUnlocked ? '#fff' : 'var(--text-muted)'} strokeWidth={1.8} aria-hidden="true" />
+              </div>
+
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: isUnlocked ? 'var(--text-primary)' : 'var(--text-muted)', margin: 0, lineHeight: 1.3 }}>
+                  {badgeDef.name}
+                </p>
+              </div>
+
+              {/* Lock overlay */}
               {!isUnlocked && (
-                <p className="text-[9px] text-gray-400 mt-1 uppercase tracking-widest font-semibold">Locked</p>
+                <div
+                  style={{
+                    position: 'absolute', top: 6, right: 6,
+                    width: 18, height: 18, borderRadius: '50%',
+                    background: 'var(--border-strong)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                  aria-label="Locked"
+                >
+                  <Lock size={10} color="var(--text-muted)" aria-hidden="true" />
+                </div>
               )}
             </div>
           );

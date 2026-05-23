@@ -25,13 +25,16 @@ router.get('/all-upcoming', getAllUpcomingSessions);
  */
 router.post('/', async (req, res) => {
   try {
-    const { participants, chatRoomId, date, time, duration, mode, notes } = req.body;
+    const { participants, chatRoomId, date, time, duration, mode, notes, requestedBy, isPreApproved } = req.body;
 
     if (!participants || participants.length !== 2) {
       return res.status(400).json({ message: 'Exactly 2 participants are required.' });
     }
     if (!chatRoomId || !date || !time) {
       return res.status(400).json({ message: 'chatRoomId, date, and time are required.' });
+    }
+    if (!requestedBy) {
+      return res.status(400).json({ message: 'requestedBy is required.' });
     }
 
     // Note: We skip strict backend past-date validation here because 'date' and 'time'
@@ -52,6 +55,10 @@ router.post('/', async (req, res) => {
 
     const exchangeRoles = await calculateExchangeRoles(participants[0], participants[1]);
 
+    // If isPreApproved (recipient selected their own availability slot),
+    // create directly as 'Scheduled'; otherwise 'Pending' so the other user can confirm.
+    const initialStatus = isPreApproved ? 'Scheduled' : 'Pending';
+
     const session = await Session.create({
       participants,
       chatRoomId,
@@ -60,7 +67,8 @@ router.post('/', async (req, res) => {
       duration: duration || '60 mins',
       mode: mode || 'Remote',
       notes: notes || '',
-      status: 'Scheduled',
+      status: initialStatus,
+      requestedBy,
       exchangeRoles,
     });
 
@@ -99,7 +107,7 @@ router.get('/room/:chatRoomId', async (req, res) => {
     const { chatRoomId } = req.params;
     const sessions = await Session.find({
       chatRoomId,
-      status: { $in: ['Scheduled', 'Rescheduled'] },
+      status: { $in: ['Pending', 'Scheduled', 'Rescheduled'] },
     }).sort({ date: 1, time: 1 });
 
     res.json(sessions);
