@@ -1,9 +1,138 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
+import {
+  ArrowLeftRight, ChevronDown, MapPin, Send, Star, Sparkles,
+  Search, User, RefreshCw,
+} from 'lucide-react'
 import LoadingSpinner from '../components/LoadingSpinner'
+import Skeleton from '../components/ui/Skeleton'
+import { API_BASE_URL } from '../config/api.js'
 
-import { API_BASE_URL } from '../config/api.js';
+/* ─── Match Score Ring SVG ──────────────────────────────── */
+const MatchScoreRing = ({ score, size = 52 }) => {
+  const r = 20
+  const c = 2 * Math.PI * r
+  const fill = (score / 100) * c
+  const color = score >= 80 ? 'var(--success)' : score >= 50 ? '#D97706' : 'var(--danger)'
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" aria-label={`${score}% match`} role="img">
+      <circle cx="24" cy="24" r={r} fill="none" stroke="var(--border)" strokeWidth="4" />
+      <circle
+        cx="24" cy="24" r={r} fill="none" stroke={color} strokeWidth="4"
+        strokeDasharray={`${fill} ${c}`} strokeLinecap="round"
+        transform="rotate(-90 24 24)"
+      />
+      <text x="24" y="28" textAnchor="middle" fontSize="11" fontWeight="700" fill={color}>
+        {score}%
+      </text>
+    </svg>
+  )
+}
 
+/* ─── Match Card ────────────────────────────────────────── */
+const MatchCard = ({ match, onRequest, isRec = false }) => (
+  <motion.div
+    whileHover={{ y: -3, scale: 1.01 }}
+    transition={{ type: 'spring', stiffness: 360, damping: 22 }}
+    style={{
+      background: 'var(--bg-surface)',
+      border: isRec ? '2px solid var(--border-strong)' : '1px solid var(--border)',
+      borderRadius: 'var(--radius-lg)',
+      padding: 20,
+      boxShadow: isRec ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}
+  >
+    {isRec && (
+      <div style={{
+        position: 'absolute', top: 10, right: 10,
+        display: 'flex', alignItems: 'center', gap: 4,
+        padding: '2px 8px', borderRadius: 9999,
+        background: 'var(--primary-light)', color: 'var(--primary)',
+        fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
+      }}>
+        <Sparkles size={9} aria-hidden="true" /> RECOMMENDED
+      </div>
+    )}
+
+    {/* Header */}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+      <div style={{
+        width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+        background: 'var(--primary-light)', color: 'var(--primary)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 16, fontWeight: 700, border: '2px solid var(--border-strong)',
+      }}>
+        {match.name?.[0]?.toUpperCase() || '?'}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
+          {match.name}
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <MapPin size={11} aria-hidden="true" /> {match.location}
+        </div>
+      </div>
+      <MatchScoreRing score={match.matchScore ?? 80} />
+    </div>
+
+    {/* Skills */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 50 }}>Offers:</span>
+        <span style={{
+          padding: '3px 10px', borderRadius: 9999,
+          background: 'var(--info-bg)', color: 'var(--info)',
+          border: '1px solid var(--info-border)', fontSize: 12, fontWeight: 500,
+        }}>{match.skillOffered}</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 50 }}>Wants:</span>
+        <span style={{
+          padding: '3px 10px', borderRadius: 9999,
+          background: 'var(--primary-light)', color: 'var(--primary)',
+          border: '1px solid var(--border-strong)', fontSize: 12, fontWeight: 500,
+        }}>{match.skillWanted}</span>
+      </div>
+    </div>
+
+    {/* AI Insight */}
+    {match.aiInsight && (
+      <div style={{
+        marginBottom: 12, padding: '10px 12px',
+        background: 'var(--bg-overlay)', borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--border)',
+      }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Sparkles size={11} aria-hidden="true" /> AI Insight
+        </p>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{match.aiInsight}</p>
+      </div>
+    )}
+
+    {/* Action */}
+    <button
+      onClick={() => onRequest(match)}
+      style={{
+        width: '100%', padding: 9,
+        background: 'var(--primary)', color: '#fff',
+        border: 'none', borderRadius: 'var(--radius-md)',
+        fontSize: 13, fontWeight: 600, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        transition: 'background var(--transition-fast)',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-hover)' }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary)' }}
+    >
+      <Send size={14} aria-hidden="true" /> Request Exchange
+    </button>
+  </motion.div>
+)
+
+/* ─── Main Component ────────────────────────────────────── */
 const SkillExchange = () => {
   const navigate = useNavigate()
   const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
@@ -17,23 +146,21 @@ const SkillExchange = () => {
   const [loadingRecommendations, setLoadingRecommendations] = useState(false)
 
   const [form, setForm] = useState({
-    name: '',
+    name: storedUser.name || '',
     skillOffered: '',
     skillWanted: '',
     location: 'Remote',
-    matchScore: '',
   })
   const [submitting, setSubmitting] = useState(false)
-  const [infoMessage, setInfoMessage] = useState(null)
+  const [bannerOpen, setBannerOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const fetchEntries = async () => {
     try {
       setLoading(true)
       setError(null)
-
       const res = await fetch(`${API_BASE_URL}/api/skill-exchange`)
       if (!res.ok) throw new Error('Failed to fetch skill exchange entries')
-
       const data = await res.json()
       setEntries(data)
     } catch (err) {
@@ -45,36 +172,29 @@ const SkillExchange = () => {
   }
 
   const fetchRecommendations = async () => {
-    if (!currentEmail) return;
-    
-    // Check cache first
-    const cacheKey = `skillx_recommendations_${currentEmail}`;
-    const cachedData = localStorage.getItem(cacheKey);
-    
+    if (!currentEmail) return
+
+    const cacheKey = `skillx_recommendations_${currentEmail}`
+    const cachedData = localStorage.getItem(cacheKey)
     if (cachedData) {
       try {
-        const parsed = JSON.parse(cachedData);
-        setRecommendations(parsed);
-        return;
-      } catch (e) {
-        console.error('Error parsing cached recommendations', e);
-      }
+        setRecommendations(JSON.parse(cachedData))
+        return
+      } catch (e) { /* ignore */ }
     }
 
     try {
-      setLoadingRecommendations(true);
-      const res = await fetch(`${API_BASE_URL}/api/skill-exchange/recommendations?email=${encodeURIComponent(currentEmail)}`);
+      setLoadingRecommendations(true)
+      const res = await fetch(`${API_BASE_URL}/api/skill-exchange/recommendations?email=${encodeURIComponent(currentEmail)}`)
       if (res.ok) {
-        const data = await res.json();
-        setRecommendations(data);
-        if (data.length > 0) {
-          localStorage.setItem(cacheKey, JSON.stringify(data));
-        }
+        const data = await res.json()
+        setRecommendations(data)
+        if (data.length > 0) localStorage.setItem(cacheKey, JSON.stringify(data))
       }
     } catch (err) {
-      console.error('Failed to fetch recommendations:', err);
+      console.error('Failed to fetch recommendations:', err)
     } finally {
-      setLoadingRecommendations(false);
+      setLoadingRecommendations(false)
     }
   }
 
@@ -85,423 +205,347 @@ const SkillExchange = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+    setForm(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
     setError(null)
-    setInfoMessage(null)
 
     try {
       if (!currentEmail) {
-        setError('You must be signed in to create a skill exchange profile.')
+        toast.error('You must be signed in to create a skill exchange profile.')
         setSubmitting(false)
         return
       }
 
-      const payload = {
-        ...form,
-        email: currentEmail,
-        matchScore: form.matchScore ? Number(form.matchScore) : 80,
-      }
-
+      const payload = { ...form, email: currentEmail, matchScore: 80 }
       const res = await fetch(`${API_BASE_URL}/api/skill-exchange`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-
       if (!res.ok) throw new Error('Failed to create skill exchange entry')
 
       const newEntry = await res.json()
+      setEntries(prev => [newEntry, ...prev])
+      setForm({ name: storedUser.name || '', skillOffered: '', skillWanted: '', location: 'Remote' })
+      toast.success('Exchange profile saved! Refreshing matches…')
 
-      setEntries((prev) => [newEntry, ...prev])
-
-      setForm({
-        name: '',
-        skillOffered: '',
-        skillWanted: '',
-        location: 'Remote',
-        matchScore: '',
-      })
-
-      setInfoMessage('Profile saved successfully ✅')
-      
-      // Clear cache and refetch recommendations since profile was updated
-      localStorage.removeItem(`skillx_recommendations_${currentEmail}`);
-      fetchRecommendations();
+      localStorage.removeItem(`skillx_recommendations_${currentEmail}`)
+      fetchRecommendations()
     } catch (err) {
       console.error(err)
-      setError('Could not create entry. Please try again.')
+      toast.error('Could not save profile. Please try again.')
     } finally {
       setSubmitting(false)
     }
   }
 
-  const handleViewProfile = (user) => {
-    if (!user.email) {
-      alert('This user has no linked profile email.')
-      return
-    }
-    navigate(`/user/${encodeURIComponent(user.email)}`)
-  }
-
   const handleRequestExchange = async (user) => {
     try {
       if (!currentEmail) {
-        alert('You must be signed in to send a request.')
+        toast.error('You must be signed in to send a request.')
         return
       }
       if (!user.email) {
-        alert('This user has no linked email for exchange requests.')
+        toast.error('This user has no linked email for exchange requests.')
         return
       }
 
       const message = `Hi ${user.name}, I would like to exchange my skills (${user.skillWanted}) with yours (${user.skillOffered}).`
-
       const res = await fetch(`${API_BASE_URL}/api/exchange-requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fromEmail: currentEmail,
-          toEmail: user.email,
-          message,
-        }),
+        body: JSON.stringify({ fromEmail: currentEmail, toEmail: user.email, message }),
       })
-
       if (!res.ok) throw new Error('Failed to send exchange request')
-
-      alert('Exchange request sent ✅')
+      toast.success(`Exchange request sent to ${user.name}!`)
     } catch (err) {
       console.error(err)
-      alert('Could not send exchange request. Please try again.')
+      toast.error('Could not send exchange request. Please try again.')
     }
   }
 
-  return (
-    <main role="main" aria-label="Skill Exchange" className="min-h-screen bg-gray-100 px-6 py-10">
-      {/* Header */}
-      <div className="max-w-6xl mx-auto mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Skill Exchange</h1>
-        <p className="text-gray-600 mt-1">
-          Find people to exchange skills and grow together. Data is saved in MongoDB.
-        </p>
+  const inputStyle = {
+    width: '100%',
+    background: 'var(--bg-surface-2)',
+    border: '1.5px solid var(--border)',
+    borderRadius: 'var(--radius-md)',
+    padding: '10px 14px',
+    fontSize: 14,
+    color: 'var(--text-primary)',
+    outline: 'none',
+    transition: 'border-color 200ms, box-shadow 200ms',
+    fontFamily: 'inherit',
+  }
 
-        {/* Explainer block */}
-        <div style={{
-          background: '#f5f3ff',
-          border: '1px solid #ddd6fe',
-          borderLeft: '4px solid #7c3aed',
-          borderRadius: '8px',
-          padding: '12px 16px',
-          marginTop: '16px'
-        }}>
-          <p style={{ margin: 0, fontSize: '0.875rem', color: '#4c1d95', lineHeight: 1.6 }}>
-            <strong>How Skill Exchange works:</strong> Offer a skill you have, find someone who needs it — and get something you need in return. No money changes hands. Match Score shows how well your skills align with theirs.
+  const labelStyle = {
+    display: 'block',
+    fontSize: 13,
+    fontWeight: 600,
+    color: 'var(--text-secondary)',
+    marginBottom: 6,
+  }
+
+  const otherEntries = entries.filter(u => u.email !== currentEmail)
+  const filteredEntries = searchQuery
+    ? otherEntries.filter(u =>
+        u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.skillOffered?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.skillWanted?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : otherEntries
+
+  return (
+    <main
+      role="main"
+      aria-label="Skill Exchange"
+      style={{ minHeight: '100vh', background: 'var(--bg-page)', paddingBottom: 48 }}
+    >
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 16px' }}>
+
+        {/* ── Header ── */}
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+            Skill Exchange
+          </h1>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>
+            Find your perfect learning partner. No money — just skills.
           </p>
         </div>
-      </div>
 
-      {/* Form */}
-      <div className="max-w-6xl mx-auto bg-white p-6 rounded-xl shadow-md mb-4">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Add Your Skill Exchange Profile
-        </h2>
-        {infoMessage && (
-          <div className="mb-3 text-sm bg-green-100 text-green-800 px-4 py-2 rounded-lg">
-            {infoMessage}
+        {/* ── Collapsible Info Banner ── */}
+        <div style={{
+          background: 'var(--primary-light)',
+          borderLeft: '4px solid var(--primary)',
+          borderRadius: `0 var(--radius-md) var(--radius-md) 0`,
+          marginBottom: 24,
+          overflow: 'hidden',
+        }}>
+          <button
+            onClick={() => setBannerOpen(!bannerOpen)}
+            style={{
+              width: '100%', padding: '12px 16px',
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--primary)', fontWeight: 600, fontSize: 14,
+            }}
+            aria-expanded={bannerOpen}
+          >
+            <ArrowLeftRight size={16} aria-hidden="true" />
+            How Skill Exchange works
+            <motion.span
+              animate={{ rotate: bannerOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}
+            >
+              <ChevronDown size={16} aria-hidden="true" />
+            </motion.span>
+          </button>
+          <AnimatePresence initial={false}>
+            {bannerOpen && (
+              <motion.div
+                key="banner-body"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                style={{ overflow: 'hidden' }}
+              >
+                <p style={{ padding: '0 16px 14px', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
+                  Offer a skill you have, find someone who needs it — and get something you need in return.
+                  No money changes hands. Your match score is automatically calculated based on how well your skills align with theirs.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* ── Profile Form ── */}
+        <div style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-lg)',
+          padding: 28,
+          marginBottom: 28,
+          boxShadow: 'var(--shadow-sm)',
+        }}>
+          <h2 style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 20px' }}>
+            Your Exchange Profile
+          </h2>
+
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+            {/* Name */}
+            <div>
+              <label htmlFor="se-name" style={labelStyle}>Your Name</label>
+              <input
+                id="se-name" type="text" name="name" value={form.name}
+                onChange={handleChange} required
+                placeholder="Your display name"
+                style={inputStyle}
+                onFocus={e => { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(91,79,232,0.12)' }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
+              />
+            </div>
+
+            {/* Location */}
+            <div>
+              <label htmlFor="se-location" style={labelStyle}>Location</label>
+              <select
+                id="se-location" name="location" value={form.location} onChange={handleChange}
+                style={inputStyle}
+                onFocus={e => { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(91,79,232,0.12)' }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
+              >
+                <option>Remote</option>
+                <option>On-site</option>
+                <option>Hybrid</option>
+              </select>
+            </div>
+
+            {/* Skill Offered */}
+            <div>
+              <label htmlFor="se-offered" style={labelStyle}>Skill You Offer</label>
+              <input
+                id="se-offered" type="text" name="skillOffered" value={form.skillOffered}
+                onChange={handleChange} required
+                placeholder="e.g. UI/UX Design, React, Python…"
+                style={inputStyle}
+                onFocus={e => { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(91,79,232,0.12)' }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
+              />
+            </div>
+
+            {/* Skill Wanted */}
+            <div>
+              <label htmlFor="se-wanted" style={labelStyle}>Skill You Want</label>
+              <input
+                id="se-wanted" type="text" name="skillWanted" value={form.skillWanted}
+                onChange={handleChange} required
+                placeholder="e.g. React JS, Data Analysis…"
+                style={inputStyle}
+                onFocus={e => { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(91,79,232,0.12)' }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
+              />
+            </div>
+
+            {/* Submit */}
+            <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                type="submit"
+                disabled={submitting}
+                style={{
+                  padding: '10px 24px',
+                  background: submitting ? 'var(--text-muted)' : 'var(--primary)',
+                  color: '#fff', border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: 14, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer',
+                  transition: 'background var(--transition-fast)',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}
+              >
+                {submitting ? (
+                  <><RefreshCw size={14} className="animate-spin" aria-hidden="true" /> Saving…</>
+                ) : (
+                  <><Send size={14} aria-hidden="true" /> Save Exchange Profile</>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* ── Recommended For You ── */}
+        {currentEmail && (loadingRecommendations || recommendations.length > 0) && (
+          <div style={{ marginBottom: 32 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Star size={18} color="#F59E0B" fill="#F59E0B" aria-hidden="true" />
+              Recommended For You
+            </h2>
+
+            {loadingRecommendations ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                {[1, 2, 3].map(i => (
+                  <div key={i} style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20 }}>
+                    <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                      <Skeleton height="44px" width="44px" style={{ borderRadius: '50%', flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                        <Skeleton height="14px" width="60%" className="mb-2" />
+                        <Skeleton height="11px" width="40%" />
+                      </div>
+                    </div>
+                    <Skeleton height="12px" width="80%" className="mb-2" />
+                    <Skeleton height="12px" width="70%" className="mb-4" />
+                    <Skeleton height="36px" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                {recommendations.map(match => (
+                  <MatchCard key={`rec-${match._id}`} match={match} onRequest={handleRequestExchange} isRec />
+                ))}
+              </div>
+            )}
           </div>
         )}
-        {error && (
-          <div className="mb-3 text-sm bg-red-100 text-red-800 px-4 py-2 rounded-lg">
+
+        {/* ── All Entries ── */}
+        {loading ? (
+          <LoadingSpinner message="Fetching exchanges…" />
+        ) : error ? (
+          <div style={{ padding: '12px 16px', background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid var(--danger-border)', borderRadius: 'var(--radius-md)', fontSize: 14 }}>
             {error}
           </div>
-        )}
-        <form
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          onSubmit={handleSubmit}
-        >
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Your name"
-            />
-          </div>
+        ) : otherEntries.length > 0 ? (
+          <>
+            {/* Search bar */}
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0, flex: 1 }}>
+                All Members
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 8 }}>({otherEntries.length})</span>
+              </h2>
+              <div style={{ position: 'relative' }}>
+                <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} aria-hidden="true" />
+                <input
+                  type="text" placeholder="Search skills or names…"
+                  value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                  style={{ ...inputStyle, paddingLeft: 36, width: 220 }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--primary)' }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                />
+              </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Location
-            </label>
-            <select
-              name="location"
-              value={form.location}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option>Remote</option>
-              <option>On-site</option>
-              <option>Hybrid</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Skill You Offer
-            </label>
-            <input
-              type="text"
-              name="skillOffered"
-              value={form.skillOffered}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="e.g. UI/UX Designer"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Skill You Want
-            </label>
-            <input
-              type="text"
-              name="skillWanted"
-              value={form.skillWanted}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="e.g. React JS"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Match Score (0–100, optional)
-            </label>
-            <input
-              type="number"
-              name="matchScore"
-              value={form.matchScore}
-              onChange={handleChange}
-              min="0"
-              max="100"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="e.g. 90"
-            />
-          </div>
-
-          <div className="flex items-end">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-5 py-2 text-sm rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-60"
-            >
-              {submitting ? 'Saving...' : 'Save Profile'}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Status + list */}
-      <div className="max-w-6xl mx-auto mb-4">
-        {loading && <LoadingSpinner message="Fetching your data…" />}
-        {!loading && !error && entries.filter(user => user.email !== currentEmail).length === 0 && (
+            {filteredEntries.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--text-muted)' }}>
+                <Search size={32} style={{ margin: '0 auto 12px', opacity: 0.4 }} aria-hidden="true" />
+                <div style={{ fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>No matches for "{searchQuery}"</div>
+                <div style={{ fontSize: 13 }}>Try a different skill or name</div>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                {filteredEntries.map(match => (
+                  <MatchCard key={match._id} match={match} onRequest={handleRequestExchange} />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
           <div style={{
-            textAlign: 'center',
-            padding: '48px 24px',
-            color: '#9ca3af'
+            textAlign: 'center', padding: '64px 24px',
+            background: 'var(--bg-surface)', border: '1px dashed var(--border-strong)',
+            borderRadius: 'var(--radius-lg)',
           }}>
-            <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔍</div>
-            <div style={{ fontWeight: 600, fontSize: '1rem', color: '#6b7280', marginBottom: '6px' }}>
-              No matches found yet
-            </div>
-            <div style={{ fontSize: '0.85rem' }}>
-              Try updating your skills on your Profile to improve your match score.
+            <User size={40} color="var(--text-muted)" style={{ margin: '0 auto 14px', opacity: 0.5 }} aria-hidden="true" />
+            <div style={{ fontWeight: 600, fontSize: 16, color: 'var(--text-secondary)', marginBottom: 6 }}>No matches found yet</div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+              Be the first! Save your exchange profile above to get discovered.
             </div>
           </div>
         )}
       </div>
-
-      {/* Recommended For You Section */}
-      {!loading && currentEmail && (loadingRecommendations || recommendations.length > 0) && (
-        <div className="max-w-6xl mx-auto mb-10">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            Recommended For You ⭐
-          </h2>
-          
-          {loadingRecommendations ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="bg-white p-6 rounded-2xl shadow-md animate-pulse">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-200"></div>
-                    <div className="space-y-2">
-                      <div className="h-4 bg-gray-200 rounded w-24"></div>
-                      <div className="h-3 bg-gray-200 rounded w-16"></div>
-                    </div>
-                  </div>
-                  <div className="space-y-3 mb-6">
-                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                  <div className="h-16 bg-gray-100 rounded mb-4"></div>
-                  <p className="text-sm text-center text-gray-400">Generating recommendations...</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recommendations.map((user) => (
-                <div
-                  key={`rec-${user._id}`}
-                  className="bg-white p-6 rounded-2xl shadow-lg border-2 border-indigo-100 hover:shadow-xl transition relative overflow-hidden"
-                >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -z-10 opacity-50"></div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-md">
-                        {user.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-800">{user.name}</p>
-                        <p className="text-xs text-gray-500">📍 {user.location}</p>
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'center' }}>
-                      <span className="text-xs font-bold bg-green-100 text-green-700 px-3 py-1.5 rounded-full shadow-sm">
-                        {user.matchScore ?? 80}% Match
-                      </span>
-                      <div style={{
-                        fontSize: '0.68rem',
-                        color: '#6b7280',
-                        marginTop: '2px',
-                        lineHeight: 1.3
-                      }}>
-                        skill<br/>match
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-600 mb-1">
-                      <span className="font-medium text-gray-800">Offers:</span>{' '}
-                      {user.skillOffered}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium text-gray-800">Wants:</span>{' '}
-                      {user.skillWanted}
-                    </p>
-                  </div>
-
-                  {user.aiInsight && (
-                    <div className="mb-4 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
-                      <p className="text-xs font-bold text-indigo-700 mb-1 flex items-center gap-1">
-                        ✨ AI Insight
-                      </p>
-                      <p className="text-sm text-gray-700 leading-relaxed mb-3">
-                        {user.aiInsight}
-                      </p>
-                      {user.suggestedExchange && (
-                        <>
-                          <p className="text-xs font-bold text-indigo-700 mb-1">
-                            Suggested Exchange:
-                          </p>
-                          <p className="text-sm font-medium text-gray-800">
-                            {user.suggestedExchange}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="flex gap-3">
-                    <button
-                      className="flex-1 text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium py-2 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition shadow-md hover:shadow-lg"
-                      onClick={() => handleRequestExchange(user)}
-                    >
-                      Send Request
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Cards */}
-      {!loading && entries.filter(user => user.email !== currentEmail).length > 0 && (
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {entries.filter(user => user.email !== currentEmail).map((user) => (
-            <div
-              key={user._id}
-              className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-lg">
-                  {user.name.charAt(0)}
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800">{user.name}</p>
-                  <p className="text-xs text-gray-500">📍 {user.location}</p>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-1">
-                  <span className="font-medium text-gray-800">Offers:</span>{' '}
-                  {user.skillOffered}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium text-gray-800">Wants:</span>{' '}
-                  {user.skillWanted}
-                </p>
-              </div>
-
-              <div className="flex justify-between items-center mb-4">
-                <div style={{ textAlign: 'center' }}>
-                  <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                    Match Score {user.matchScore ?? 80}%
-                  </span>
-                  <div style={{
-                    fontSize: '0.68rem',
-                    color: '#6b7280',
-                    marginTop: '2px',
-                    lineHeight: 1.3
-                  }}>
-                    skill<br/>match
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  className="flex-1 text-sm border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition"
-                  onClick={() => handleViewProfile(user)}
-                >
-                  View Profile
-                </button>
-                <button
-                  className="flex-1 text-sm bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
-                  onClick={() => handleRequestExchange(user)}
-                >
-                  Request Exchange
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </main>
   )
 }

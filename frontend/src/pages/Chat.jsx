@@ -12,6 +12,7 @@ import TaskPanel from '../components/workspace/TaskPanel';
 
 import { API_BASE_URL } from '../config/api.js';
 import { getSocket } from '../config/socket.js';
+import { toast } from 'sonner';
 let socket;
 
 const formatMessageTime = (dateString) => {
@@ -59,6 +60,7 @@ const Chat = () => {
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
   const [editingSession, setEditingSession] = useState(null);
   const [isSubmittingSession, setIsSubmittingSession] = useState(false);
+  const [sessionTrayOpen, setSessionTrayOpen] = useState(false);
 
   // Review states
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -89,6 +91,10 @@ const Chat = () => {
       const res = await fetch(`${API_BASE_URL}/api/sessions/room/${roomId}`);
       const data = await res.json();
       setRoomSessions(data);
+      // Auto-open the tray if there are pending sessions awaiting action
+      if (data.some(s => s.status === 'Pending')) {
+        setSessionTrayOpen(true);
+      }
     } catch (error) {
       console.error('Failed to fetch sessions', error);
     }
@@ -114,6 +120,8 @@ const Chat = () => {
     setActiveRoom(room);
     setActiveTab('chat');
     setShowMobileSidebar(false);
+    setSessionTrayOpen(false); // reset tray on room switch
+    setRoomSessions([]);       // clear stale sessions instantly
     
     // Auto-expand the other user accordion
     const otherUser = room.participants?.find((p) => p !== userEmail);
@@ -304,7 +312,7 @@ const Chat = () => {
 
         if (!res.ok) {
           const errData = await res.json();
-          alert(`Failed to create session: ${errData.error || errData.message}`);
+          toast.error(`Could not create session: ${errData.error || errData.message || 'Unknown error'}`);
           throw new Error('Failed to create session');
         }
 
@@ -315,6 +323,7 @@ const Chat = () => {
       setIsSessionModalOpen(false);
       setEditingSession(null);
       fetchRoomSessions(activeRoom._id);
+      toast.success(editingSession?._id ? 'Session updated!' : 'Session request sent!');
     } catch (error) {
       console.error(error);
     } finally {
@@ -328,8 +337,12 @@ const Chat = () => {
       const res = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/${action}`, { method: 'PUT' });
       if (!res.ok) throw new Error(`Failed to ${action} session`);
       fetchRoomSessions(activeRoom._id);
+      if (action === 'accept') toast.success('Session accepted!');
+      else if (action === 'cancel') toast.info('Session cancelled.');
+      else if (action === 'complete') toast.success('Session marked as completed!');
     } catch (error) {
       console.error('Failed session action', error);
+      toast.error(`Could not ${action} session. Please try again.`);
     }
   };
 
@@ -586,34 +599,111 @@ const Chat = () => {
 
             <WorkspaceTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
+            {/* ── Session Tray ── collapsible, sits between tabs and messages ── */}
+            {activeTab === 'chat' && roomSessions.length > 0 && (
+              <div style={{ borderBottom: '1px solid #e5e7eb', background: '#fff', flexShrink: 0 }}>
+                {/* Tray trigger bar */}
+                <button
+                  onClick={() => setSessionTrayOpen(o => !o)}
+                  style={{
+                    width: '100%', padding: '8px 16px',
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                  aria-expanded={sessionTrayOpen}
+                  aria-label="Toggle session panel"
+                >
+                  {/* Calendar icon */}
+                  <span style={{ fontSize: 14 }}>📅</span>
+
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
+                    Sessions
+                  </span>
+
+                  {/* Status dots */}
+                  <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                    {roomSessions.map(s => {
+                      const color =
+                        s.status === 'Pending'    ? '#F59E0B' :
+                        s.status === 'Scheduled'  ? '#6366F1' :
+                        s.status === 'Rescheduled'? '#0EA5E9' : '#9CA3AF';
+                      return (
+                        <span
+                          key={s._id}
+                          title={`${s.status} · ${s.date} ${s.time}`}
+                          style={{
+                            width: 8, height: 8, borderRadius: '50%',
+                            background: color, display: 'inline-block',
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Pending badge */}
+                  {roomSessions.filter(s => s.status === 'Pending').length > 0 && (
+                    <span style={{
+                      marginLeft: 2,
+                      padding: '1px 7px', borderRadius: 9999,
+                      background: '#FEF3C7', color: '#92400E',
+                      fontSize: 11, fontWeight: 700,
+                      border: '1px solid #FDE68A',
+                    }}>
+                      {roomSessions.filter(s => s.status === 'Pending').length} pending
+                    </span>
+                  )}
+
+                  {/* Chevron */}
+                  <span style={{
+                    marginLeft: 'auto',
+                    fontSize: 12, color: '#9CA3AF',
+                    transform: sessionTrayOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 200ms',
+                    display: 'inline-block',
+                  }}>▼</span>
+                </button>
+
+                {/* Expandable session list */}
+                <div style={{
+                  maxHeight: sessionTrayOpen ? 340 : 0,
+                  overflow: 'hidden',
+                  transition: 'max-height 280ms cubic-bezier(0.4,0,0.2,1)',
+                }}>
+                  <div style={{
+                    overflowY: 'auto', maxHeight: 340,
+                    padding: '0 12px 12px',
+                    display: 'flex', flexDirection: 'column', gap: 10,
+                  }}>
+                    {roomSessions.map(session => (
+                      <SessionCard
+                        key={session._id}
+                        session={session}
+                        userEmail={userEmail}
+                        onReschedule={(s) => openScheduleModal(s)}
+                        onAccept={(id) => handleSessionAction(id, 'accept')}
+                        onSuggestAlternative={(s) => openScheduleModal(s)}
+                        onCancel={(id) => handleSessionAction(id, 'cancel')}
+                        onComplete={(id) => handleSessionAction(id, 'complete')}
+                        onReview={(s) => {
+                          setReviewingSession({ ...s, reviewedUserEmail: activeOtherUserEmail });
+                          setIsReviewModalOpen(true);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'chat' && (
               <>
-                {/* Messages List */}
+                {/* Messages List — sessions no longer rendered here */}
                 <div 
                   className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col space-y-6"
                   onScroll={handleScroll}
                   ref={scrollContainerRef}
                 >
-                  {roomSessions.length > 0 && (
-                    <div className="flex flex-col gap-3 mb-2">
-                      {roomSessions.map(session => (
-                        <SessionCard
-                          key={session._id}
-                          session={session}
-                          userEmail={userEmail}
-                          onReschedule={(s) => openScheduleModal(s)}
-                          onAccept={(id) => handleSessionAction(id, 'accept')}
-                          onSuggestAlternative={(s) => openScheduleModal(s)}
-                          onCancel={(id) => handleSessionAction(id, 'cancel')}
-                          onComplete={(id) => handleSessionAction(id, 'complete')}
-                          onReview={(s) => {
-                            setReviewingSession({ ...s, reviewedUserEmail: activeOtherUserEmail });
-                            setIsReviewModalOpen(true);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
 
                   {messages.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-center p-8 max-w-md mx-auto">

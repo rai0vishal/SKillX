@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { toast } from 'sonner'
+import {
+  Hand, ArrowLeftRight, UserCircle, Bell, LayoutDashboard, Briefcase,
+  Brain, RefreshCw, Plus, Search, CalendarDays, Globe,
+  CheckCircle2, MessageCircle
+} from 'lucide-react'
 import LoadingSpinner from '../components/LoadingSpinner';
 import LearningRoadmap from '../components/LearningRoadmap'
 import MyLearningHub from '../components/MyLearningHub'
@@ -138,13 +145,13 @@ const Dashboard = () => {
       }))
 
       if (newStatus === 'accepted') {
-        alert('You accepted the exchange request ✅')
+        toast.success('Exchange request accepted!')
       } else if (newStatus === 'rejected') {
-        alert('You rejected the exchange request.')
+        toast.info('Exchange request rejected.')
       }
     } catch (err) {
       console.error(err)
-      alert('Could not update request. Please try again.')
+      toast.error('Could not update request. Please try again.')
     }
   }
 
@@ -200,13 +207,13 @@ const Dashboard = () => {
       }))
 
       if (newStatus === 'accepted') {
-        alert('You accepted this gig application ✅')
+        toast.success('Gig application accepted!')
       } else if (newStatus === 'rejected') {
-        alert('You rejected this gig application.')
+        toast.info('Gig application rejected.')
       }
     } catch (err) {
       console.error(err)
-      alert('Could not update gig application. Please try again.')
+      toast.error('Could not update gig application. Please try again.')
     }
   }
 
@@ -252,12 +259,17 @@ const Dashboard = () => {
 
   const handleSessionAction = async (sessionId, action) => {
     if (action === 'cancel' && !window.confirm('Are you sure you want to cancel this session?')) return
-    
+
     try {
-      await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/${action}`, { method: 'PUT' })
+      const res = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/${action}`, { method: 'PUT' })
+      if (!res.ok) throw new Error(`Failed to ${action} session`)
       fetchUpcomingSessions()
+      if (action === 'accept') toast.success('Session accepted!')
+      else if (action === 'cancel') toast.info('Session cancelled.')
+      else if (action === 'complete') toast.success('Session marked as completed!')
     } catch (error) {
       console.error('Failed session action', error)
+      toast.error(`Could not ${action} session. Please try again.`)
     }
   }
 
@@ -346,66 +358,68 @@ const Dashboard = () => {
   ).length
 
   return (
-    <main role="main" aria-label="Dashboard" className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
-      <div className="w-full max-w-6xl space-y-8">
+    <motion.main
+      role="main"
+      aria-label="Dashboard"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      style={{ minHeight: '100vh', background: 'var(--bg-page)', padding: '0 0 48px' }}
+    >
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         {/* Welcome Banner */}
         {userEmail && (
           <div style={{
-            background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
-            borderRadius: '12px',
-            padding: '20px 24px',
-            marginBottom: '0',
-            color: '#fff'
+            background: 'linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '22px 28px',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
           }}>
-            <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 700 }}>
-              👋 Welcome back, {storedUser?.name?.split(' ')[0] || 'there'}!
-            </h2>
-            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', opacity: 0.85 }}>
-              Here's what's happening with your skill exchanges today.
-            </p>
+            <Hand size={22} aria-hidden="true" style={{ opacity: 0.9, flexShrink: 0 }} />
+            <div>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>
+                Welcome back, {storedUser?.name?.split(' ')[0] || 'there'}!
+              </h2>
+              <p style={{ margin: '3px 0 0', fontSize: '0.85rem', opacity: 0.85 }}>
+                Here's what's happening with your skill exchanges today.
+              </p>
+            </div>
           </div>
         )}
 
         {/* Quick-Action Cards */}
         {userEmail && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '12px',
-            marginBottom: '0'
-          }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
             {[
-              { icon: '🤝', label: 'Browse Exchanges', desc: 'Find skills to trade', path: '/skill-exchage' },
-              { icon: '👤', label: 'Update Profile', desc: 'Keep your skills fresh', path: '/profile' },
-              { icon: '🔔', label: 'Notifications', desc: 'See latest activity', path: '/dashboard' }
-            ].map((item, i) => (
+              { Icon: ArrowLeftRight, label: 'Browse Exchanges', desc: 'Find skills to trade', path: '/skill-exchange', color: '#5B4FE8', bg: 'var(--primary-light)' },
+              { Icon: UserCircle,     label: 'Update Profile',   desc: 'Keep your skills fresh', path: '/profile', color: '#0EA5E9', bg: 'var(--info-bg)' },
+              { Icon: Bell,           label: 'Notifications',    desc: 'See latest activity', path: '/dashboard', color: '#F59E0B', bg: 'var(--warning-bg)' },
+            ].map(({ Icon, label, desc, path, color, bg }, i) => (
               <div
                 key={i}
                 role="button"
                 tabIndex={0}
-                aria-label={item.label}
-                onClick={() => navigate(item.path)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate(item.path);
-                  }
-                }}
-                style={{
-                  background: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '10px',
-                  padding: '14px 16px',
-                  cursor: 'pointer',
-                  transition: 'box-shadow 0.15s',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
-                }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(124,58,237,0.12)'}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'}
+                aria-label={label}
+                onClick={() => navigate(path)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(path); } }}
+                className="card card-spring"
+                style={{ cursor: 'pointer', padding: '16px' }}
               >
-                <div style={{ fontSize: '1.4rem', marginBottom: '6px' }}>{item.icon}</div>
-                <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#111827' }}>{item.label}</div>
-                <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '2px' }}>{item.desc}</div>
+                <div
+                  style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    marginBottom: 10,
+                  }}
+                  aria-hidden="true"
+                >
+                  <Icon size={18} color={color} strokeWidth={1.8} aria-hidden="true" />
+                </div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{label}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{desc}</div>
               </div>
             ))}
           </div>
@@ -413,14 +427,14 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Dashboard</h1>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>
               Overview of gigs, skill exchanges, your activity, and requests.
             </p>
             {userEmail && pendingReceivedCount > 0 && (
-              <p className="mt-2 text-sm text-purple-700 font-medium">
-                🔔 You have {pendingReceivedCount} pending skill exchange
-                request{pendingReceivedCount > 1 ? 's' : ''}.
+              <p style={{ marginTop: 8, fontSize: 13, color: 'var(--primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Bell size={13} aria-hidden="true" />
+                {pendingReceivedCount} pending skill exchange request{pendingReceivedCount > 1 ? 's' : ''}
               </p>
             )}
           </div>
@@ -434,40 +448,61 @@ const Dashboard = () => {
                 fetchAnalytics()
               }
             }}
-            className="self-start text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+            className="inline-flex items-center gap-2 self-start"
+            style={{
+              fontSize: 13, background: 'var(--bg-surface-2)', color: 'var(--text-secondary)',
+              border: '1px solid var(--border)', padding: '7px 14px',
+              borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 500,
+              transition: 'all var(--transition-fast)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-light)'; e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--border-strong)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-surface-2)'; e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)' }}
           >
+            <RefreshCw size={13} aria-hidden="true" />
             Refresh
           </button>
         </div>
 
         {/* Errors */}
         {error && (
-          <div className="text-sm bg-red-100 text-red-800 px-4 py-2 rounded-lg">
+          <div style={{ fontSize: 13, background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid var(--danger-border)', padding: '10px 16px', borderRadius: 'var(--radius-md)' }}>
             {error}
           </div>
         )}
 
         {/* --- Tab Navigation --- */}
         {userEmail && (
-          <div className="flex overflow-x-auto border-b border-gray-200 hide-scrollbar">
-            <div className="flex space-x-8 min-w-max px-2">
+          <div
+            className="flex overflow-x-auto hide-scrollbar"
+            style={{ borderBottom: '1px solid var(--border)' }}
+          >
+            <div className="flex min-w-max" style={{ gap: 4 }}>
               {[
-                { id: 'overview', label: 'Overview', icon: '📊' },
-                { id: 'network', label: 'Network', icon: '🤝' },
-                { id: 'gigs', label: 'Gigs', icon: '💼' },
-                { id: 'learning', label: 'Learning', icon: '🧠' },
-              ].map((tab) => (
+                { id: 'overview',  label: 'Overview',  Icon: LayoutDashboard },
+                { id: 'network',   label: 'Network',   Icon: ArrowLeftRight },
+                { id: 'gigs',      label: 'Gigs',      Icon: Briefcase },
+                { id: 'learning',  label: 'Learning',  Icon: Brain },
+              ].map(({ id, label, Icon }) => (
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'border-indigo-600 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '12px 14px',
+                    borderBottom: activeTab === id ? '2px solid var(--primary)' : '2px solid transparent',
+                    color: activeTab === id ? 'var(--primary)' : 'var(--text-secondary)',
+                    fontWeight: activeTab === id ? 600 : 500,
+                    fontSize: 13,
+                    background: 'none',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition-fast)',
+                    whiteSpace: 'nowrap',
+                  }}
+                  aria-selected={activeTab === id}
+                  role="tab"
                 >
-                  <span>{tab.icon}</span>
-                  {tab.label}
+                  <Icon size={14} aria-hidden="true" />
+                  {label}
                 </button>
               ))}
             </div>
@@ -487,48 +522,82 @@ const Dashboard = () => {
                 />
                 
                 {/* Quick Actions (New) */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Actions</h3>
+                <div className="card">
+                  <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>Quick Actions</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <Link to="/post-gig" className="flex flex-col items-center justify-center p-3 rounded-lg border border-indigo-100 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors text-center shadow-sm hover:shadow">
-                      <span className="text-xl mb-1">📝</span>
-                      <span className="text-xs font-bold">Post Gig</span>
-                    </Link>
-                    <Link to="/search" className="flex flex-col items-center justify-center p-3 rounded-lg border border-emerald-100 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors text-center shadow-sm hover:shadow">
-                      <span className="text-xl mb-1">🔍</span>
-                      <span className="text-xs font-bold">Find Skills</span>
-                    </Link>
-                    <Link to="/chat" className="flex flex-col items-center justify-center p-3 rounded-lg border border-purple-100 bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors text-center shadow-sm hover:shadow">
-                      <span className="text-xl mb-1">📅</span>
-                      <span className="text-xs font-bold">Schedule</span>
-                    </Link>
-                    <button onClick={() => setActiveTab('network')} className="flex flex-col items-center justify-center p-3 rounded-lg border border-blue-100 bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors text-center shadow-sm hover:shadow">
-                      <span className="text-xl mb-1">🌐</span>
-                      <span className="text-xs font-bold">Network</span>
+                    {[
+                      { to: '/post-gig', Icon: Plus,         label: 'Post Gig',    color: '#5B4FE8', bg: 'var(--primary-light)' },
+                      { to: '/search',   Icon: Search,        label: 'Find Skills', color: '#10B981', bg: '#ECFDF5' },
+                      { to: '/chat',     Icon: CalendarDays,  label: 'Schedule',    color: '#0EA5E9', bg: '#E0F2FE' },
+                    ].map(({ to, Icon, label, color, bg }) => (
+                      <Link
+                        key={to}
+                        to={to}
+                        style={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'center',
+                          justifyContent: 'center', gap: 8, padding: '12px 8px',
+                          borderRadius: 'var(--radius-md)', border: '1px solid var(--border)',
+                          background: bg, textDecoration: 'none',
+                          transition: 'all var(--transition-fast)',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)' }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+                      >
+                        <Icon size={18} color={color} strokeWidth={1.8} aria-hidden="true" />
+                        <span style={{ fontSize: 11, fontWeight: 700, color }}>{label}</span>
+                      </Link>
+                    ))}
+                    <button
+                      onClick={() => setActiveTab('network')}
+                      style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        justifyContent: 'center', gap: 8, padding: '12px 8px',
+                        borderRadius: 'var(--radius-md)', border: '1px solid var(--border)',
+                        background: '#E0F2FE', cursor: 'pointer',
+                        transition: 'all var(--transition-fast)',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)' }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+                    >
+                      <Globe size={18} color="#0EA5E9" strokeWidth={1.8} aria-hidden="true" />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#0EA5E9' }}>Network</span>
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* Quick Summary / Profile Stats */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Quick Summary</h3>
-                <div className="flex-1 flex flex-col justify-center gap-6">
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 text-2xl font-bold mb-3 shadow-inner">
+              <div className="card flex flex-col">
+                <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 16 }}>Quick Summary</h3>
+                <div className="flex-1 flex flex-col justify-center gap-5">
+                  <div style={{ textAlign: 'center' }}>
+                    <div
+                      style={{
+                        width: 56, height: 56, borderRadius: '50%',
+                        background: 'var(--primary-light)', color: 'var(--primary)',
+                        fontSize: 22, fontWeight: 800,
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        marginBottom: 10, border: '2px solid var(--border-strong)',
+                      }}
+                    >
                       {userEmail.charAt(0).toUpperCase()}
                     </div>
-                    <h2 className="text-lg font-bold text-gray-800">{userEmail.split('@')[0]}</h2>
-                    <p className="text-xs text-gray-500 mt-1">SkillX Member</p>
+                    <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{userEmail.split('@')[0]}</h2>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>SkillX Member</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-6">
-                    <div className="text-center">
-                      <p className="text-2xl font-black text-gray-800">{userStats.gigsCompleted}</p>
-                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mt-1">Gigs Done</p>
+                  <div
+                    style={{
+                      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
+                      borderTop: '1px solid var(--border)', paddingTop: 16,
+                    }}
+                  >
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{userStats.gigsCompleted}</p>
+                      <p style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginTop: 2 }}>Gigs Done</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-black text-gray-800">{userStats.skillExchanges}</p>
-                      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mt-1">Exchanges</p>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{userStats.skillExchanges}</p>
+                      <p style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginTop: 2 }}>Exchanges</p>
                     </div>
                   </div>
                 </div>
@@ -552,10 +621,10 @@ const Dashboard = () => {
             </div>
 
             {!loadingSessions && upcomingSessions.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-6">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex justify-between items-center">
-                  <span>Upcoming Sessions List</span>
-                  <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs font-bold">{upcomingSessions.length}</span>
+              <div className="card" style={{ marginTop: 24 }}>
+                <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Upcoming Sessions</span>
+                  <span className="badge badge-exchange">{upcomingSessions.length}</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {upcomingSessions.map(session => (
@@ -589,7 +658,12 @@ const Dashboard = () => {
 
         {/* --- NETWORK TAB --- */}
         {userEmail && activeTab === 'network' && (
-          <div className="space-y-8">
+          <motion.div
+            className="space-y-8"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
             {stats.matches && stats.matches.length > 0 && (
               <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-xl p-6 md:p-8 text-white relative overflow-hidden">
                 <div className="absolute -right-20 -top-20 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
@@ -629,8 +703,8 @@ const Dashboard = () => {
               </div>
             )}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl shadow-md p-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">Skill Exchange Requests For You</h2>
+              <div className="card">
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>Skill Exchange Requests For You</h2>
                 {loadingRequests ? (
                   <LoadingSpinner message="Fetching your data…" />
                 ) : requests.received.length === 0 ? (
@@ -666,8 +740,8 @@ const Dashboard = () => {
                   </>
                 )}
               </div>
-              <div className="bg-white rounded-2xl shadow-md p-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">Skill Exchange Requests You Sent</h2>
+              <div className="card">
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>Skill Exchange Requests You Sent</h2>
                 {loadingRequests ? (
                   <LoadingSpinner message="Fetching your data…" />
                 ) : requests.sent.length === 0 ? (
@@ -686,15 +760,20 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* --- GIGS TAB --- */}
         {userEmail && activeTab === 'gigs' && (
-          <div className="space-y-8">
+          <motion.div
+            className="space-y-8"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl shadow-md p-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">Gig Applications For Your Gigs</h2>
+              <div className="card">
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>Gig Applications For Your Gigs</h2>
                 {loadingGigApps ? (
                   <LoadingSpinner message="Fetching your data…" />
                 ) : gigApplications.received.length === 0 ? (
@@ -718,8 +797,8 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-              <div className="bg-white rounded-2xl shadow-md p-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">Gig Applications You Sent</h2>
+              <div className="card">
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>Gig Applications You Sent</h2>
                 {loadingGigApps ? (
                   <LoadingSpinner message="Fetching your data…" />
                 ) : gigApplications.sent.length === 0 ? (
@@ -738,7 +817,7 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* --- LEARNING TAB --- */}
@@ -780,7 +859,7 @@ const Dashboard = () => {
         sessionId={reviewingSession?._id}
         reviewedUserEmail={reviewingSession?.reviewedUserEmail}
       />
-    </main>
+    </motion.main>
   )
 }
 

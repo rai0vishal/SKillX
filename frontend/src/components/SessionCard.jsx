@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, userEmail, onAccept, onSuggestAlternative }) => {
   const [timeLeft, setTimeLeft] = useState('');
-  const location = useLocation();
-  const isChat = location.pathname.includes('/chat');
 
   useEffect(() => {
     if (session.status !== 'Scheduled' && session.status !== 'Rescheduled') {
@@ -185,7 +183,8 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
         </div>
       )}
 
-      {isPending && isChat && (
+      {/* Pending session — Accept / Suggest Alternative / Reject */}
+      {isPending && (
         <div className="flex gap-2 pt-2 border-t border-gray-50 mt-4">
           {isReceiver ? (
             <>
@@ -193,14 +192,16 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
                 onClick={() => onAccept(session._id)}
                 className="flex-1 text-sm font-semibold py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors shadow-sm"
               >
-                Accept
+                ✓ Accept
               </button>
-              <button
-                onClick={() => onSuggestAlternative(session)}
-                className="flex-1 text-sm font-semibold py-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
-              >
-                Suggest Alternative
-              </button>
+              {onSuggestAlternative && (
+                <button
+                  onClick={() => onSuggestAlternative(session)}
+                  className="flex-1 text-sm font-semibold py-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
+                >
+                  Suggest Alternative
+                </button>
+              )}
               <button
                 onClick={() => onCancel(session._id)}
                 className="px-3 text-sm font-semibold py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
@@ -210,7 +211,7 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
             </>
           ) : (
             <div className="flex flex-1 items-center justify-between">
-              <span className="text-sm font-medium text-gray-500 italic">Waiting for response...</span>
+              <span className="text-sm font-medium text-gray-500 italic">Waiting for their confirmation…</span>
               <button
                 onClick={() => onCancel(session._id)}
                 className="text-xs font-semibold py-1.5 px-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { generateRoadmapAPI, saveRoadmapAPI } from '../api/roadmapAPI';
+import { Compass, Save, RefreshCw, Trash2, Sprout, Sparkles, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const MAX_REGENERATIONS = 5;
 
@@ -97,7 +98,7 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
                 Saving...
               </>
             ) : (
-              <>💾 Save Roadmap</>
+              <><Save size={14} aria-hidden="true" /> Save Roadmap</>
             )}
           </button>
 
@@ -110,19 +111,19 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
                 : 'bg-white text-indigo-600 border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 hover:-translate-y-0.5 hover:shadow-xl'
               }`}
           >
-            🔄 Generate Another ({MAX_REGENERATIONS - regenCount} left)
+            <RefreshCw size={14} aria-hidden="true" /> Generate Another ({MAX_REGENERATIONS - regenCount} left)
           </button>
 
           <button
             onClick={handleDiscard}
             className="px-5 py-2.5 rounded-xl font-bold bg-white text-red-500 border-2 border-red-200 hover:border-red-400 hover:bg-red-50 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2"
           >
-            🗑️ Discard
+            <Trash2 size={14} aria-hidden="true" /> Discard
           </button>
         </div>
 
         {/* Preview Card */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-indigo-50">
+        <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-md)', overflow: 'hidden', border: '1px solid var(--border)' }}>
           {/* Header */}
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 sm:p-8 text-white relative">
             <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl transform translate-x-10 -translate-y-10"></div>
@@ -140,12 +141,13 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
           </div>
 
           {/* Milestones */}
-          <div className="p-6 sm:p-8 bg-gray-50/50">
+          <div style={{ padding: '24px 32px', background: 'var(--bg-surface-2)' }}>
             <div className="space-y-6">
               {rm.milestones && rm.milestones.map((milestone, idx) => (
                 <div
                   key={idx}
-                  className="group flex flex-col sm:flex-row gap-4 sm:gap-6 p-5 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all duration-300"
+                  className="group flex flex-col sm:flex-row gap-4 sm:gap-6 p-5 rounded-xl border transition-all duration-300"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
                 >
                   <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-full bg-indigo-50 text-indigo-600 font-bold text-sm border-2 border-indigo-100 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
                     W {idx + 1}
@@ -178,7 +180,7 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
                     {milestone.projectSuggestion && (
                       <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 group-hover:bg-emerald-100 transition-colors duration-300">
                         <div className="flex gap-2 items-start">
-                          <span className="text-emerald-500 mt-0.5">🚀</span>
+                          <Sparkles size={14} color="var(--primary)" aria-hidden="true" />
                           <div>
                             <p className="text-xs font-bold text-emerald-800 uppercase tracking-wide">Suggested Project</p>
                             <p className="text-sm text-emerald-700 mt-0.5 font-medium">{milestone.projectSuggestion}</p>
@@ -197,35 +199,36 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-md p-6 lg:p-8 mt-6">
+    <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-sm)', padding: '24px 32px', marginTop: 24, border: '1px solid var(--border)' }}>
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <span className="text-3xl">🧭</span> AI Learning Roadmap Generator
-          </h2>
-          <p className="text-gray-500 text-sm mt-1">
-            Let AI create a customized, step-by-step learning path for your career goals.
-          </p>
-        </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Compass size={24} color="var(--primary)" aria-hidden="true" />
+            </div>
+            <div>
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>AI Learning Roadmap Generator</h2>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '2px 0 0' }}>Let AI create a customized, step-by-step learning path for your career goals.</p>
+            </div>
+          </div>
       </div>
 
       {error && (
-        <div className="mb-6 bg-red-50 text-red-700 p-4 rounded-xl border border-red-100 flex items-start gap-3">
-          <span className="text-xl">⚠️</span>
-          <p className="text-sm font-medium mt-0.5">{error}</p>
+        <div style={{ marginBottom: 24, background: 'var(--danger-bg)', color: 'var(--danger)', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--danger-border)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          <AlertTriangle size={18} aria-hidden="true" />
+          <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{error}</p>
         </div>
       )}
 
       {successMsg && (
-        <div className="mb-6 bg-emerald-50 text-emerald-700 p-4 rounded-xl border border-emerald-100 flex items-start gap-3">
-          <span className="text-xl">✅</span>
-          <p className="text-sm font-medium mt-0.5">{successMsg}</p>
+        <div style={{ marginBottom: 24, background: 'var(--success-bg)', color: 'var(--success)', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--success-border)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          <CheckCircle size={18} aria-hidden="true" />
+          <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{successMsg}</p>
         </div>
       )}
 
       {/* Generate Form — only show when no preview is active */}
       {!preview && (
-        <form onSubmit={handleGenerate} className="bg-gray-50 rounded-2xl p-4 sm:p-6 border border-gray-100 relative overflow-hidden group">
+        <form onSubmit={handleGenerate} style={{ background: 'var(--bg-surface-2)', borderRadius: 'var(--radius-lg)', padding: '16px 20px', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
           <div className="absolute top-0 left-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 h-full"></div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
@@ -236,7 +239,9 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
                 placeholder="e.g., Become a MERN Stack Developer, Learn UI/UX Design..."
-                className="w-full h-12 px-4 rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 outline-none transition-shadow hover:shadow-md"
+                style={{ width: '100%', height: 48, padding: '0 16px', background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: 14, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', transition: 'border-color 200ms' }}
+                onFocus={e => { e.target.style.borderColor = 'var(--primary)' }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
                 disabled={isGenerating}
               />
             </div>
@@ -259,7 +264,7 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
                 </>
               ) : (
                 <>
-                  <span className="text-lg">✨</span> Generate Roadmap
+                  <><Sparkles size={16} aria-hidden="true" /> Generate Roadmap</>
                 </>
               )}
             </button>
@@ -280,12 +285,10 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
 
       {/* Empty state — only show when no preview and not generating */}
       {!preview && !isGenerating && (
-        <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-300 mt-6">
-          <div className="text-5xl mb-4">🌱</div>
-          <h3 className="text-lg font-bold text-gray-800 mb-2">No Roadmap Generated</h3>
-          <p className="text-gray-500 text-sm max-w-md mx-auto">
-            Enter a learning goal above and let AI map out your learning journey!
-          </p>
+        <div style={{ textAlign: 'center', padding: '56px 16px', background: 'var(--bg-surface-2)', borderRadius: 'var(--radius-lg)', border: '1.5px dashed var(--border-strong)', marginTop: 24 }}>
+          <Sprout size={44} color="var(--text-muted)" style={{ margin: '0 auto 16px', opacity: 0.5 }} aria-hidden="true" />
+          <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>No Roadmap Generated</h3>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 360, margin: '0 auto' }}>Enter a learning goal above and let AI map out your learning journey!</p>
         </div>
       )}
     </div>
