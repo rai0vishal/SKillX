@@ -8,15 +8,15 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     return (
       <div style={{
-        background: 'var(--bg-surface)',
+        background: 'var(--surface)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-md)',
         padding: '10px 14px',
         boxShadow: 'var(--shadow-md)',
         fontSize: 13,
       }}>
-        <p style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{payload[0].name}</p>
-        <p style={{ color: 'var(--text-secondary)' }}>{payload[0].value}% ({payload[0].payload.rawCount} exchanges)</p>
+        <p style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>{payload[0].name}</p>
+        <p style={{ color: 'var(--text-muted)' }}>{payload[0].value}% ({payload[0].payload.rawCount} exchanges)</p>
       </div>
     );
   }
@@ -25,7 +25,7 @@ const CustomTooltip = ({ active, payload }) => {
 
 const SkillDistributionChart = ({ data, loading }) => {
   const cardStyle = {
-    background: 'var(--bg-surface)',
+    background: 'var(--surface)',
     border: '1px solid var(--border)',
     borderRadius: 'var(--radius-lg)',
     padding: 24,
@@ -40,7 +40,7 @@ const SkillDistributionChart = ({ data, loading }) => {
         <div style={{
           width: 40, height: 40, borderRadius: '50%',
           border: '3px solid var(--border)',
-          borderTopColor: 'var(--primary)',
+          borderTopColor: 'var(--accent)',
           animation: 'spin 0.8s linear infinite',
         }} />
       </div>
@@ -51,7 +51,7 @@ const SkillDistributionChart = ({ data, loading }) => {
     return (
       <div style={{ ...cardStyle, alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 0 }}>
         <BarChart2 size={40} color="var(--text-muted)" style={{ marginBottom: 16, opacity: 0.5 }} aria-hidden="true" />
-        <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+        <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
           Skills Exchanged
         </p>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
@@ -67,7 +67,7 @@ const SkillDistributionChart = ({ data, loading }) => {
         <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
           Skills Exchanged
         </p>
-        <p style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>
+        <p style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)' }}>
           {data.reduce((acc, curr) => acc + (curr.rawCount || 0), 0)}
           <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 6 }}>total skills</span>
         </p>
@@ -87,7 +87,7 @@ const SkillDistributionChart = ({ data, loading }) => {
             <Tooltip content={<CustomTooltip />} />
             <Legend
               verticalAlign="bottom" height={36} iconType="circle"
-              wrapperStyle={{ fontSize: '12px', color: 'var(--text-secondary)' }}
+              wrapperStyle={{ fontSize: '12px', color: 'var(--text-muted)' }}
             />
           </PieChart>
         </ResponsiveContainer>

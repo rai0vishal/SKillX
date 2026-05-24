@@ -1,5 +1,5 @@
 import React from 'react'
-import { Bell } from 'lucide-react'
+const Bell = ({ size, color, style }) => <i className="ti ti-bell" style={{ fontSize: size || 'inherit', color, ...style }} />
 import { useState, useEffect, useRef } from 'react'
 import NotificationDropdown from './NotificationDropdown'
 import { connectSocket } from '../config/socket'

@@ -58,7 +58,7 @@ const TaskPanel = ({ workspaceId, currentUserEmail }) => {
   };
 
   const handleDelete = async (taskId) => {
-    if (!window.confirm('Delete this task?')) return;
+    if (!true) return;
     try {
       await fetch(`${API_BASE_URL}/api/workspace/task/${taskId}`, { method: 'DELETE' });
       setTasks((prev) => prev.filter((t) => t._id !== taskId));

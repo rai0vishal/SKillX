@@ -15,6 +15,16 @@ const userProfileSchema = new mongoose.Schema(
     location: { type: String, default: '' },
     bio: { type: String, default: '' },
     skills: { type: [String], default: [] },
+    socialLinks: {
+      type: [
+        {
+          type: { type: String, enum: ['github', 'linkedin', 'portfolio', 'twitter'], required: true },
+          url: { type: String, required: true },
+          label: { type: String }
+        }
+      ],
+      default: []
+    },
     stats: {
       gigsPosted: { type: Number, default: 0 },
       gigsCompleted: { type: Number, default: 0 },

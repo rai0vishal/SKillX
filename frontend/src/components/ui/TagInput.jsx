@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X } from 'lucide-react'
+const X = ({ size, color, style }) => <i className="ti ti-x" style={{ fontSize: size || 'inherit', color, ...style }} />
 
 export function TagInput({ value = [], onChange, placeholder = 'Add a skill…' }) {
   const [input, setInput] = useState('')
@@ -29,7 +29,7 @@ export function TagInput({ value = [], onChange, placeholder = 'Add a skill…' 
       style={{
         display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center',
         minHeight: 44, padding: '8px 10px',
-        background: 'var(--bg-surface-2)', border: '1.5px solid var(--border)',
+        background: 'var(--surface2)', border: '1.5px solid var(--border)',
         borderRadius: 'var(--radius-md)', cursor: 'text',
         transition: 'border-color 200ms',
       }}
@@ -41,7 +41,7 @@ export function TagInput({ value = [], onChange, placeholder = 'Add a skill…' 
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 4,
             padding: '3px 10px', borderRadius: 9999,
-            background: 'var(--primary-light)', color: 'var(--primary)',
+            background: 'var(--accent-dim)', color: 'var(--accent)',
             border: '1px solid var(--border-strong)', fontSize: 12, fontWeight: 500,
           }}
         >
@@ -52,7 +52,7 @@ export function TagInput({ value = [], onChange, placeholder = 'Add a skill…' 
             aria-label={`Remove ${tag}`}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--primary)', padding: 0,
+              color: 'var(--accent)', padding: 0,
               display: 'flex', alignItems: 'center',
             }}
           >
@@ -69,7 +69,7 @@ export function TagInput({ value = [], onChange, placeholder = 'Add a skill…' 
         style={{
           flex: 1, minWidth: 120,
           background: 'none', border: 'none', outline: 'none',
-          fontSize: 13, color: 'var(--text-primary)', fontFamily: 'inherit',
+          fontSize: 13, color: 'var(--text)', fontFamily: 'inherit',
         }}
       />
     </div>

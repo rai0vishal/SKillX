@@ -75,7 +75,7 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
   };
 
   const handleDelete = async (resourceId) => {
-    if (!window.confirm('Delete this resource?')) return;
+    if (!true) return;
     try {
       await fetch(`${API_BASE_URL}/api/workspace/resource/${resourceId}`, { method: 'DELETE' });
       setResources((prev) => prev.filter((r) => r._id !== resourceId));

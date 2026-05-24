@@ -4,7 +4,6 @@ import SessionModal from '../components/SessionModal';
 import SessionCard from '../components/SessionCard';
 import ReviewModal from '../components/ReviewModal';
 
-// Workspace Components
 import WorkspaceTabs from '../components/workspace/WorkspaceTabs';
 import ResourcesPanel from '../components/workspace/ResourcesPanel';
 import NotesPanel from '../components/workspace/NotesPanel';
@@ -40,16 +39,19 @@ const groupMessagesByDate = (messages) => {
 
 const Chat = () => {
   const [rooms, setRooms] = useState([]);
+  
+  // New UI states
+  const [selectedPerson, setSelectedPerson] = useState(null);
   const [activeRoom, setActiveRoom] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState({});
   const [onlineUsers, setOnlineUsers] = useState({});
-  const [expandedUsers, setExpandedUsers] = useState({});
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
   const isScrolledToBottomRef = useRef(true);
-  const [showMobileSidebar, setShowMobileSidebar] = useState(true);
 
   // Workspace States
   const [activeTab, setActiveTab] = useState('chat');
@@ -91,7 +93,7 @@ const Chat = () => {
       const res = await fetch(`${API_BASE_URL}/api/sessions/room/${roomId}`);
       const data = await res.json();
       setRoomSessions(data);
-      // Auto-open the tray if there are pending sessions awaiting action
+      // Auto-open tray if pending sessions
       if (data.some(s => s.status === 'Pending')) {
         setSessionTrayOpen(true);
       }
@@ -112,29 +114,33 @@ const Chat = () => {
     }
   }, []);
 
-  // Use useCallback so we can call handleRoomClick inside fetchRooms safely
   const handleRoomClick = useCallback((room) => {
     if (activeRoomRef.current && activeRoomRef.current._id !== room._id) {
       socket?.emit('leaveRoom', activeRoomRef.current._id);
     }
     setActiveRoom(room);
     setActiveTab('chat');
-    setShowMobileSidebar(false);
-    setSessionTrayOpen(false); // reset tray on room switch
-    setRoomSessions([]);       // clear stale sessions instantly
+    setSessionTrayOpen(false);
+    setRoomSessions([]);
     
-    // Auto-expand the other user accordion
-    const otherUser = room.participants?.find((p) => p !== userEmail);
-    if (otherUser) {
-      setExpandedUsers((prev) => ({ ...prev, [otherUser]: true }));
-    }
+    // Clear unread
+    setRooms(prev => prev.map(r => r._id === room._id ? { ...r, unreadCount: 0 } : r));
 
     fetchMessages(room._id);
     fetchRoomSessions(room._id);
     fetchWorkspace(room._id, room.participants || []);
 
     socket?.emit('joinRoom', room._id);
-  }, [userEmail, fetchMessages, fetchRoomSessions, fetchWorkspace]);
+  }, [fetchMessages, fetchRoomSessions, fetchWorkspace]);
+
+  const handlePersonClick = (personEmail) => {
+    setSelectedPerson(personEmail);
+    // Auto-select the first room for this person
+    const personRooms = groupedRooms[personEmail] || [];
+    if (personRooms.length > 0) {
+      handleRoomClick(personRooms[0]);
+    }
+  };
 
   const fetchRooms = useCallback(async () => {
     try {
@@ -145,6 +151,8 @@ const Chat = () => {
       if (location.state?.roomId) {
         const targetRoom = data.find(r => r._id === location.state.roomId);
         if (targetRoom) {
+          const otherUser = targetRoom.participants.find((p) => p !== userEmail);
+          setSelectedPerson(otherUser);
           handleRoomClick(targetRoom);
           window.history.replaceState({}, document.title);
         }
@@ -182,7 +190,6 @@ const Chat = () => {
     socket.on('userStoppedTyping', ({ email }) => setTypingUsers(prev => ({ ...prev, [email]: false })));
     socket.on('userStatusChange', ({ email, isOnline }) => setOnlineUsers(prev => ({ ...prev, [email]: isOnline })));
 
-    // Do NOT disconnect socket on cleanup in Chat.jsx as it breaks the singleton for other components
     return () => {
       socket.off('receiveMessage');
       socket.off('userTyping');
@@ -193,7 +200,6 @@ const Chat = () => {
 
   useEffect(() => {
     if (userEmail) {
-      // eslint-disable-next-line
       fetchRooms();
     }
   }, [userEmail, fetchRooms]);
@@ -204,20 +210,6 @@ const Chat = () => {
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'auto' }), 100);
     }
   }, [activeRoom]);
-
-  const getContextIcon = (type) => {
-    switch (type) {
-      case 'gig': return '📁';
-      case 'exchange': return '🔄';
-      case 'session': return '📅';
-      case 'video_session': return '🎥';
-      default: return '💬';
-    }
-  };
-
-  const toggleUserExpand = (email) => {
-    setExpandedUsers((prev) => ({ ...prev, [email]: !prev[email] }));
-  };
 
   const groupedRooms = useMemo(() => {
     return rooms.reduce((acc, room) => {
@@ -332,7 +324,6 @@ const Chat = () => {
   };
 
   const handleSessionAction = async (sessionId, action) => {
-    if (action === 'cancel' && !window.confirm('Are you sure you want to cancel/reject this session?')) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/${action}`, { method: 'PUT' });
       if (!res.ok) throw new Error(`Failed to ${action} session`);
@@ -374,422 +365,383 @@ const Chat = () => {
     return `${Math.floor(diff / 86400)}d ago`;
   };
 
-  if (!user) return <div className="p-8 text-center text-gray-500">Please sign in to view messages.</div>;
+  if (!user) return <div className="p-8 text-center text-[var(--text-muted)]">Please sign in to view messages.</div>;
 
   const activeOtherUserEmail = activeRoom?.participants?.find((p) => p !== userEmail);
   const isOtherUserOnline = onlineUsers[activeOtherUserEmail];
   const groupedMessages = groupMessagesByDate(messages);
 
+  const filteredPeople = Object.keys(groupedRooms).filter(email => 
+    email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <main role="main" aria-label="Messages" className="flex h-[calc(100vh-160px)] bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 max-w-6xl mx-auto font-sans relative">
+    <main style={{ height: 'calc(100vh - 56px)', display: 'grid', gridTemplateColumns: '230px 200px 1fr', background: 'var(--bg)', overflow: 'hidden' }}>
       
-      {/* ── Left Sidebar ─────────────────────────────────────────────────── */}
-      <section role="complementary" aria-label="Conversation list" className={`w-full md:w-80 border-r border-gray-100 bg-gray-50/40 flex flex-col transition-transform duration-300 ${showMobileSidebar ? 'block' : 'hidden md:flex'}`}>
-        <div className="p-5 border-b border-gray-200 bg-white shadow-sm flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-lg">
-            {userEmail[0].toUpperCase()}
+      {/* ── COL 1: PEOPLE LIST ── */}
+      <section style={{ background: 'var(--panel)', borderRight: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column', zIndex: 10 }}>
+        <div style={{ padding: '16px', borderBottom: '0.5px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="ti ti-messages" style={{ color: 'var(--accent)' }} /> Messages
+            </h2>
+            <button style={{ width: 28, height: 28, borderRadius: '50%', background: 'transparent', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)', cursor: 'pointer' }}>
+              <i className="ti ti-pencil" style={{ fontSize: 14 }} />
+            </button>
           </div>
-          <div>
-            <h2 className="text-base font-bold text-gray-800 leading-tight">Messages</h2>
-            <p className="text-xs text-gray-500 font-medium">You have {rooms.length} active threads</p>
+          <div style={{ position: 'relative' }}>
+            <i className="ti ti-search" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%', padding: '8px 12px 8px 32px',
+                background: 'var(--surface2)', border: '0.5px solid var(--border)',
+                borderRadius: 8, fontSize: 13, color: 'var(--text)', outline: 'none'
+              }}
+            />
           </div>
         </div>
-        
-        <div className="flex-1 overflow-y-auto">
-          {rooms.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '48px 20px',
-              color: '#9ca3af'
-            }}>
-              <div style={{ fontSize: '2rem', marginBottom: '10px' }}>💬</div>
-              <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#6b7280', marginBottom: '4px' }}>
-                No conversations yet
-              </div>
-              <div style={{ fontSize: '0.78rem' }}>
-                Start a skill exchange to begin messaging.
-              </div>
-            </div>
+
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {filteredPeople.length === 0 ? (
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>No conversations</div>
           ) : (
-            Object.keys(groupedRooms).map((otherUser) => {
-              const isExpanded = !!expandedUsers[otherUser];
-              const userRooms = groupedRooms[otherUser];
-              const isOnline = onlineUsers[otherUser];
+            filteredPeople.map(email => {
+              const personRooms = groupedRooms[email];
+              const isActive = selectedPerson === email;
+              const isOnline = onlineUsers[email];
+              const totalUnread = personRooms.reduce((sum, r) => sum + (r.unreadCount || 0), 0);
+              
+              const gigChats = personRooms.filter(r => r.referenceType === 'gig').length;
+              const exChats = personRooms.filter(r => r.referenceType === 'exchange').length;
+              const threadSummaries = [];
+              if (gigChats > 0) threadSummaries.push('Gig chat');
+              if (exChats > 0) threadSummaries.push('Exchange chat');
 
               return (
-                <div key={otherUser} className="border-b border-gray-100 last:border-b-0">
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Toggle conversations with ${otherUser.split('@')[0]}`}
-                    aria-expanded={isExpanded}
-                    onClick={() => toggleUserExpand(otherUser)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        toggleUserExpand(otherUser);
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '10px 14px',
-                      cursor: 'pointer',
-                      background: isExpanded ? '#f5f3ff' : 'transparent',
-                      borderLeft: isExpanded ? '3px solid #7c3aed' : '3px solid transparent',
-                      transition: 'background 0.15s'
-                    }}
-                    onMouseEnter={e => { if (!isExpanded) e.currentTarget.style.background = '#fafafa' }}
-                    onMouseLeave={e => { if (!isExpanded) e.currentTarget.style.background = 'transparent' }}
-                  >
-                    {/* Avatar with initials */}
+                <div
+                  key={email}
+                  onClick={() => handlePersonClick(email)}
+                  style={{
+                    display: 'flex', alignItems: 'center', padding: '12px 16px', gap: 12,
+                    cursor: 'pointer', background: isActive ? 'var(--surface2)' : 'transparent',
+                    borderRight: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                    borderBottom: '0.5px solid var(--border)'
+                  }}
+                >
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+                      {email[0].toUpperCase()}
+                    </div>
                     <div style={{
-                      width: '40px', height: '40px', borderRadius: '50%',
-                      background: '#ede9fe', color: '#5b21b6',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 700, fontSize: '0.85rem', flexShrink: 0,
-                      position: 'relative'
-                    }}>
-                      {otherUser[0].toUpperCase()}
-                      <span className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-gray-300'}`}></span>
-                    </div>
-
-                    {/* Name + preview */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 600, fontSize: '0.875rem', color: '#111827' }}>
-                          {otherUser.split('@')[0]}
-                        </span>
-                        <span style={{ fontSize: '0.68rem', color: '#9ca3af', flexShrink: 0, marginLeft: '8px' }}>
-                          {userRooms[0]?.lastMessageAt ? timeAgo(userRooms[0].lastMessageAt) : ''}
-                        </span>
-                      </div>
-                      <div style={{
-                        fontSize: '0.78rem', color: '#6b7280',
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-                      }}>
-                        {isOnline ? (
-                          <span style={{ color: '#059669', fontWeight: 600 }}>● Online</span>
-                        ) : (
-                          <span>{userRooms.length} Active Thread{userRooms.length !== 1 && 's'}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Unread badge */}
-                    {userRooms.some(r => r.unreadCount > 0) && (
-                      <div role="status" aria-label={`${userRooms.reduce((sum, r) => sum + (r.unreadCount || 0), 0)} unread messages`} style={{
-                        minWidth: '20px',
-                        height: '20px',
-                        borderRadius: '999px',
-                        background: '#7c3aed',
-                        color: '#fff',
-                        fontSize: '0.68rem',
-                        fontWeight: 700,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '0 5px',
-                        flexShrink: 0
-                      }}>
-                        {(() => {
-                          const total = userRooms.reduce((sum, r) => sum + (r.unreadCount || 0), 0);
-                          return total > 99 ? '99+' : total;
-                        })()}
-                      </div>
-                    )}
-
-                    <span className={`text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-90 text-indigo-500' : 'rotate-0'}`} style={{ flexShrink: 0 }}>
-                      ▶
-                    </span>
+                      position: 'absolute', bottom: -2, right: -2, width: 10, height: 10,
+                      borderRadius: '50%', background: isOnline ? 'var(--green)' : 'var(--text-dim)',
+                      border: '2px solid var(--panel)'
+                    }} />
                   </div>
-
-                  <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-96' : 'max-h-0'}`}>
-                    <div className="bg-gray-50/60 py-2 px-3 space-y-1">
-                      {userRooms.map((room) => {
-                        const isCurrentActive = activeRoom?._id === room._id;
-                        return (
-                          <div
-                            key={room._id}
-                            role="button"
-                            tabIndex={0}
-                            aria-label={`Open conversation for ${room.title || 'Gig'}`}
-                            aria-pressed={isCurrentActive}
-                            // eslint-disable-next-line react-hooks/refs
-                            onClick={() => handleRoomClick(room)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                handleRoomClick(room);
-                              }
-                            }}
-                            className={`p-3 rounded-xl cursor-pointer transition-all flex items-start gap-3 group ${isCurrentActive
-                                ? 'bg-indigo-600 text-white shadow-md'
-                                : 'hover:bg-white text-gray-700 hover:shadow-sm border border-transparent hover:border-gray-200'
-                              }`}
-                          >
-                            <span className="text-lg shrink-0 mt-0.5 opacity-90">{getContextIcon(room.referenceType)}</span>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex justify-between items-baseline mb-0.5">
-                                <p className={`text-sm truncate font-bold ${isCurrentActive ? 'text-white' : 'text-gray-900'}`}>
-                                  {room.title || `${room.referenceType === 'gig' ? 'Gig' : 'Exchange'} Chat`}
-                                </p>
-                              </div>
-                              <p className={`text-xs truncate ${isCurrentActive ? 'text-indigo-200' : 'text-gray-500'}`}>
-                                View conversation
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {email.split('@')[0]}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-dim)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {threadSummaries.join(' · ')}
                     </div>
                   </div>
+                  {totalUnread > 0 && (
+                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>
+                      {totalUnread}
+                    </div>
+                  )}
                 </div>
-              );
+              )
             })
           )}
         </div>
       </section>
 
-      {/* ── Main Chat Area ───────────────────────────────────────────────── */}
-      <section role="region" aria-label="Chat window" className={`flex-1 flex flex-col bg-slate-50 relative ${!showMobileSidebar ? 'block' : 'hidden md:flex'}`}>
+      {/* ── COL 2: THREADS ── */}
+      <section style={{ background: 'var(--bg)', borderRight: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column', zIndex: 5 }}>
+        {selectedPerson ? (
+          <>
+            <div style={{ padding: '24px 16px', borderBottom: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ position: 'relative', marginBottom: 12 }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--accent-dim)', color: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700 }}>
+                  {selectedPerson[0].toUpperCase()}
+                </div>
+                <div style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: '50%', background: onlineUsers[selectedPerson] ? 'var(--green)' : 'var(--text-dim)', border: '2px solid var(--bg)' }} />
+              </div>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{selectedPerson.split('@')[0]}</h3>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{onlineUsers[selectedPerson] ? 'Online' : 'Offline'}</div>
+            </div>
+
+            <div style={{ padding: '16px', flex: 1, overflowY: 'auto' }}>
+              <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-dim)', fontWeight: 600, letterSpacing: '0.05em', marginBottom: 12 }}>
+                Conversations
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(groupedRooms[selectedPerson] || []).map(room => {
+                  const isActive = activeRoom?._id === room._id;
+                  const isGig = room.referenceType === 'gig';
+                  const bgColor = isGig ? 'var(--amber-bg)' : 'var(--accent-dim)';
+                  const iconColor = isGig ? 'var(--amber)' : 'var(--accent-light)';
+                  const iconClass = isGig ? 'ti-briefcase' : 'ti-arrows-exchange';
+                  const title = isGig ? 'Gig chat' : 'Exchange chat';
+
+                  return (
+                    <div
+                      key={room._id}
+                      onClick={() => handleRoomClick(room)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12, padding: 12,
+                        background: isActive ? 'var(--surface2)' : 'var(--surface)',
+                        border: '0.5px solid', borderColor: isActive ? 'var(--accent)' : 'var(--border)',
+                        borderRadius: 10, cursor: 'pointer'
+                      }}
+                    >
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: bgColor, color: iconColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <i className={`ti ${iconClass}`} style={{ fontSize: 16 }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{title}</span>
+                          <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>{timeAgo(room.lastMessageAt)}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {room.title || 'Tap to view'}
+                          </span>
+                          {room.unreadCount > 0 && (
+                            <span style={{ background: 'var(--accent)', color: 'white', fontSize: 9, padding: '2px 6px', borderRadius: 10, fontWeight: 700 }}>
+                              {room.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Sessions Mini-card */}
+              {roomSessions.length > 0 && (
+                <div style={{ marginTop: 24, background: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '10px 12px' }}>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-dim)', fontWeight: 600, letterSpacing: '0.05em', marginBottom: 8 }}>
+                    Sessions
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                    {roomSessions.map(s => {
+                      const color = s.status === 'Completed' ? 'var(--green)' : s.status === 'Pending' ? 'var(--amber)' : 'var(--border-strong)';
+                      return <div key={s._id} style={{ width: 10, height: 10, borderRadius: '50%', background: color }} title={s.status} />;
+                    })}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>
+                    {roomSessions.filter(s => s.status === 'Completed').length} done · {roomSessions.filter(s => s.status === 'Pending').length} pending · {roomSessions.filter(s => s.status === 'Scheduled' || s.status === 'Rescheduled').length} upcoming
+                  </div>
+                  <button onClick={() => openScheduleModal()} style={{ width: '100%', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 6, padding: '6px 0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                    Schedule session
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 12 }}>
+            Select someone to view threads
+          </div>
+        )}
+      </section>
+
+      {/* ── COL 3: CHAT AREA ── */}
+      <section style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {activeRoom ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b border-gray-200 bg-white shadow-sm z-10 flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0">
-                <button 
-                  aria-label="Back to conversation list"
-                  onClick={() => setShowMobileSidebar(true)}
-                  className="md:hidden p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-lg mr-1 transition-colors"
-                >
-                  ←
-                </button>
-                <div className="w-11 h-11 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-lg relative flex-shrink-0 shadow-sm">
-                  {activeOtherUserEmail?.[0]?.toUpperCase()}
-                  <span className={`absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-white rounded-full ${isOtherUserOnline ? 'bg-emerald-500' : 'bg-gray-400'}`}></span>
+            <div style={{ padding: '16px 24px', borderBottom: '0.5px solid var(--border)', background: 'var(--panel)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: activeRoom.referenceType === 'gig' ? 'var(--amber-bg)' : 'var(--accent-dim)', color: activeRoom.referenceType === 'gig' ? 'var(--amber)' : 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <i className={`ti ${activeRoom.referenceType === 'gig' ? 'ti-briefcase' : 'ti-arrows-exchange'}`} style={{ fontSize: 18 }} />
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-gray-900 text-base leading-tight truncate">
-                    {activeOtherUserEmail}
+                <div>
+                  <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+                    {activeRoom.referenceType === 'gig' ? 'Gig chat' : 'Exchange chat'} — {activeOtherUserEmail.split('@')[0]}
                   </h3>
-                  <div className="flex items-center gap-1.5 text-xs font-medium mt-0.5">
-                    {isOtherUserOnline ? (
-                      <span className="text-emerald-600 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Online
-                      </span>
-                    ) : (
-                      <span className="text-gray-500">Offline</span>
-                    )}
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span>{activeRoom.title || 'General Discussion'}</span>
+                    <span style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', padding: '2px 8px', borderRadius: 20, fontSize: 10 }}>
+                      {activeRoom.referenceType === 'gig' ? 'Gig' : 'Skill trade'}
+                    </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => openScheduleModal()}
-                  className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-indigo-600 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2 group"
-                >
-                  <span className="group-hover:scale-110 transition-transform">📅</span> 
-                  <span className="hidden sm:inline">Schedule Session</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button style={{ width: 32, height: 32, borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', cursor: 'pointer' }}>
+                  <i className="ti ti-search" />
+                </button>
+                <button style={{ width: 32, height: 32, borderRadius: 8, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', cursor: 'pointer' }}>
+                  <i className="ti ti-dots" />
+                </button>
+                <button onClick={() => openScheduleModal()} style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent)', color: 'var(--accent-light)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  Schedule session
                 </button>
               </div>
             </div>
 
-            <WorkspaceTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
-            {/* ── Session Tray ── collapsible, sits between tabs and messages ── */}
-            {activeTab === 'chat' && roomSessions.length > 0 && (
-              <div style={{ borderBottom: '1px solid #e5e7eb', background: '#fff', flexShrink: 0 }}>
-                {/* Tray trigger bar */}
+            {/* Chat Tabs - Replacing WorkspaceTabs visual manually since requested to restyle */}
+            <div style={{ display: 'flex', padding: '0 24px', background: 'var(--panel)', borderBottom: '0.5px solid var(--border)' }}>
+              {['Chat', 'Resources', 'Notes', 'Tasks'].map(tab => (
                 <button
-                  onClick={() => setSessionTrayOpen(o => !o)}
+                  key={tab}
+                  onClick={() => setActiveTab(tab.toLowerCase())}
                   style={{
-                    width: '100%', padding: '8px 16px',
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    textAlign: 'left',
+                    padding: '12px 16px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                    color: activeTab === tab.toLowerCase() ? 'var(--accent-light)' : 'var(--text-muted)',
+                    borderBottom: activeTab === tab.toLowerCase() ? '2px solid var(--accent)' : '2px solid transparent'
                   }}
-                  aria-expanded={sessionTrayOpen}
-                  aria-label="Toggle session panel"
                 >
-                  {/* Calendar icon */}
-                  <span style={{ fontSize: 14 }}>📅</span>
+                  {tab}
+                </button>
+              ))}
+            </div>
 
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>
-                    Sessions
-                  </span>
-
-                  {/* Status dots */}
-                  <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+            {/* Session Strip */}
+            {activeTab === 'chat' && roomSessions.length > 0 && (
+              <div style={{ background: 'var(--surface)', borderBottom: '0.5px solid var(--border)', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>
+                    <i className="ti ti-calendar" style={{ fontSize: 14 }} /> Sessions
+                  </div>
+                  <div style={{ display: 'flex', gap: 4 }}>
                     {roomSessions.map(s => {
-                      const color =
-                        s.status === 'Pending'    ? '#F59E0B' :
-                        s.status === 'Scheduled'  ? '#6366F1' :
-                        s.status === 'Rescheduled'? '#0EA5E9' : '#9CA3AF';
-                      return (
-                        <span
-                          key={s._id}
-                          title={`${s.status} · ${s.date} ${s.time}`}
-                          style={{
-                            width: 8, height: 8, borderRadius: '50%',
-                            background: color, display: 'inline-block',
-                          }}
-                        />
-                      );
+                      const color = s.status === 'Completed' ? 'var(--green)' : s.status === 'Pending' ? 'var(--amber)' : 'var(--text-dim)';
+                      return <div key={s._id} style={{ width: 8, height: 8, borderRadius: '50%', background: color }} title={s.status} />;
                     })}
                   </div>
-
-                  {/* Pending badge */}
-                  {roomSessions.filter(s => s.status === 'Pending').length > 0 && (
-                    <span style={{
-                      marginLeft: 2,
-                      padding: '1px 7px', borderRadius: 9999,
-                      background: '#FEF3C7', color: '#92400E',
-                      fontSize: 11, fontWeight: 700,
-                      border: '1px solid #FDE68A',
-                    }}>
-                      {roomSessions.filter(s => s.status === 'Pending').length} pending
-                    </span>
-                  )}
-
-                  {/* Chevron */}
-                  <span style={{
-                    marginLeft: 'auto',
-                    fontSize: 12, color: '#9CA3AF',
-                    transform: sessionTrayOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 200ms',
-                    display: 'inline-block',
-                  }}>▼</span>
-                </button>
-
-                {/* Expandable session list */}
-                <div style={{
-                  maxHeight: sessionTrayOpen ? 340 : 0,
-                  overflow: 'hidden',
-                  transition: 'max-height 280ms cubic-bezier(0.4,0,0.2,1)',
-                }}>
-                  <div style={{
-                    overflowY: 'auto', maxHeight: 340,
-                    padding: '0 12px 12px',
-                    display: 'flex', flexDirection: 'column', gap: 10,
-                  }}>
-                    {roomSessions.map(session => (
-                      <SessionCard
-                        key={session._id}
-                        session={session}
-                        userEmail={userEmail}
-                        onReschedule={(s) => openScheduleModal(s)}
-                        onAccept={(id) => handleSessionAction(id, 'accept')}
-                        onSuggestAlternative={(s) => openScheduleModal(s)}
-                        onCancel={(id) => handleSessionAction(id, 'cancel')}
-                        onComplete={(id) => handleSessionAction(id, 'complete')}
-                        onReview={(s) => {
-                          setReviewingSession({ ...s, reviewedUserEmail: activeOtherUserEmail });
-                          setIsReviewModalOpen(true);
-                        }}
-                      />
-                    ))}
-                  </div>
                 </div>
+                {roomSessions.filter(s => s.status === 'Pending').length > 0 && (
+                  <button onClick={() => setSessionTrayOpen(!sessionTrayOpen)} style={{ background: 'var(--amber-bg)', border: '1px solid var(--amber)', color: 'var(--amber)', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                    {roomSessions.filter(s => s.status === 'Pending').length} pending action
+                  </button>
+                )}
+              </div>
+            )}
+            {/* Session tray toggle content */}
+            {activeTab === 'chat' && sessionTrayOpen && roomSessions.length > 0 && (
+              <div style={{ padding: 16, background: 'var(--surface2)', borderBottom: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 200, overflowY: 'auto' }}>
+                {roomSessions.map(session => (
+                  <SessionCard
+                    key={session._id}
+                    session={session}
+                    userEmail={userEmail}
+                    onReschedule={(s) => openScheduleModal(s)}
+                    onAccept={(id) => handleSessionAction(id, 'accept')}
+                    onSuggestAlternative={(s) => openScheduleModal(s)}
+                    onCancel={(id) => handleSessionAction(id, 'cancel')}
+                    onComplete={(id) => handleSessionAction(id, 'complete')}
+                    onReview={(s) => {
+                      setReviewingSession({ ...s, reviewedUserEmail: activeOtherUserEmail });
+                      setIsReviewModalOpen(true);
+                    }}
+                  />
+                ))}
               </div>
             )}
 
+            {/* Content Area */}
             {activeTab === 'chat' && (
               <>
-                {/* Messages List — sessions no longer rendered here */}
-                <div 
-                  className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col space-y-6"
-                  onScroll={handleScroll}
-                  ref={scrollContainerRef}
-                >
-
+                <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }} onScroll={handleScroll} ref={scrollContainerRef}>
                   {messages.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center text-center p-8 max-w-md mx-auto">
-                      <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-4xl mb-6 shadow-sm border border-indigo-100/50">💬</div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">Start Conversation</h3>
-                      <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                        Choose a thread and begin exchanging ideas. Share resources, schedule sessions, and collaborate smoothly.
-                      </p>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24 }}>
+                      <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 16 }}>💬</div>
+                      <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>Start Conversation</h3>
+                      <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Send a message to begin.</p>
                     </div>
                   ) : (
                     Object.keys(groupedMessages).map(dateLabel => (
-                      <div key={dateLabel} className="space-y-4">
-                        {/* Date Separator */}
-                        <div className="flex items-center justify-center sticky top-2 z-10 my-4">
-                          <span className="bg-white/90 backdrop-blur-sm text-gray-500 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm border border-gray-100">
+                      <React.Fragment key={dateLabel}>
+                        <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0' }}>
+                          <span style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 20, padding: '4px 12px', fontSize: 10, fontWeight: 600, color: 'var(--text-dim)' }}>
                             {dateLabel}
                           </span>
                         </div>
-                        
-                        {/* Messages for Date */}
-                        {groupedMessages[dateLabel].map((msg, index) => {
+                        {groupedMessages[dateLabel].map((msg, idx) => {
+                          const isSystem = msg.type === 'system';
                           const isMe = msg.senderEmail === userEmail;
-                          const showAvatar = !isMe && (index === 0 || groupedMessages[dateLabel][index - 1].senderEmail !== msg.senderEmail);
+                          const showAvatar = !isMe && (idx === 0 || groupedMessages[dateLabel][idx - 1].senderEmail !== msg.senderEmail);
+
+                          if (isSystem) {
+                            return (
+                              <div key={idx} style={{ display: 'flex', justifyContent: 'center', margin: '8px 0' }}>
+                                <div style={{ background: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <i className="ti ti-info-circle" style={{ color: 'var(--text-dim)', fontSize: 14 }} />
+                                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{msg.text}</span>
+                                </div>
+                              </div>
+                            );
+                          }
 
                           return (
-                            <div key={index} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
-                              <div className="flex gap-3 max-w-[85%] sm:max-w-[70%]">
-                                {!isMe && (
-                                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs mt-auto">
-                                    {showAvatar ? activeOtherUserEmail[0].toUpperCase() : ''}
-                                  </div>
-                                )}
-                                <div
-                                  className={`px-4 py-2.5 rounded-2xl shadow-sm relative group transition-all ${
-                                    isMe
-                                      ? 'bg-indigo-600 text-white rounded-br-sm'
-                                      : 'bg-white text-gray-900 rounded-bl-sm border border-gray-200'
-                                  }`}
-                                >
-                                  <p className="text-sm leading-relaxed break-words">{msg.text}</p>
-                                  <div className={`flex items-center justify-end gap-1.5 mt-1.5 ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
-                                    <span className="text-[10px] font-medium tracking-wide">
-                                      {formatMessageTime(msg.createdAt)}
-                                    </span>
-                                    {isMe && (
-                                      <span className="text-[10px]">
-                                        {msg.readStatus ? '✓✓' : '✓'}
-                                      </span>
-                                    )}
-                                  </div>
+                            <div key={idx} style={{ display: 'flex', width: '100%', justifyContent: isMe ? 'flex-end' : 'flex-start', gap: 8 }}>
+                              {!isMe && (
+                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--text)', opacity: showAvatar ? 1 : 0, alignSelf: 'flex-end' }}>
+                                  {activeOtherUserEmail[0].toUpperCase()}
+                                </div>
+                              )}
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', maxWidth: '70%' }}>
+                                <div style={{
+                                  background: isMe ? 'var(--accent-dim)' : 'var(--surface)',
+                                  border: '0.5px solid', borderColor: isMe ? 'var(--accent)' : 'var(--border)',
+                                  borderRadius: 12, borderBottomRightRadius: isMe ? 2 : 12, borderBottomLeftRadius: !isMe ? 2 : 12,
+                                  padding: '10px 14px', color: isMe ? 'var(--accent-light)' : 'var(--text)', fontSize: 13, lineHeight: 1.5, wordBreak: 'break-word'
+                                }}>
+                                  {msg.text}
+                                </div>
+                                <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  {formatMessageTime(msg.createdAt)}
+                                  {isMe && <span>{msg.readStatus ? '✓✓' : '✓'}</span>}
                                 </div>
                               </div>
                             </div>
                           );
                         })}
-                      </div>
+                      </React.Fragment>
                     ))
                   )}
 
-                  {/* Typing Indicator */}
                   {typingUsers[activeOtherUserEmail] && (
-                    <div className="flex justify-start">
-                      <div className="flex gap-3 max-w-[85%]">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs mt-auto">
-                          {activeOtherUserEmail[0].toUpperCase()}
-                        </div>
-                        <div className="bg-white px-4 py-3 rounded-2xl rounded-bl-sm border border-gray-200 shadow-sm flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                        </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 8 }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--text)', alignSelf: 'flex-end' }}>
+                        {activeOtherUserEmail[0].toUpperCase()}
+                      </div>
+                      <div style={{ background: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 12, borderBottomLeftRadius: 2, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-dim)', animation: 'bounce 1s infinite' }} />
+                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-dim)', animation: 'bounce 1s infinite 0.2s' }} />
+                        <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-dim)', animation: 'bounce 1s infinite 0.4s' }} />
                       </div>
                     </div>
                   )}
-                  <div ref={messagesEndRef} className="h-1" />
+                  <div ref={messagesEndRef} style={{ height: 1 }} />
                 </div>
 
-                {/* Message Input Area */}
-                <div className="p-4 bg-white border-t border-gray-200">
-                  <form onSubmit={handleSendMessage} className="flex gap-3 items-end max-w-4xl mx-auto">
-                    <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-400 transition-all shadow-inner">
+                {/* Input Area */}
+                <div style={{ padding: '16px 24px', background: 'var(--panel)', borderTop: '0.5px solid var(--border)' }}>
+                  <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
+                    <div style={{
+                      flex: 1, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 10,
+                      display: 'flex', alignItems: 'flex-end', padding: '8px 12px', transition: 'border-color 0.2s'
+                    }} onFocus={(e) => e.currentTarget.style.borderColor = 'var(--accent)'} onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}>
+                      <button type="button" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4, marginRight: 4 }}><i className="ti ti-paperclip" style={{ fontSize: 18 }} /></button>
                       <textarea
                         value={newMessage}
                         onChange={handleTyping}
-                        placeholder="Type your message..."
-                        className="w-full bg-transparent px-4 py-3 text-sm border-none focus:outline-none resize-none min-h-[44px] max-h-32"
+                        placeholder="Type a message..."
+                        style={{
+                          flex: 1, background: 'transparent', border: 'none', color: 'var(--text)', fontSize: 13,
+                          resize: 'none', outline: 'none', maxHeight: 100, minHeight: 20, fontFamily: 'inherit', padding: '2px 0'
+                        }}
                         rows={1}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
@@ -798,47 +750,33 @@ const Chat = () => {
                           }
                         }}
                       />
+                      <button type="button" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4, marginLeft: 4 }}><i className="ti ti-mood-smile" style={{ fontSize: 18 }} /></button>
                     </div>
                     <button
                       type="submit"
                       disabled={!newMessage.trim()}
-                      aria-label="Send message"
-                      className="bg-indigo-600 text-white h-11 px-6 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
+                      style={{
+                        width: 38, height: 38, borderRadius: '50%', background: 'var(--accent)', color: 'white',
+                        border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: newMessage.trim() ? 'pointer' : 'not-allowed',
+                        opacity: newMessage.trim() ? 1 : 0.5, flexShrink: 0
+                      }}
                     >
-                      Send
+                      <i className="ti ti-send" style={{ fontSize: 16 }} />
                     </button>
                   </form>
                 </div>
               </>
             )}
 
-            {activeTab === 'resources' && workspace && (
-              <div className="flex-1 overflow-hidden bg-white"><ResourcesPanel workspaceId={workspace._id} currentUserEmail={userEmail} /></div>
-            )}
-            {activeTab === 'notes' && workspace && (
-              <div className="flex-1 overflow-hidden bg-white"><NotesPanel workspaceId={workspace._id} initialNotes={workspace.notes} /></div>
-            )}
-            {activeTab === 'tasks' && workspace && (
-              <div className="flex-1 overflow-hidden bg-white"><TaskPanel workspaceId={workspace._id} currentUserEmail={userEmail} /></div>
-            )}
+            {activeTab === 'resources' && workspace && <div style={{ flex: 1, overflow: 'hidden' }}><ResourcesPanel workspaceId={workspace._id} currentUserEmail={userEmail} /></div>}
+            {activeTab === 'notes' && workspace && <div style={{ flex: 1, overflow: 'hidden' }}><NotesPanel workspaceId={workspace._id} initialNotes={workspace.notes} /></div>}
+            {activeTab === 'tasks' && workspace && <div style={{ flex: 1, overflow: 'hidden' }}><TaskPanel workspaceId={workspace._id} currentUserEmail={userEmail} /></div>}
           </>
         ) : (
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#9ca3af',
-            padding: '48px'
-          }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🗨️</div>
-            <div style={{ fontWeight: 600, fontSize: '1rem', color: '#6b7280', marginBottom: '6px' }}>
-              Select a conversation
-            </div>
-            <div style={{ fontSize: '0.82rem', textAlign: 'center' }}>
-              Choose someone from the left to start chatting.
-            </div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)' }}>
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, marginBottom: 16 }}>🗨️</div>
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>No thread selected</h2>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Select a conversation to start chatting</p>
           </div>
         )}
       </section>

@@ -5,15 +5,15 @@ import Skeleton from '../ui/Skeleton';
 const getActivityConfig = (type) => {
   const t = (type || '').toLowerCase();
   if (t.includes('session') || t.includes('complete')) {
-    return { Icon: CheckCircle2, bg: 'var(--success-bg)', color: 'var(--success)' };
+    return { Icon: CheckCircle2, bg: 'var(--green-bg)', color: 'var(--green)' };
   }
   if (t.includes('review') || t.includes('rating')) {
     return { Icon: Star, bg: '#FFFBEB', color: '#F59E0B' };
   }
   if (t.includes('exchange') || t.includes('request')) {
-    return { Icon: ArrowLeftRight, bg: 'var(--primary-light)', color: 'var(--primary)' };
+    return { Icon: ArrowLeftRight, bg: 'var(--accent-dim)', color: 'var(--accent)' };
   }
-  return { Icon: Leaf, bg: 'var(--bg-surface-2)', color: 'var(--text-secondary)' };
+  return { Icon: Leaf, bg: 'var(--surface2)', color: 'var(--text-muted)' };
 };
 
 const RecentActivity = ({ activities, loading }) => {
@@ -47,11 +47,11 @@ const RecentActivity = ({ activities, loading }) => {
       {activities.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '36px 16px',
-          background: 'var(--bg-surface-2)', borderRadius: 'var(--radius-md)',
+          background: 'var(--surface2)', borderRadius: 'var(--radius-md)',
           border: '1px dashed var(--border-strong)',
         }}>
           <Leaf size={28} color="var(--text-muted)" style={{ margin: '0 auto 10px' }} aria-hidden="true" />
-          <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 14, marginBottom: 4 }}>
+          <div style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: 14, marginBottom: 4 }}>
             No activity yet
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
@@ -79,10 +79,10 @@ const RecentActivity = ({ activities, loading }) => {
                   <Icon size={15} color={color} strokeWidth={2} aria-hidden="true" />
                 </div>
                 <div className="flex-1">
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px', lineHeight: 1.4 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px', lineHeight: 1.4 }}>
                     {activity.title}
                   </p>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }} className="line-clamp-1">
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }} className="line-clamp-1">
                     {activity.description}
                   </p>
                   <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>

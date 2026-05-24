@@ -123,7 +123,7 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
         </div>
 
         {/* Preview Card */}
-        <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-md)', overflow: 'hidden', border: '1px solid var(--border)' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-md)', overflow: 'hidden', border: '1px solid var(--border)' }}>
           {/* Header */}
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 sm:p-8 text-white relative">
             <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl transform translate-x-10 -translate-y-10"></div>
@@ -141,13 +141,13 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
           </div>
 
           {/* Milestones */}
-          <div style={{ padding: '24px 32px', background: 'var(--bg-surface-2)' }}>
+          <div style={{ padding: '24px 32px', background: 'var(--surface2)' }}>
             <div className="space-y-6">
               {rm.milestones && rm.milestones.map((milestone, idx) => (
                 <div
                   key={idx}
                   className="group flex flex-col sm:flex-row gap-4 sm:gap-6 p-5 rounded-xl border transition-all duration-300"
-                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+                  style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
                 >
                   <div className="flex-shrink-0 flex items-center justify-center w-14 h-14 rounded-full bg-indigo-50 text-indigo-600 font-bold text-sm border-2 border-indigo-100 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
                     W {idx + 1}
@@ -180,7 +180,7 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
                     {milestone.projectSuggestion && (
                       <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 group-hover:bg-emerald-100 transition-colors duration-300">
                         <div className="flex gap-2 items-start">
-                          <Sparkles size={14} color="var(--primary)" aria-hidden="true" />
+                          <Sparkles size={14} color="var(--accent)" aria-hidden="true" />
                           <div>
                             <p className="text-xs font-bold text-emerald-800 uppercase tracking-wide">Suggested Project</p>
                             <p className="text-sm text-emerald-700 mt-0.5 font-medium">{milestone.projectSuggestion}</p>
@@ -199,28 +199,28 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
   };
 
   return (
-    <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-sm)', padding: '24px 32px', marginTop: 24, border: '1px solid var(--border)' }}>
+    <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-sm)', padding: '24px 32px', marginTop: 24, border: '1px solid var(--border)' }}>
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Compass size={24} color="var(--primary)" aria-hidden="true" />
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Compass size={24} color="var(--accent)" aria-hidden="true" />
             </div>
             <div>
-              <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>AI Learning Roadmap Generator</h2>
-              <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '2px 0 0' }}>Let AI create a customized, step-by-step learning path for your career goals.</p>
+              <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', margin: 0 }}>AI Learning Roadmap Generator</h2>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: '2px 0 0' }}>Let AI create a customized, step-by-step learning path for your career goals.</p>
             </div>
           </div>
       </div>
 
       {error && (
-        <div style={{ marginBottom: 24, background: 'var(--danger-bg)', color: 'var(--danger)', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--danger-border)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <div style={{ marginBottom: 24, background: 'var(--red-bg)', color: 'var(--red)', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--red)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
           <AlertTriangle size={18} aria-hidden="true" />
           <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{error}</p>
         </div>
       )}
 
       {successMsg && (
-        <div style={{ marginBottom: 24, background: 'var(--success-bg)', color: 'var(--success)', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--success-border)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <div style={{ marginBottom: 24, background: 'var(--green-bg)', color: 'var(--green)', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--green)', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
           <CheckCircle size={18} aria-hidden="true" />
           <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{successMsg}</p>
         </div>
@@ -228,7 +228,7 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
 
       {/* Generate Form — only show when no preview is active */}
       {!preview && (
-        <form onSubmit={handleGenerate} style={{ background: 'var(--bg-surface-2)', borderRadius: 'var(--radius-lg)', padding: '16px 20px', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
+        <form onSubmit={handleGenerate} style={{ background: 'var(--surface2)', borderRadius: 'var(--radius-lg)', padding: '16px 20px', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
           <div className="absolute top-0 left-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 h-full"></div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
@@ -239,8 +239,8 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
                 placeholder="e.g., Become a MERN Stack Developer, Learn UI/UX Design..."
-                style={{ width: '100%', height: 48, padding: '0 16px', background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: 14, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', transition: 'border-color 200ms' }}
-                onFocus={e => { e.target.style.borderColor = 'var(--primary)' }}
+                style={{ width: '100%', height: 48, padding: '0 16px', background: 'var(--surface)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: 14, color: 'var(--text)', outline: 'none', fontFamily: 'inherit', transition: 'border-color 200ms' }}
+                onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
                 onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
                 disabled={isGenerating}
               />
@@ -285,9 +285,9 @@ const LearningRoadmap = ({ userEmail, onRoadmapSaved }) => {
 
       {/* Empty state — only show when no preview and not generating */}
       {!preview && !isGenerating && (
-        <div style={{ textAlign: 'center', padding: '56px 16px', background: 'var(--bg-surface-2)', borderRadius: 'var(--radius-lg)', border: '1.5px dashed var(--border-strong)', marginTop: 24 }}>
+        <div style={{ textAlign: 'center', padding: '56px 16px', background: 'var(--surface2)', borderRadius: 'var(--radius-lg)', border: '1.5px dashed var(--border-strong)', marginTop: 24 }}>
           <Sprout size={44} color="var(--text-muted)" style={{ margin: '0 auto 16px', opacity: 0.5 }} aria-hidden="true" />
-          <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>No Roadmap Generated</h3>
+          <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>No Roadmap Generated</h3>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 360, margin: '0 auto' }}>Enter a learning goal above and let AI map out your learning journey!</p>
         </div>
       )}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-
+import { toast } from 'sonner'
 import { API_BASE_URL } from '../config/api.js';
+
 const MAX_REGENERATIONS = 5
 
 const PostGig = () => {
@@ -16,7 +17,6 @@ const PostGig = () => {
   })
 
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState(null)
   const [isDirty, setIsDirty] = useState(false)
 
   // AI Enhancement state
@@ -34,7 +34,6 @@ const PostGig = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setMessage(null)
 
     try {
       // convert comma-separated skills -> array
@@ -68,7 +67,7 @@ const PostGig = () => {
       const data = await res.json()
       console.log('Gig created:', data)
 
-      setMessage({ type: 'success', text: 'Gig posted successfully ✅' })
+      toast.success('Gig posted successfully!')
 
       // reset form
       setForm({
@@ -86,7 +85,7 @@ const PostGig = () => {
       setIsDirty(false)
     } catch (err) {
       console.error(err)
-      setMessage({ type: 'error', text: 'Something went wrong while posting gig ❌' })
+      toast.error('Something went wrong while posting gig.')
     } finally {
       setLoading(false)
     }
@@ -160,60 +159,41 @@ const PostGig = () => {
   }
 
   return (
-    <main role="main" aria-label="Post a Gig" className="min-h-screen bg-gray-100 flex justify-center px-4 py-10">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8">
+    <main role="main" aria-label="Post a Gig" className="page-content" style={{ maxWidth: 800 }}>
+      <div className="card">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Post a New Gig
-          </h1>
-          <p className="text-gray-600 mt-1">
+        <div style={{ marginBottom: 28, paddingBottom: 20, borderBottom: '0.5px solid var(--border)' }}>
+          <h1 className="text-h1">Post a New Gig</h1>
+          <p className="text-caption" style={{ marginTop: 8, fontSize: 13 }}>
             Describe the gig clearly so the right talent can find you.
           </p>
         </div>
 
-        {/* Status message */}
-        {message && (
-          <div
-            className={`mb-4 text-sm px-4 py-2 rounded-lg ${
-              message.type === 'success'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
-
         {/* Form */}
-        <form className="space-y-5" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {/* Gig Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Gig Title
-            </label>
+            <label className="input-label">Gig Title</label>
             <input
               type="text"
               name="title"
               value={form.title}
               onChange={handleChange}
               placeholder="e.g. Frontend Developer for Portfolio Website"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="input"
               required
             />
           </div>
 
           {/* Category + Type */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
-              </label>
+              <label className="input-label">Category</label>
               <select
                 name="category"
                 value={form.category}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="input"
               >
                 <option>Web Development</option>
                 <option>Design</option>
@@ -225,14 +205,12 @@ const PostGig = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Gig Type
-              </label>
+              <label className="input-label">Gig Type</label>
               <select
                 name="type"
                 value={form.type}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="input"
               >
                 <option>One-time Project</option>
                 <option>Part-time</option>
@@ -244,161 +222,119 @@ const PostGig = () => {
 
           {/* Skills Required */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Skills Required
-            </label>
+            <label className="input-label">Skills Required</label>
             <input
               type="text"
               name="skills"
               value={form.skills}
               onChange={handleChange}
               placeholder="e.g. React, Tailwind, API Integration"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="input"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Separate skills with commas.
-            </p>
+            <p className="input-helper">Separate skills with commas.</p>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Gig Description
-            </label>
-            <p style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '2px', marginBottom: '6px' }}>
-              Describe the work, timeline, and expectations. Used to generate AI suggestions.
-            </p>
+            <label className="input-label">Gig Description</label>
             <textarea
-              rows="4"
+              rows="5"
               name="description"
               value={form.description}
               onChange={handleChange}
               placeholder="Describe the work, expectations, and any important details..."
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="input"
+              style={{ resize: 'vertical' }}
               required
             />
+            
             <button
               type="button"
               onClick={handleEnhance}
               disabled={isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()}
               style={{
-                width: '100%',
-                padding: '10px',
-                marginTop: '8px',
-                background: (isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? '#e5e7eb' : '#f5f3ff',
-                border: '1px solid ' + ((isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? '#d1d5db' : '#ede9fe'),
-                borderRadius: '8px',
-                color: (isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? '#9ca3af' : '#7c3aed',
-                fontWeight: 500,
-                fontSize: '0.88rem',
+                width: '100%', padding: '10px', marginTop: '12px',
+                background: (isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? 'var(--surface2)' : 'var(--accent-dim)',
+                border: '0.5px solid ' + ((isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? 'var(--border)' : 'var(--accent)'),
+                borderRadius: 'var(--radius-md)',
+                color: (isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? 'var(--text-dim)' : 'var(--accent-light)',
+                fontWeight: 600, fontSize: 13,
                 cursor: (isEnhancing || !form.title.trim() || !form.category.trim() || !form.skills.trim()) ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px'
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                transition: 'all var(--t-fast)'
               }}
             >
               {isEnhancing ? (
-                <>
-                  <svg className="animate-spin" style={{ height: '14px', width: '14px' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Generating...
-                </>
+                <><i className="ti ti-loader animate-spin" /> Generating...</>
               ) : (
-                <>✨ Generate Description with AI</>
+                <><i className="ti ti-sparkles" /> Generate Description with AI</>
               )}
             </button>
           </div>
 
           {/* AI Enhancement Error */}
           {enhanceError && (
-            <div className="bg-red-50 text-red-700 p-3 rounded-xl border border-red-100 flex items-start gap-2 text-sm">
-              <span>⚠️</span>
-              <p className="font-medium">{enhanceError}</p>
+            <div style={{ background: 'var(--amber-bg)', color: 'var(--amber-text)', padding: 12, borderRadius: 'var(--radius-md)', border: '0.5px solid var(--amber)', display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13 }}>
+              <i className="ti ti-alert-triangle" style={{ marginTop: 2 }} />
+              <p style={{ margin: 0 }}>{enhanceError}</p>
             </div>
           )}
 
           {/* AI Enhanced Preview Card */}
           {enhancedText && (
-            <div className="rounded-xl border-2 border-indigo-200 bg-indigo-50/50 overflow-hidden">
-              {/* Card Header */}
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-500 px-4 py-3 flex items-center gap-2">
-                <span className="text-white text-sm">✨</span>
-                <h4 className="text-sm font-bold text-white">AI Enhanced Description</h4>
-                <span className="ml-auto text-xs text-indigo-100 bg-white/20 px-2 py-0.5 rounded-full">
+            <div className="card-accent" style={{ overflow: 'hidden', padding: 0 }}>
+              <div style={{ background: 'var(--accent-dim)', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <i className="ti ti-sparkles" style={{ color: 'var(--accent-light)' }} />
+                <h4 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--accent-light)' }}>AI Enhanced Description</h4>
+                <span style={{ marginLeft: 'auto', fontSize: 11, background: 'var(--surface)', padding: '2px 8px', borderRadius: 'var(--radius-full)', color: 'var(--text-muted)' }}>
                   {regenCount}/{MAX_REGENERATIONS} used
                 </span>
               </div>
 
-              {/* Enhanced Text */}
-              <div className="p-4">
-                <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+              <div style={{ padding: 16 }}>
+                <p style={{ fontSize: 13, color: 'var(--text)', whiteSpace: 'pre-wrap', lineHeight: 1.6, margin: 0 }}>
                   {enhancedText}
                 </p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-2 px-4 pb-4">
-                <button
-                  type="button"
-                  onClick={handleUseDescription}
-                  className="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-                >
-                  ✅ Use Description
+              <div style={{ display: 'flex', gap: 8, padding: '0 16px 16px' }}>
+                <button type="button" onClick={handleUseDescription} className="btn-success">
+                  <i className="ti ti-check" /> Use Description
                 </button>
-                <button
-                  type="button"
-                  onClick={handleRegenerate}
-                  disabled={isEnhancing || regenCount >= MAX_REGENERATIONS}
-                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-                    regenCount >= MAX_REGENERATIONS
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-400 shadow-sm hover:shadow-md hover:-translate-y-0.5'
-                  }`}
-                >
-                  🔄 Regenerate ({MAX_REGENERATIONS - regenCount} left)
+                <button type="button" onClick={handleRegenerate} disabled={isEnhancing || regenCount >= MAX_REGENERATIONS} className="btn-ghost">
+                  <i className="ti ti-refresh" /> Regenerate
                 </button>
-                <button
-                  type="button"
-                  onClick={handleDiscardEnhanced}
-                  className="px-4 py-2 text-xs font-bold rounded-lg bg-white text-red-500 border border-red-200 hover:bg-red-50 hover:border-red-400 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
-                >
-                  🗑️ Discard
+                <button type="button" onClick={handleDiscardEnhanced} className="btn-danger">
+                  <i className="ti ti-trash" /> Discard
                 </button>
               </div>
             </div>
           )}
 
           {/* Budget + Duration */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Budget (₹)
-              </label>
+              <label className="input-label">Budget (₹)</label>
               <input
                 type="number"
                 name="budget"
                 value={form.budget}
                 onChange={handleChange}
                 placeholder="e.g. 3000"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="input"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Duration
-              </label>
+              <label className="input-label">Duration</label>
               <input
                 type="text"
                 name="duration"
                 value={form.duration}
                 onChange={handleChange}
                 placeholder="e.g. 1 week, 1 month"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="input"
                 required
               />
             </div>
@@ -406,14 +342,12 @@ const PostGig = () => {
 
           {/* Location */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Location
-            </label>
+            <label className="input-label">Location</label>
             <select
               name="location"
               value={form.location}
               onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="input"
             >
               <option>Remote</option>
               <option>On-site</option>
@@ -423,48 +357,36 @@ const PostGig = () => {
 
           {/* Draft indicator */}
           {isDirty && (
-            <p style={{
-              fontSize: '0.78rem',
-              color: '#9ca3af',
-              marginBottom: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              <span>●</span> Draft in progress — submit when ready
+            <p style={{ fontSize: 12, color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: 6, margin: 0 }}>
+              <i className="ti ti-circle-filled" style={{ fontSize: 8, color: 'var(--accent)' }} /> Draft in progress
             </p>
           )}
 
           {/* Buttons */}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="divider" style={{ margin: '8px 0' }} />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
             <button
               type="button"
               onClick={() => {
                 setForm({
-                  title: '',
-                  category: 'Web Development',
-                  type: 'One-time Project',
-                  skills: '',
-                  description: '',
-                  budget: '',
-                  duration: '',
-                  location: 'Remote',
+                  title: '', category: 'Web Development', type: 'One-time Project',
+                  skills: '', description: '', budget: '', duration: '', location: 'Remote',
                 })
                 setEnhancedText(null)
                 setRegenCount(0)
                 setEnhanceError(null)
                 setIsDirty(false)
               }}
-              className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+              className="btn-ghost"
             >
               Clear
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-5 py-2 text-sm rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-60"
-            >
-              {loading ? 'Posting...' : 'Post Gig'}
+            <button type="submit" disabled={loading} className="btn-primary">
+              {loading ? (
+                <><i className="ti ti-loader animate-spin" /> Posting...</>
+              ) : (
+                <><i className="ti ti-upload" /> Post Gig</>
+              )}
             </button>
           </div>
         </form>

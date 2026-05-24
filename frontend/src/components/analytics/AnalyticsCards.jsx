@@ -24,8 +24,8 @@ const AnalyticsCards = ({ data, loading }) => {
       title: 'Completed Exchanges',
       value: data.completedExchanges || 0,
       Icon: CheckCircle2,
-      iconBg: 'var(--success-bg)',
-      iconColor: 'var(--success)',
+      iconBg: 'var(--green-bg)',
+      iconColor: 'var(--green)',
       trend: '+12% this week',
       trendUp: true,
       noData: data.completedExchanges == null,
@@ -34,8 +34,8 @@ const AnalyticsCards = ({ data, loading }) => {
       title: 'Active Sessions',
       value: data.activeSessions || 0,
       Icon: CalendarDays,
-      iconBg: 'var(--info-bg)',
-      iconColor: 'var(--info)',
+      iconBg: 'var(--blue-bg)',
+      iconColor: 'var(--blue)',
       trend: '2 upcoming',
       trendUp: true,
       noData: data.activeSessions == null,
@@ -57,8 +57,8 @@ const AnalyticsCards = ({ data, loading }) => {
       title: 'Requests Sent',
       value: data.requestsSent || 0,
       Icon: Send,
-      iconBg: 'var(--primary-light)',
-      iconColor: 'var(--primary)',
+      iconBg: 'var(--accent-dim)',
+      iconColor: 'var(--accent)',
       trend: 'Total sent',
       trendUp: null,
       noData: data.requestsSent == null,
@@ -67,8 +67,8 @@ const AnalyticsCards = ({ data, loading }) => {
       title: 'Requests Accepted',
       value: data.requestsAccepted || 0,
       Icon: Handshake,
-      iconBg: 'var(--success-bg)',
-      iconColor: 'var(--success)',
+      iconBg: 'var(--green-bg)',
+      iconColor: 'var(--green)',
       trend: '85% acceptance rate',
       trendUp: true,
       noData: data.requestsAccepted == null,
@@ -77,8 +77,8 @@ const AnalyticsCards = ({ data, loading }) => {
       title: 'Success Rate',
       value: data.successRate != null ? `${data.successRate}%` : '0%',
       Icon: TrendingUp,
-      iconBg: 'var(--primary-light)',
-      iconColor: 'var(--primary)',
+      iconBg: 'var(--accent-dim)',
+      iconColor: 'var(--accent)',
       trend: '+5% this month',
       trendUp: true,
       noData: data.successRate == null,
@@ -101,10 +101,10 @@ const AnalyticsCards = ({ data, loading }) => {
         >
           <Icon size={14} color={iconColor} strokeWidth={2} aria-hidden="true" />
         </div>
-        <h3 style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', margin: 0 }}>{title}</h3>
+        <h3 style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: 0 }}>{title}</h3>
       </div>
 
-      <p style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1 }}>
+      <p style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', margin: 0, lineHeight: 1 }}>
         {typeof value === 'number' ? <AnimatedCounter to={value} /> : value}
       </p>
 
@@ -114,8 +114,8 @@ const AnalyticsCards = ({ data, loading }) => {
         ) : (
           <p style={{
             fontSize: 11, display: 'inline-flex', alignItems: 'center', gap: 4,
-            color: trendUp === true ? 'var(--success)' : trendUp === false ? 'var(--danger)' : 'var(--text-muted)',
-            background: trendUp === true ? 'var(--success-bg)' : trendUp === false ? 'var(--danger-bg)' : 'var(--bg-surface-2)',
+            color: trendUp === true ? 'var(--green)' : trendUp === false ? 'var(--red)' : 'var(--text-muted)',
+            background: trendUp === true ? 'var(--green-bg)' : trendUp === false ? 'var(--red-bg)' : 'var(--surface2)',
             padding: '2px 8px', borderRadius: 9999, fontWeight: 500,
           }}>
             {trendUp === true && <TrendingUp size={10} aria-hidden="true" />}
@@ -142,7 +142,7 @@ const AnalyticsCards = ({ data, loading }) => {
       ) : (
         <div
           style={{
-            background: 'var(--primary-light)',
+            background: 'var(--accent-dim)',
             border: '1px solid var(--border-strong)',
             borderRadius: 'var(--radius-md)',
             padding: '16px 20px',
@@ -153,17 +153,17 @@ const AnalyticsCards = ({ data, loading }) => {
           }}
         >
           <div>
-            <p style={{ fontWeight: 600, fontSize: 14, color: 'var(--primary)', margin: 0 }}>
+            <p style={{ fontWeight: 600, fontSize: 14, color: 'var(--accent)', margin: 0 }}>
               Ready to start exchanging?
             </p>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0' }}>
               Send your first skill exchange request to see your stats here.
             </p>
           </div>
           <Link
             to="/skill-exchage"
             style={{
-              background: 'var(--primary)', color: '#fff',
+              background: 'var(--accent)', color: '#fff',
               padding: '8px 16px', borderRadius: 'var(--radius-md)',
               fontSize: 13, textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0,
               transition: 'background var(--transition-fast)',

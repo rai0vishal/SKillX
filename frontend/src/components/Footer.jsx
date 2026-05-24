@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <footer
       style={{
-        background: 'var(--bg-surface)',
+        background: 'var(--surface)',
         borderTop: '1px solid var(--border)',
         padding: '40px 24px 20px',
         marginTop: 'auto',
@@ -24,7 +24,7 @@ const Footer = () => {
           {/* Brand */}
           <div>
             <div
-              style={{ fontSize: 20, fontWeight: 800, color: 'var(--primary)', marginBottom: 10 }}
+              style={{ fontSize: 20, fontWeight: 800, color: 'var(--accent)', marginBottom: 10 }}
             >
               Skill<span
                 style={{
@@ -35,7 +35,7 @@ const Footer = () => {
                 }}
               >X</span>
             </div>
-            <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--text-secondary)', maxWidth: 240, margin: '0 0 16px' }}>
+            <p style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--text-muted)', maxWidth: 240, margin: '0 0 16px' }}>
               A platform to exchange skills, post gigs, and grow together — completely free.
             </p>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -53,20 +53,20 @@ const Footer = () => {
                   style={{
                     width: 32, height: 32, borderRadius: 8,
                     border: '1px solid var(--border)',
-                    background: 'var(--bg-surface-2)',
+                    background: 'var(--surface2)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'var(--text-secondary)', textDecoration: 'none',
+                    color: 'var(--text-muted)', textDecoration: 'none',
                     transition: 'all 150ms',
                   }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.color = 'var(--primary)'
+                    e.currentTarget.style.color = 'var(--accent)'
                     e.currentTarget.style.borderColor = 'var(--border-strong)'
-                    e.currentTarget.style.background = 'var(--primary-light)'
+                    e.currentTarget.style.background = 'var(--accent-dim)'
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.color = 'var(--text-secondary)'
+                    e.currentTarget.style.color = 'var(--text-muted)'
                     e.currentTarget.style.borderColor = 'var(--border)'
-                    e.currentTarget.style.background = 'var(--bg-surface-2)'
+                    e.currentTarget.style.background = 'var(--surface2)'
                   }}
                 >
                   <Icon size={14} aria-hidden="true" />
@@ -77,7 +77,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 14, letterSpacing: '0.01em' }}>
+            <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 14, letterSpacing: '0.01em' }}>
               Quick Links
             </h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -91,7 +91,7 @@ const Footer = () => {
                   <Link
                     to={to}
                     style={{ fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', transition: 'color 150ms' }}
-                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)' }}
                     onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
                   >
                     {label}
@@ -103,7 +103,7 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 14, letterSpacing: '0.01em' }}>
+            <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 14, letterSpacing: '0.01em' }}>
               Contact
             </h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 9 }}>

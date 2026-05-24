@@ -6,15 +6,15 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
       <div style={{
-        background: 'var(--bg-surface)',
+        background: 'var(--surface)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-md)',
         padding: '8px 12px',
         boxShadow: 'var(--shadow-md)',
         fontSize: 13,
       }}>
-        <p style={{ fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{label}</p>
-        <p style={{ color: 'var(--primary)', margin: '2px 0 0', fontWeight: 700 }}>
+        <p style={{ fontWeight: 600, color: 'var(--text)', margin: 0 }}>{label}</p>
+        <p style={{ color: 'var(--accent)', margin: '2px 0 0', fontWeight: 700 }}>
           {payload[0].value} exchanges
         </p>
       </div>
@@ -45,9 +45,9 @@ const WeeklyChart = ({ data, loading }) => {
           <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
             Weekly Exchange Activity
           </h3>
-          <p style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1 }}>
+          <p style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)', margin: 0, lineHeight: 1 }}>
             {totalExchanges}
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginLeft: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 6 }}>
               this week
             </span>
           </p>
@@ -78,11 +78,11 @@ const WeeklyChart = ({ data, loading }) => {
             />
             <Tooltip
               content={<CustomTooltip />}
-              cursor={{ fill: 'var(--bg-surface-2)', radius: 6 }}
+              cursor={{ fill: 'var(--surface2)', radius: 6 }}
             />
             <Bar
               dataKey="sessions"
-              fill="var(--primary)"
+              fill="var(--accent)"
               radius={[4, 4, 0, 0]}
               maxBarSize={36}
             />
