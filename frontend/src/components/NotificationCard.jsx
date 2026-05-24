@@ -27,11 +27,11 @@ const NotificationCard = ({ notification, onClick }) => {
   return (
     <div
       onClick={() => onClick(notification)}
-      className={`p-4 flex gap-3 cursor-pointer transition-colors border-b border-gray-50 last:border-0 hover:bg-gray-50 ${
-        !notification.isRead ? 'bg-indigo-50/30' : 'bg-white'
+      className={`p-4 flex gap-3 cursor-pointer transition-colors border-b border-gray-50 last:border-0 hover:bg-[var(--bg-card)] ${
+        !notification.isRead ? 'bg-indigo-50/30' : 'bg-[var(--bg-card)]'
       }`}
     >
-      <div className="flex-shrink-0 text-xl w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+      <div className="flex-shrink-0 text-xl w-10 h-10 bg-[var(--bg-card)] rounded-full flex items-center justify-center">
         {getIcon(notification.type)}
       </div>
       <div className="flex-1 min-w-0">

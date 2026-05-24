@@ -2,6 +2,9 @@ import mongoose from 'mongoose';
 
 const sessionSchema = new mongoose.Schema(
   {
+    roomId: {
+      type: String,
+    },
     participants: {
       type: [String],
       required: true,

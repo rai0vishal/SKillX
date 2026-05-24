@@ -137,15 +137,15 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
   }, {});
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-800">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200 backdrop-blur-[4px]" style={{ background: 'rgba(0, 0, 0, 0.7)' }}>
+      <div className="bg-[var(--bg-card)] rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
+        <div className="p-6 border-b border-[var(--border-subtle)] flex items-center justify-between">
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">
             {initialData ? 'Reschedule Session' : 'Schedule Session'}
           </h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--bg-card)] text-[var(--text-secondary)] transition-colors"
           >
             ✕
           </button>
@@ -159,16 +159,16 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
           )}
 
           {!initialData && recipientAvail.length > 0 && (
-            <div className="flex gap-2 mb-6 bg-gray-100 p-1 rounded-xl">
+            <div className="flex gap-2 mb-6 bg-[var(--bg-input)] p-1 rounded-xl">
               <button
                 onClick={() => setMethod('slots')}
-                className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${method === 'slots' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${method === 'slots' ? 'bg-[var(--brand-purple)] text-white shadow-sm' : 'text-[var(--text-secondary)] hover:text-white'}`}
               >
                 Available Slots
               </button>
               <button
                 onClick={() => { setMethod('custom'); setIsPreApproved(false); }}
-                className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${method === 'custom' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${method === 'custom' ? 'bg-[var(--brand-purple)] text-white shadow-sm' : 'text-[var(--text-secondary)] hover:text-white'}`}
               >
                 Suggest Custom Time
               </button>
@@ -177,23 +177,23 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
 
           {method === 'slots' ? (
             <div className="space-y-4">
-              <h3 className="font-bold text-gray-700 text-sm">Pick a preferred slot:</h3>
+              <h3 className="font-bold text-[var(--text-primary)] text-sm">Pick a preferred slot:</h3>
               {Object.entries(groupedAvail).map(([dateStr, slots]) => {
                 const dateObj = new Date(dateStr);
                 const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
                 const formattedDate = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
                 return (
-                  <div key={dateStr} className="flex gap-4 border border-gray-100 p-4 rounded-xl hover:bg-gray-50 transition">
+                  <div key={dateStr} className="flex gap-4 border border-[var(--border-subtle)] p-4 rounded-xl hover:bg-[var(--bg-input)] transition">
                     <div className="w-16">
-                      <div className="font-bold text-gray-800">{dayName}</div>
-                      <div className="text-xs text-gray-500">{formattedDate}</div>
+                      <div className="font-bold text-[var(--text-secondary)]">{dayName}</div>
+                      <div className="text-xs text-[var(--text-primary)]">{formattedDate}</div>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {slots.map((slot, i) => (
                         <button
                           key={i}
                           onClick={() => handleSlotSelect(slot)}
-                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${slot.type === 'custom' ? 'bg-purple-50 text-purple-700 hover:bg-purple-100' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition bg-[var(--brand-purple-alpha)] text-[var(--brand-purple-light)] border border-[rgba(124,111,224,0.4)] hover:bg-[rgba(124,111,224,0.3)]`}
                           title={slot.type === 'custom' ? 'Custom Date Slot' : 'Weekly Slot'}
                         >
                           {slot.startTime} - {slot.endTime}
@@ -224,7 +224,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
                             key={i}
                             type="button"
                             onClick={() => handleSuggestionSelect(s)}
-                            className="bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded text-xs hover:bg-gray-50 font-medium"
+                            className="bg-[var(--bg-card)] border border-[var(--border-subtle)] text-gray-700 px-2 py-1 rounded text-xs hover:bg-[var(--bg-card)] font-medium"
                           >
                             {s.startTime}
                           </button>
@@ -247,36 +247,36 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Date *</label>
                   <input
                     type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[var(--brand-purple)] focus:border-[var(--brand-purple)] focus:outline-none"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
+                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-1 flex justify-between">
                     Time *
-                    {checkingConflict && <span className="text-xs text-indigo-500">Checking...</span>}
+                    {checkingConflict && <span className="text-xs text-[var(--brand-purple)]">Checking...</span>}
                   </label>
                   <input
                     type="time"
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
-                    className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:outline-none ${conflictWarning?.hasConflict ? 'border-red-400 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'}`}
+                    className={`w-full bg-[var(--bg-input)] border text-[var(--text-primary)] rounded-lg px-3 py-2 text-sm focus:ring-1 focus:outline-none ${conflictWarning?.hasConflict ? 'border-red-400 focus:ring-red-500 focus:border-red-500' : 'border-[var(--border-subtle)] focus:ring-[var(--brand-purple)] focus:border-[var(--brand-purple)]'}`}
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Duration</label>
                 <select
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[var(--brand-purple)] focus:border-[var(--brand-purple)] focus:outline-none"
                 >
                   <option value="30 mins">30 mins</option>
                   <option value="60 mins">60 mins</option>
@@ -286,11 +286,11 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mode</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Mode</label>
                 <select
                   value={mode}
                   onChange={(e) => setMode(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[var(--brand-purple)] focus:border-[var(--brand-purple)] focus:outline-none"
                 >
                   <option value="Remote">Remote</option>
                   <option value="Video Session">Video Session</option>
@@ -300,23 +300,23 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Notes (Optional)</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="e.g. Will this time work?"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none h-24 resize-none"
+                  className="w-full bg-[var(--bg-input)] border border-[var(--border-subtle)] text-[var(--text-primary)] placeholder-[var(--text-muted-new)] rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[var(--brand-purple)] focus:border-[var(--brand-purple)] focus:outline-none h-24 resize-none"
                 />
               </div>
             </form>
           )}
         </div>
 
-        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+        <div className="p-6 border-t border-[var(--border-subtle)] bg-[var(--bg-card)] flex justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[#9CA3AF] hover:text-white bg-transparent rounded-lg transition-colors"
           >
             Cancel
           </button>
@@ -326,7 +326,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
               type="submit"
               form="session-form"
               disabled={isSubmitting}
-              className={`px-6 py-2 text-sm font-medium text-white rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${conflictWarning?.hasConflict ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+              className={`px-6 py-2 text-sm font-medium text-white rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${conflictWarning?.hasConflict ? 'bg-red-600 hover:bg-red-700' : 'bg-[var(--brand-purple)] hover:bg-[#6b5edd]'}`}
             >
               {isSubmitting ? 'Saving...' : (conflictWarning?.hasConflict ? 'Send Anyway' : (initialData ? 'Update Session' : 'Send Request'))}
             </button>

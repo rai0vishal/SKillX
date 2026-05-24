@@ -14,6 +14,20 @@
   --surface2:     #22222F;
   --surface3:     #282836;
 
+  /* ── New Semantic Tokens (Step 6) ── */
+  --bg-primary:   #0A0A14;
+  --bg-card:      #1A1A2E;
+  --bg-input:     #0F0F1A;
+  --border-subtle:#2D2D44;
+  --border-brand: rgba(124, 111, 224, 0.3);
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  /* (Overriding text-muted later but keeping standard names here) */
+  --text-muted-new: #64748B;
+  --brand-purple: #7C6FE0;
+  --brand-purple-light: #A78BFA;
+  --brand-purple-alpha: rgba(124, 111, 224, 0.15);
+
   /* ── Borders ── */
   --border:       #2A2A3A;
   --border-strong:#3A3A50;

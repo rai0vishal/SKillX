@@ -58,8 +58,10 @@ router.post('/', async (req, res) => {
     // If isPreApproved (recipient selected their own availability slot),
     // create directly as 'Scheduled'; otherwise 'Pending' so the other user can confirm.
     const initialStatus = isPreApproved ? 'Scheduled' : 'Pending';
+    const roomId = initialStatus === 'Scheduled' ? new mongoose.Types.ObjectId().toString() : undefined;
 
     const session = await Session.create({
+      roomId,
       participants,
       chatRoomId,
       date,
@@ -107,7 +109,7 @@ router.get('/room/:chatRoomId', async (req, res) => {
     const { chatRoomId } = req.params;
     const sessions = await Session.find({
       chatRoomId,
-      status: { $in: ['Pending', 'Scheduled', 'Rescheduled'] },
+      status: { $in: ['Pending', 'Scheduled', 'Rescheduled', 'Completed', 'Cancelled', 'Declined'] },
     }).sort({ date: 1, time: 1 });
 
     res.json(sessions);
@@ -194,6 +196,9 @@ router.put('/:id/accept', async (req, res) => {
       return res.status(404).json({ message: 'Session not found.' });
     }
 
+    if (!session.roomId) {
+      session.roomId = new mongoose.Types.ObjectId().toString();
+    }
     session.status = 'Scheduled';
     await session.save();
 
@@ -203,6 +208,32 @@ router.put('/:id/accept', async (req, res) => {
   } catch (error) {
     console.error('Error accepting session:', error);
     res.status(500).json({ message: 'Failed to accept session.' });
+  }
+});
+
+/**
+ * PUT /api/sessions/:id/decline
+ * Decline a pending session
+ */
+router.put('/:id/decline', async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid session ID.' });
+    }
+    const session = await Session.findById(req.params.id);
+    if (!session) {
+      return res.status(404).json({ message: 'Session not found.' });
+    }
+
+    session.status = 'Declined';
+    await session.save();
+
+    emitSessionUpdate(session.participants, { _id: session._id, status: session.status });
+
+    res.json(session);
+  } catch (error) {
+    console.error('Error declining session:', error);
+    res.status(500).json({ message: 'Failed to decline session.' });
   }
 });
 

@@ -76,7 +76,7 @@ const Search = () => {
   return (
     <div className="max-w-7xl mx-auto py-8">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-4">Discover the SkillX Network</h1>
+        <h1 className="text-3xl font-extrabold text-[var(--text-primary)] mb-4">Discover the SkillX Network</h1>
         <div className="max-w-2xl mx-auto">
           <SearchBar value={query} onChange={setQuery} onSearch={handleSearch} />
         </div>
@@ -93,17 +93,17 @@ const Search = () => {
         {/* Main Content */}
         <div className="flex-1">
           {/* Tabs & Sort */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-[var(--bg-card)] p-2 rounded-2xl border border-gray-100 shadow-sm">
             <div className="flex gap-2">
               <button
                 onClick={() => setActiveTab('users')}
-                className={`px-6 py-2.5 rounded-xl text-sm font-bold transition ${activeTab === 'users' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+                className={`px-6 py-2.5 rounded-xl text-sm font-bold transition ${activeTab === 'users' ? 'bg-indigo-600 text-white shadow-md' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-card)]'}`}
               >
                 👥 Users
               </button>
               <button
                 onClick={() => setActiveTab('gigs')}
-                className={`px-6 py-2.5 rounded-xl text-sm font-bold transition ${activeTab === 'gigs' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+                className={`px-6 py-2.5 rounded-xl text-sm font-bold transition ${activeTab === 'gigs' ? 'bg-indigo-600 text-white shadow-md' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-card)]'}`}
               >
                 💼 Gigs
               </button>
@@ -113,7 +113,7 @@ const Search = () => {
             </div>
           </div>
 
-          <div className="mb-6 flex justify-between items-center text-sm text-gray-500 font-medium px-2">
+          <div className="mb-6 flex justify-between items-center text-sm text-[var(--text-secondary)] font-medium px-2">
             <span>{loading ? 'Searching...' : `Found ${total} result${total !== 1 ? 's' : ''}`}</span>
           </div>
 
@@ -121,7 +121,7 @@ const Search = () => {
           {loading && !results.length ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 h-[280px] animate-pulse">
+                <div key={i} className="bg-[var(--bg-card)] rounded-2xl border border-gray-100 p-5 h-[280px] animate-pulse">
                   <div className="flex items-center gap-4 mb-6">
                     <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
                     <div className="space-y-2 flex-1">
@@ -145,10 +145,10 @@ const Search = () => {
                     ? results.filter(user => user._id !== currentUser._id).map(item => (
                         <UserResultCard key={item._id} user={item} />
                       ))
-                    : <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                    : <div className="col-span-full text-center py-20 bg-[var(--bg-card)] rounded-3xl border border-gray-100 shadow-sm">
                         <div className="text-6xl mb-4">🔍</div>
                         <h3 className="text-xl font-bold text-gray-800 mb-2">No results found</h3>
-                        <p className="text-gray-500 max-w-md mx-auto">We couldn't find any users matching your search criteria.</p>
+                        <p className="text-[var(--text-secondary)] max-w-md mx-auto">We couldn't find any users matching your search criteria.</p>
                       </div>
                   : results.map(item => (
                       <GigResultCard key={item._id} gig={item} />
@@ -162,7 +162,7 @@ const Search = () => {
                   <button
                     disabled={page === 1}
                     onClick={() => setPage(p => p - 1)}
-                    className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 font-medium disabled:opacity-50 hover:bg-gray-50 transition"
+                    className="px-4 py-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] text-gray-600 font-medium disabled:opacity-50 hover:bg-[var(--bg-card)] transition"
                   >
                     Previous
                   </button>
@@ -178,7 +178,7 @@ const Search = () => {
                         <button
                           key={pageNum}
                           onClick={() => setPage(pageNum)}
-                          className={`w-10 h-10 rounded-xl font-bold transition ${page === pageNum ? 'bg-indigo-600 text-white shadow-md' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                          className={`w-10 h-10 rounded-xl font-bold transition ${page === pageNum ? 'bg-indigo-600 text-white shadow-md' : 'bg-[var(--bg-card)] border border-[var(--border-subtle)] text-gray-600 hover:bg-[var(--bg-card)]'}`}
                         >
                           {pageNum}
                         </button>
@@ -188,7 +188,7 @@ const Search = () => {
                   <button
                     disabled={page === totalPages}
                     onClick={() => setPage(p => p + 1)}
-                    className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 font-medium disabled:opacity-50 hover:bg-gray-50 transition"
+                    className="px-4 py-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] text-gray-600 font-medium disabled:opacity-50 hover:bg-[var(--bg-card)] transition"
                   >
                     Next
                   </button>
@@ -196,10 +196,10 @@ const Search = () => {
               )}
             </>
           ) : !initialLoad ? (
-            <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm">
+            <div className="text-center py-20 bg-[var(--bg-card)] rounded-3xl border border-gray-100 shadow-sm">
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">No results found</h3>
-              <p className="text-gray-500 max-w-md mx-auto">We couldn't find any {activeTab} matching your search criteria. Try adjusting your filters or search terms.</p>
+              <p className="text-[var(--text-secondary)] max-w-md mx-auto">We couldn't find any {activeTab} matching your search criteria. Try adjusting your filters or search terms.</p>
               <button 
                 onClick={() => { setQuery(''); setFilters({}); setPage(1); fetchResults('', 1, {}, activeTab === 'users' ? 'bestMatch' : 'newest'); }}
                 className="mt-6 bg-indigo-50 text-indigo-700 px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-100 transition"

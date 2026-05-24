@@ -329,6 +329,7 @@ const Chat = () => {
       if (!res.ok) throw new Error(`Failed to ${action} session`);
       fetchRoomSessions(activeRoom._id);
       if (action === 'accept') toast.success('Session accepted!');
+      else if (action === 'decline') toast.info('Session declined.');
       else if (action === 'cancel') toast.info('Session cancelled.');
       else if (action === 'complete') toast.success('Session marked as completed!');
     } catch (error) {
@@ -531,10 +532,10 @@ const Chat = () => {
                   <div style={{ fontSize: 10, textTransform: 'uppercase', color: 'var(--text-dim)', fontWeight: 600, letterSpacing: '0.05em', marginBottom: 8 }}>
                     Sessions
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                     {roomSessions.map(s => {
-                      const color = s.status === 'Completed' ? 'var(--green)' : s.status === 'Pending' ? 'var(--amber)' : 'var(--border-strong)';
-                      return <div key={s._id} style={{ width: 10, height: 10, borderRadius: '50%', background: color }} title={s.status} />;
+                      const color = s.status === 'Completed' ? '#22C55E' : s.status === 'Pending' ? '#EAB308' : s.status === 'Scheduled' || s.status === 'Rescheduled' ? '#7C6FE0' : 'var(--border-strong)';
+                      return <div key={s._id} style={{ width: 12, height: 12, borderRadius: '50%', background: color }} title={s.status} />;
                     })}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>
@@ -606,46 +607,92 @@ const Chat = () => {
               ))}
             </div>
 
-            {/* Session Strip */}
             {activeTab === 'chat' && roomSessions.length > 0 && (
-              <div style={{ background: 'var(--surface)', borderBottom: '0.5px solid var(--border)', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div 
+                style={{ background: 'var(--surface)', borderBottom: '0.5px solid var(--border)', padding: '10px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                onClick={() => setSessionTrayOpen(!sessionTrayOpen)}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>
-                    <i className="ti ti-calendar" style={{ fontSize: 14 }} /> Sessions
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                    <i className="ti ti-calendar" style={{ fontSize: 16 }} /> Sessions
                   </div>
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    {roomSessions.map(s => {
-                      const color = s.status === 'Completed' ? 'var(--green)' : s.status === 'Pending' ? 'var(--amber)' : 'var(--text-dim)';
-                      return <div key={s._id} style={{ width: 8, height: 8, borderRadius: '50%', background: color }} title={s.status} />;
-                    })}
+                  <div style={{ display: 'flex', gap: 6, fontSize: 12, fontWeight: 500, color: 'var(--text-muted)' }}>
+                    {roomSessions.filter(s => s.status === 'Completed').length > 0 && <span>{roomSessions.filter(s => s.status === 'Completed').length} done &middot; </span>}
+                    {roomSessions.filter(s => s.status === 'Pending').length > 0 && <span>{roomSessions.filter(s => s.status === 'Pending').length} pending &middot; </span>}
+                    {roomSessions.filter(s => s.status === 'Scheduled' || s.status === 'Rescheduled').length > 0 && <span>{roomSessions.filter(s => s.status === 'Scheduled' || s.status === 'Rescheduled').length} upcoming &middot; </span>}
+                    <i className={`ti ${sessionTrayOpen ? 'ti-chevron-up' : 'ti-chevron-down'}`} style={{ marginLeft: 4 }} />
                   </div>
                 </div>
-                {roomSessions.filter(s => s.status === 'Pending').length > 0 && (
-                  <button onClick={() => setSessionTrayOpen(!sessionTrayOpen)} style={{ background: 'var(--amber-bg)', border: '1px solid var(--amber)', color: 'var(--amber)', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-                    {roomSessions.filter(s => s.status === 'Pending').length} pending action
+                {roomSessions.filter(s => s.status === 'Pending' && s.requestedBy !== userEmail).length > 0 && (
+                  <button onClick={(e) => { e.stopPropagation(); setSessionTrayOpen(!sessionTrayOpen); }} style={{ background: 'rgba(234,179,8,0.15)', border: '1px solid rgba(234,179,8,0.3)', color: '#EAB308', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                    {roomSessions.filter(s => s.status === 'Pending' && s.requestedBy !== userEmail).length} pending action
                   </button>
                 )}
               </div>
             )}
             {/* Session tray toggle content */}
             {activeTab === 'chat' && sessionTrayOpen && roomSessions.length > 0 && (
-              <div style={{ padding: 16, background: 'var(--surface2)', borderBottom: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 200, overflowY: 'auto' }}>
-                {roomSessions.map(session => (
-                  <SessionCard
-                    key={session._id}
-                    session={session}
-                    userEmail={userEmail}
-                    onReschedule={(s) => openScheduleModal(s)}
-                    onAccept={(id) => handleSessionAction(id, 'accept')}
-                    onSuggestAlternative={(s) => openScheduleModal(s)}
-                    onCancel={(id) => handleSessionAction(id, 'cancel')}
-                    onComplete={(id) => handleSessionAction(id, 'complete')}
-                    onReview={(s) => {
-                      setReviewingSession({ ...s, reviewedUserEmail: activeOtherUserEmail });
-                      setIsReviewModalOpen(true);
-                    }}
-                  />
-                ))}
+              <div style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border)', padding: '16px 24px', maxHeight: 320, overflowY: 'auto' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {roomSessions.map((session) => (
+                    <div key={session._id}>
+                      <div 
+                        onClick={() => {
+                          setEditingSession(editingSession && editingSession._id === session._id ? null : session);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '12px 16px',
+                          background: 'var(--bg-card)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: 8,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                            {new Date(session.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          </span>
+                          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                            {session.time} · {session.duration} · {session.mode}
+                          </span>
+                        </div>
+                        <span style={{
+                          fontSize: 10,
+                          fontWeight: 600,
+                          padding: '2px 8px',
+                          borderRadius: 9999,
+                          textTransform: 'uppercase',
+                          background: session.status === 'Completed' ? 'var(--accent-dim)' : session.status === 'Pending' ? 'rgba(234,179,8,0.15)' : session.status === 'Scheduled' || session.status === 'Rescheduled' ? 'var(--green-bg)' : 'var(--surface2)',
+                          color: session.status === 'Completed' ? 'var(--accent-light)' : session.status === 'Pending' ? '#EAB308' : session.status === 'Scheduled' || session.status === 'Rescheduled' ? 'var(--green-text)' : 'var(--text-muted)'
+                        }}>
+                          {session.status}
+                        </span>
+                      </div>
+                      
+                      {editingSession && editingSession._id === session._id && (
+                        <div style={{ marginTop: 8 }}>
+                          <SessionCard
+                            session={session}
+                            userEmail={userEmail}
+                            onReschedule={(s) => openScheduleModal(s)}
+                            onAccept={(id) => handleSessionAction(id, 'accept')}
+                            onSuggestAlternative={(s) => openScheduleModal(s)}
+                            onDecline={(id) => handleSessionAction(id, 'decline')}
+                            onCancel={(id) => handleSessionAction(id, 'cancel')}
+                            onComplete={(id) => handleSessionAction(id, 'complete')}
+                            onReview={(s) => {
+                              setReviewingSession({ ...s, reviewedUserEmail: activeOtherUserEmail });
+                              setIsReviewModalOpen(true);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

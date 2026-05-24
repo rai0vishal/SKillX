@@ -74,36 +74,36 @@ const TaskPanel = ({ workspaceId, currentUserEmail }) => {
   return (
     <div className="flex flex-col h-full">
       {/* Header & Progress */}
-      <div className="p-4 border-b border-gray-100 bg-white space-y-3">
+      <div className="p-4 border-b border-[var(--border-subtle)] bg-[var(--bg-card)] space-y-3">
         <div className="flex justify-between items-end">
           <div>
-            <h3 className="text-sm font-bold text-gray-800">Task Progress</h3>
-            <p className="text-[10px] text-gray-500">{completed} of {total} completed</p>
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">Task Progress</h3>
+            <p className="text-[10px] text-[var(--text-secondary)]">{completed} of {total} completed</p>
           </div>
-          <span className="text-xs font-bold text-indigo-600">{progress}%</span>
+          <span className="text-xs font-bold text-[var(--brand-purple)]">{progress}%</span>
         </div>
-        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-[var(--border-subtle)] rounded-full overflow-hidden">
           <div
-            className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+            className="h-full bg-[var(--brand-purple)] rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
         
         <button
           onClick={() => setShowForm(!showForm)}
-          className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg hover:bg-indigo-100 transition"
+          className="w-full flex items-center justify-center gap-2 py-2 bg-[var(--brand-purple-alpha)] text-[var(--brand-purple)] text-xs font-semibold rounded-lg hover:bg-[rgba(124,111,224,0.15)] border border-dashed border-[rgba(124,111,224,0.3)] transition"
         >
           {showForm ? 'Cancel' : '➕ Add Task'}
         </button>
 
         {showForm && (
-          <form onSubmit={handleCreateTask} className="space-y-2 p-3 bg-gray-50 rounded-xl border border-gray-200 mt-2">
+          <form onSubmit={handleCreateTask} className="space-y-2 p-3 bg-[var(--bg-input)] rounded-xl border border-[var(--border-subtle)] mt-2">
             <input
               type="text"
               placeholder="Task Title *"
               value={taskForm.title}
               onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="w-full px-3 py-2 text-xs bg-transparent text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--brand-purple)] focus:border-[var(--brand-purple)] placeholder-[var(--text-muted-new)]"
               required
             />
             <input
@@ -111,7 +111,7 @@ const TaskPanel = ({ workspaceId, currentUserEmail }) => {
               placeholder="Description (optional)"
               value={taskForm.description}
               onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="w-full px-3 py-2 text-xs bg-transparent text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--brand-purple)] focus:border-[var(--brand-purple)] placeholder-[var(--text-muted-new)]"
             />
             <div className="flex gap-2">
               <input
@@ -119,16 +119,16 @@ const TaskPanel = ({ workspaceId, currentUserEmail }) => {
                 placeholder="Assign to (email)"
                 value={taskForm.assignedTo}
                 onChange={(e) => setTaskForm({ ...taskForm, assignedTo: e.target.value })}
-                className="flex-1 px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                className="flex-1 px-3 py-2 text-xs bg-transparent text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--brand-purple)] focus:border-[var(--brand-purple)] placeholder-[var(--text-muted-new)]"
               />
               <input
                 type="date"
                 value={taskForm.dueDate}
                 onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })}
-                className="flex-1 px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-gray-500"
+                className="flex-1 px-3 py-2 text-xs bg-transparent text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--brand-purple)] focus:border-[var(--brand-purple)]"
               />
             </div>
-            <button type="submit" className="w-full py-2 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition">
+            <button type="submit" className="w-full py-2 bg-[var(--brand-purple)] text-white text-xs font-semibold rounded-lg hover:bg-[#6b5edd] transition">
               Create Task
             </button>
           </form>
@@ -150,7 +150,7 @@ const TaskPanel = ({ workspaceId, currentUserEmail }) => {
             ))}
           </div>
         ) : tasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-gray-400 text-center">
+          <div className="flex flex-col items-center justify-center h-40 text-[var(--text-secondary)] text-center">
             <div className="text-3xl mb-2">✅</div>
             <p className="text-sm">No tasks yet. Create one to get started!</p>
           </div>

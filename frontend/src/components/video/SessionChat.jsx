@@ -38,7 +38,7 @@ const MessageBubble = memo(({ msg, isOwn, currentUserEmail }) => {
         </div>
 
         {/* Timestamp */}
-        <span className="text-gray-500 text-[10px] mt-1 mx-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="text-[var(--text-secondary)] text-[10px] mt-1 mx-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {formatTime(msg.timestamp)}{isOwn && ' ✓'}
         </span>
       </div>
@@ -82,7 +82,7 @@ const SessionChat = memo(({ messages, onSendMessage, currentUserEmail }) => {
           Session Chat
         </h3>
         {messages.length > 0 && (
-          <span className="text-[11px] text-gray-500">{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
+          <span className="text-[11px] text-[var(--text-secondary)]">{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
         )}
       </div>
 

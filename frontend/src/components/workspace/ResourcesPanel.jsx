@@ -98,7 +98,7 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
             placeholder="Search resources..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-gray-50 px-3 py-2 rounded-lg text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+            className="flex-1 bg-[var(--bg-card)] px-3 py-2 rounded-lg text-xs border border-[var(--border-subtle)] focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
           />
         </div>
 
@@ -116,7 +116,7 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
           </button>
           <button
             onClick={() => setShowLinkForm(!showLinkForm)}
-            className="flex-1 flex items-center justify-center gap-2 py-2 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-200 transition"
+            className="flex-1 flex items-center justify-center gap-2 py-2 bg-[var(--bg-card)] text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-200 transition"
           >
             🔗 Add Link
           </button>
@@ -124,13 +124,13 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
         </div>
 
         {showLinkForm && (
-          <form onSubmit={handleAddLink} className="space-y-2 p-3 bg-gray-50 rounded-xl border border-gray-200">
+          <form onSubmit={handleAddLink} className="space-y-2 p-3 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)]">
             <input
               type="text"
               placeholder="Title (e.g. React Docs)"
               value={linkForm.title}
               onChange={(e) => setLinkForm({ ...linkForm, title: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="w-full px-3 py-2 text-xs border border-[var(--border-subtle)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               required
             />
             <input
@@ -138,7 +138,7 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
               placeholder="URL (https://...)"
               value={linkForm.url}
               onChange={(e) => setLinkForm({ ...linkForm, url: e.target.value })}
-              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              className="w-full px-3 py-2 text-xs border border-[var(--border-subtle)] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               required
             />
             <div className="flex gap-2">

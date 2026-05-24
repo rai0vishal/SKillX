@@ -40,6 +40,9 @@ const VideoSession = () => {
 
   // ── UI state ──────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState('notes'); // notes | chat | info
+  const activeTabRef = useRef(activeTab);
+  useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
+  
   const [chatMessages, setChatMessages] = useState([]);
   const [isHandRaised, setIsHandRaised] = useState(false);
   const [notesContent, setNotesContent] = useState('');
@@ -270,7 +273,7 @@ const VideoSession = () => {
           }
           return [...prev, msg];
         });
-        if (activeTab !== 'chat') {
+        if (activeTabRef.current !== 'chat') {
           toast.info(`New message from ${msg.senderEmail.split('@')[0]}`);
         }
       });
@@ -280,7 +283,49 @@ const VideoSession = () => {
       setPageStatus('error');
       setErrorMessage('Failed to join session. Please try again.');
     }
-  }, [sessionId, userEmail, createPeerConnection, activeTab]);
+  }, [sessionId, userEmail, createPeerConnection]); // Removed activeTab
+
+  // ── Polling Fallback to clear waiting screen ────────────────────────────────
+  useEffect(() => {
+    if (pageStatus !== 'live' || connectionStatus !== 'waiting') return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/video-session/${sessionId}?email=${encodeURIComponent(userEmail)}`);
+        const data = await res.json();
+        if (data.activeParticipantCount === 2) {
+          console.log('[Video Session] Both participants detected via polling, setting connection to connected');
+          setConnectionStatus('connected');
+        }
+      } catch (err) {
+        console.error('Polling failed', err);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [pageStatus, connectionStatus, sessionId, userEmail]);
+
+  // ── 10 Minute Timeout Reminder ──────────────────────────────────────────────
+  useEffect(() => {
+    if (pageStatus !== 'live' || connectionStatus !== 'waiting' || !session?.chatRoomId) return;
+
+    const timeout = setTimeout(() => {
+      const chatSocket = io(SOCKET_URL, { transports: ['websocket'] });
+      chatSocket.emit('registerUser', userEmail);
+      chatSocket.emit('sendMessage', {
+        chatRoomId: session.chatRoomId,
+        senderEmail: userEmail,
+        text: "Hey, I'm waiting in the session room. Ready to join?",
+      });
+      setTimeout(() => chatSocket.disconnect(), 1000);
+      toast.info('Sent a reminder to the other participant in the chat.');
+    }, 10 * 60 * 1000); // 10 minutes
+
+    return () => clearTimeout(timeout);
+  }, [pageStatus, connectionStatus, session, userEmail]);
+
+  const roomIdRef = useRef(roomId);
+  useEffect(() => { roomIdRef.current = roomId; }, [roomId]);
 
   const leaveSession = useCallback(async (silent = false) => {
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -290,8 +335,8 @@ const VideoSession = () => {
     peerRef.current = null;
 
     if (socketRef.current) {
-      if (roomId) {
-        socketRef.current.emit('rtc:leave-room', { roomId, userEmail });
+      if (roomIdRef.current) {
+        socketRef.current.emit('rtc:leave-room', { roomId: roomIdRef.current, userEmail });
       }
       socketRef.current.disconnect();
       socketRef.current = null;
@@ -315,7 +360,7 @@ const VideoSession = () => {
     if (!silent) {
       setIsReviewOpen(true);
     }
-  }, [roomId, sessionId, userEmail]);
+  }, [sessionId, userEmail]); // Removed roomId
 
   useEffect(() => {
     if (!userEmail) {

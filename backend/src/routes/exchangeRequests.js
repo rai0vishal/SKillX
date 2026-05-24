@@ -7,28 +7,33 @@ const router = express.Router()
 // POST /api/exchange-requests → create a new request
 router.post('/', async (req, res) => {
   try {
-    const { fromEmail, toEmail, message } = req.body
+    const { fromUserId, toUserId, exchangeId, message, fromEmail, toEmail } = req.body
 
-    if (!fromEmail || !toEmail) {
+    if (!fromUserId || !toUserId) {
       return res
         .status(400)
-        .json({ message: 'fromEmail and toEmail are required' })
+        .json({ message: 'fromUserId and toUserId are required' })
     }
 
     const request = await ExchangeRequest.create({
+      fromUserId,
+      toUserId,
+      exchangeId,
+      message,
       fromEmail,
       toEmail,
-      message,
       status: 'pending',
     })
 
-    // ✅ Increment "skillExchanges" for the sender (fromEmail)
+    // ✅ Increment "skillExchanges" for the sender
     try {
-      await Profile.findOneAndUpdate(
-        { email: fromEmail },
-        { $inc: { 'stats.skillExchanges': 1 } },
-        { upsert: true }
-      )
+      if (fromEmail) {
+        await Profile.findOneAndUpdate(
+          { email: fromEmail },
+          { $inc: { 'stats.skillExchanges': 1 } },
+          { upsert: true }
+        )
+      }
     } catch (err) {
       console.error(
         'Error updating profile stats (skillExchanges +1 for sender):',
@@ -43,24 +48,32 @@ router.post('/', async (req, res) => {
   }
 })
 
-// GET /api/exchange-requests?email=someone@gmail.com
+// GET /api/exchange-requests?userId=some_uid or ?email=some_email
 // Returns { received: [...], sent: [...] }
 router.get('/', async (req, res) => {
   try {
-    const { email } = req.query
+    const { userId, email } = req.query
 
-    if (!email) {
+    if (!userId && !email) {
       const all = await ExchangeRequest.find().sort({ createdAt: -1 })
       return res.json({ received: [], sent: [], all })
     }
 
+    let receivedQuery = {};
+    let sentQuery = {};
+
+    if (email) {
+      receivedQuery = { toEmail: email, fromEmail: { $ne: email } };
+      sentQuery = { fromEmail: email };
+    } else {
+      receivedQuery = { toUserId: userId, fromUserId: { $ne: userId } };
+      sentQuery = { fromUserId: userId };
+    }
+
     const [received, sent] = await Promise.all([
       // only requests from OTHER people to you
-      ExchangeRequest.find({
-        toEmail: email,
-        fromEmail: { $ne: email },
-      }).sort({ createdAt: -1 }),
-      ExchangeRequest.find({ fromEmail: email }).sort({ createdAt: -1 }),
+      ExchangeRequest.find(receivedQuery).sort({ createdAt: -1 }),
+      ExchangeRequest.find(sentQuery).sort({ createdAt: -1 }),
     ])
 
     res.json({ received, sent })

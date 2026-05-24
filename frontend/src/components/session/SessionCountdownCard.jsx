@@ -157,10 +157,10 @@ const SessionCountdownCard = ({ userEmail, onViewAll }) => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center items-center h-48 animate-pulse">
+      <div className="bg-[var(--bg-card)] rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center items-center h-48 animate-pulse">
         <div className="w-12 h-12 bg-gray-200 rounded-full mb-3"></div>
         <div className="w-32 h-4 bg-gray-200 rounded mb-2"></div>
-        <div className="w-24 h-3 bg-gray-100 rounded"></div>
+        <div className="w-24 h-3 bg-[var(--bg-card)] rounded"></div>
       </div>
     );
   }
@@ -241,14 +241,14 @@ const SessionCountdownCard = ({ userEmail, onViewAll }) => {
             {canJoin && isVideo && joinState !== 'completed' ? (
               <Link
                 to={`/session/${nearestSession._id}`}
-                className="flex-1 md:flex-none px-4 py-2 bg-white text-indigo-600 hover:bg-indigo-50 text-sm font-bold rounded-lg shadow-sm transition-transform hover:scale-105 active:scale-95 flex items-center justify-center whitespace-nowrap"
+                className="flex-1 md:flex-none px-4 py-2 bg-[var(--bg-card)] text-indigo-600 hover:bg-indigo-50 text-sm font-bold rounded-lg shadow-sm transition-transform hover:scale-105 active:scale-95 flex items-center justify-center whitespace-nowrap"
               >
                 {joinState === 'live' ? 'Join Now' : 'Join Session'}
               </Link>
             ) : (
               <button
                 disabled
-                className="flex-1 md:flex-none px-4 py-2 bg-white/10 text-white/50 text-sm font-bold rounded-lg border border-white/10 cursor-not-allowed flex items-center justify-center whitespace-nowrap"
+                className="flex-1 md:flex-none px-4 py-2 bg-[var(--bg-card)]/10 text-white/50 text-sm font-bold rounded-lg border border-white/10 cursor-not-allowed flex items-center justify-center whitespace-nowrap"
               >
                 {joinState === 'completed' ? 'Completed' : 'Upcoming'}
               </button>
@@ -256,7 +256,7 @@ const SessionCountdownCard = ({ userEmail, onViewAll }) => {
 
             <button
               onClick={onViewAll}
-              className="flex-1 md:flex-none px-4 py-2 bg-transparent hover:bg-white/10 text-white font-semibold rounded-lg border border-white/20 transition-colors text-sm whitespace-nowrap"
+              className="flex-1 md:flex-none px-4 py-2 bg-transparent hover:bg-[var(--bg-card)]/10 text-white font-semibold rounded-lg border border-white/20 transition-colors text-sm whitespace-nowrap"
             >
               View Details
             </button>

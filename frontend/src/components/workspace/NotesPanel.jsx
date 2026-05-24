@@ -50,7 +50,7 @@ const NotesPanel = ({ workspaceId, initialNotes }) => {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-gray-50/50">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-[var(--bg-card)]/50">
         <p className="text-xs font-semibold text-gray-600">📝 Collaborative Notes</p>
         {statusLabel[saveStatus]}
       </div>
@@ -66,7 +66,7 @@ const NotesPanel = ({ workspaceId, initialNotes }) => {
         />
       </div>
 
-      <div className="px-4 py-2 border-t border-gray-100 bg-gray-50/30">
+      <div className="px-4 py-2 border-t border-gray-100 bg-[var(--bg-card)]/30">
         <p className="text-[10px] text-gray-400">Notes are auto-saved 1.5s after you stop typing.</p>
       </div>
     </div>

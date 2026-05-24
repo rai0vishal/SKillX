@@ -12,10 +12,10 @@ const FilterPanel = ({ activeTab, filters, onChange }) => {
   const update = (key, value) => onChange({ ...filters, [key]: value });
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-[var(--bg-card)] rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 font-semibold text-gray-800 text-sm hover:bg-gray-50 transition"
+        className="w-full flex items-center justify-between p-4 font-semibold text-gray-800 text-sm hover:bg-[var(--bg-card)] transition"
       >
         <span className="flex items-center gap-2">
           <span>🎛</span> Filters
@@ -27,13 +27,13 @@ const FilterPanel = ({ activeTab, filters, onChange }) => {
         <div className="px-4 pb-4 space-y-5 border-t border-gray-50">
           {/* Skill Category */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 mt-4">
+            <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2 mt-4">
               Skill Category
             </label>
             <select
               value={filters.category || 'All'}
               onChange={(e) => update('category', e.target.value === 'All' ? '' : e.target.value)}
-              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-gray-700"
+              className="w-full text-sm border border-[var(--border-subtle)] rounded-xl px-3 py-2 bg-[var(--bg-card)] focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-gray-700"
             >
               {SKILL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -41,7 +41,7 @@ const FilterPanel = ({ activeTab, filters, onChange }) => {
 
           {/* Skills text input */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
               Specific Skills
             </label>
             <input
@@ -49,7 +49,7 @@ const FilterPanel = ({ activeTab, filters, onChange }) => {
               placeholder="React, Node, Python..."
               value={filters.skills || ''}
               onChange={(e) => update('skills', e.target.value)}
-              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-gray-700 placeholder-gray-400"
+              className="w-full text-sm border border-[var(--border-subtle)] rounded-xl px-3 py-2 bg-[var(--bg-card)] focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-gray-700 placeholder-gray-400"
             />
             <p className="text-[10px] text-gray-400 mt-1">Comma-separated</p>
           </div>
@@ -58,7 +58,7 @@ const FilterPanel = ({ activeTab, filters, onChange }) => {
           {activeTab === 'users' && (
             <>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
                   Minimum Rating: ⭐{filters.minRating || 0}+
                 </label>
                 <input
@@ -74,7 +74,7 @@ const FilterPanel = ({ activeTab, filters, onChange }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
                   Minimum Trust Score: {filters.minTrustScore || 0}+
                 </label>
                 <input
@@ -90,7 +90,7 @@ const FilterPanel = ({ activeTab, filters, onChange }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
                   Location
                 </label>
                 <input
@@ -98,7 +98,7 @@ const FilterPanel = ({ activeTab, filters, onChange }) => {
                   placeholder="e.g. Remote, Mumbai..."
                   value={filters.location || ''}
                   onChange={(e) => update('location', e.target.value)}
-                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-gray-700 placeholder-gray-400"
+                  className="w-full text-sm border border-[var(--border-subtle)] rounded-xl px-3 py-2 bg-[var(--bg-card)] focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-gray-700 placeholder-gray-400"
                 />
               </div>
             </>

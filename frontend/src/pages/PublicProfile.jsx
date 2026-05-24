@@ -71,7 +71,7 @@ const PublicProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-card)] flex items-center justify-center">
         <LoadingSpinner message="Fetching your data…" />
       </div>
     )
@@ -79,8 +79,8 @@ const PublicProfile = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-        <div className="bg-white p-6 rounded-2xl shadow-md max-w-md w-full text-center">
+      <div className="min-h-screen bg-[var(--bg-card)] flex items-center justify-center px-4">
+        <div className="bg-[var(--bg-card)] p-6 rounded-2xl shadow-md max-w-md w-full text-center">
           <p className="text-sm text-red-600">{error}</p>
         </div>
       </div>
@@ -90,8 +90,8 @@ const PublicProfile = () => {
   const skills = profile.skills || []
 
   return (
-    <main role="main" aria-label="Public Profile" className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-6 md:p-8">
+    <main role="main" aria-label="Public Profile" className="min-h-screen bg-[var(--bg-card)] px-4 py-10 flex justify-center">
+      <div className="w-full max-w-3xl bg-[var(--bg-card)] rounded-2xl shadow-lg p-6 md:p-8">
         <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
           {/* Avatar */}
           <div className="w-20 h-20 rounded-full bg-indigo-500 flex items-center justify-center text-white text-3xl font-bold">
@@ -106,10 +106,10 @@ const PublicProfile = () => {
             <p className="text-sm text-indigo-600 mt-1">
               {profile.role || 'No role specified'}
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               📧 {profile.email}
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               📍 {profile.location || 'Unknown location'}
             </p>
 

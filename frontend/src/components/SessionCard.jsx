@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, userEmail, onAccept, onSuggestAlternative }) => {
+const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, userEmail, onAccept, onSuggestAlternative, onDecline }) => {
   const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
@@ -40,7 +40,7 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
     return () => clearInterval(interval);
   }, [session.date, session.time, session.status]);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status, isReceiver) => {
     switch (status) {
       case 'Scheduled':
       case 'Rescheduled':
@@ -48,7 +48,12 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
       case 'Completed':
         return 'bg-[var(--accent-dim)] text-[var(--accent-light)] border border-[var(--accent)]';
       case 'Cancelled':
-        return 'bg-[var(--red-bg)] text-[var(--red-text)] border border-[var(--red)]';
+      case 'Declined':
+        return 'bg-[var(--surface2)] text-[var(--text-muted)] border border-[var(--border-subtle)]';
+      case 'Pending':
+        return isReceiver 
+          ? 'bg-[rgba(124,111,224,0.15)] text-[#A78BFA] border border-[rgba(124,111,224,0.3)]' 
+          : 'bg-[rgba(234,179,8,0.15)] text-[#EAB308] border border-[rgba(234,179,8,0.3)]';
       default:
         return 'bg-[var(--surface2)] text-[var(--text-muted)] border border-[var(--border)]';
     }
@@ -57,8 +62,11 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
   const isActive = session.status === 'Scheduled' || session.status === 'Rescheduled';
   const isPending = session.status === 'Pending';
   const isCompleted = session.status === 'Completed';
+  const isDeclined = session.status === 'Declined';
+  const isCancelled = session.status === 'Cancelled';
   const hasReviewed = session.reviewedBy && session.reviewedBy.includes(userEmail);
   const isReceiver = session.requestedBy && session.requestedBy !== userEmail;
+  const isSender = session.requestedBy === userEmail;
 
   // Join button logic — only Video Sessions within the 15-min early window
   const isVideoSession = session.mode === 'Video Session';
@@ -76,18 +84,34 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
   const hasRoles = userRoles.mentorSkills.length > 0 || userRoles.learnerSkills.length > 0;
 
   return (
-    <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-4 hover:shadow-md transition-shadow group flex flex-col justify-between h-full">
+    <div className={`bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-sm rounded-xl p-4 transition-shadow group flex flex-col justify-between h-full ${(isDeclined || isCancelled) ? 'opacity-70' : 'hover:shadow-md'}`}>
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h4 className="font-bold text-gray-800 flex items-center gap-1.5 text-sm">
-            📅 {new Date(session.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-          </h4>
-          <p style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '4px' }}>
-            with {session.partnerName || session.partner?.name || session.participants?.find(p => p !== userEmail)?.split('@')[0] || 'Unknown'}
-          </p>
-          <p className="text-[11px] text-gray-500 mt-1 font-medium">
-            {new Date(`1970-01-01T${session.time}`).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })} • {session.duration} • {session.mode}
-          </p>
+          {isPending && isReceiver ? (
+            <>
+              <h4 className="font-bold text-[var(--text-primary)] flex items-center gap-1.5 text-sm mb-1">
+                📅 Session request from {session.requestedBy.split('@')[0]}
+              </h4>
+              <p className="text-[14px] text-[var(--text-secondary)] font-medium mt-1">
+                {new Date(session.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} · {new Date(`1970-01-01T${session.time}`).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })} · {session.duration}
+              </p>
+              <p className="text-[14px] text-[var(--text-secondary)] font-medium">
+                {session.mode}
+              </p>
+            </>
+          ) : (
+            <>
+              <h4 className="font-bold text-[var(--brand-purple-light)] flex items-center gap-1.5 text-sm">
+                📅 {new Date(session.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+              </h4>
+              <p className="text-[var(--text-primary)]" style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '4px' }}>
+                with {session.partnerName || session.partner?.name || session.participants?.find(p => p !== userEmail)?.split('@')[0] || 'Unknown'}
+              </p>
+              <p className="text-[11px] text-[var(--text-secondary)] mt-1 font-medium">
+                {new Date(`1970-01-01T${session.time}`).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })} • {session.duration} • {session.mode}
+              </p>
+            </>
+          )}
 
           {hasRoles && (
             <div className="flex flex-wrap gap-1 mt-2">
@@ -105,11 +129,17 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
           )}
         </div>
         <div className="flex flex-col items-end gap-1.5">
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${getStatusColor(session.status)}`}>
+          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${getStatusColor(session.status, isReceiver)}`}>
             {session.status === 'Pending'
-              ? session.requestedBy === userEmail
-                ? 'Awaiting their reply'
-                : 'Confirm your slot'
+              ? isReceiver
+                ? 'ACTION REQUIRED'
+                : 'AWAITING THEIR REPLY'
+              : session.status === 'Declined'
+              ? 'Request Declined'
+              : session.status === 'Cancelled'
+              ? 'Request Cancelled'
+              : session.status === 'Scheduled' || session.status === 'Rescheduled'
+              ? 'CONFIRMED'
               : session.status}
           </span>
           {isActive && timeLeft && (
@@ -122,13 +152,13 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
       </div>
 
       {session.notes && (
-        <div className="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
-          <p className="text-sm text-gray-600 italic">"{session.notes}"</p>
+        <div className="mb-4 bg-[var(--bg-input)] p-3 rounded-lg border border-[var(--border-subtle)]">
+          <p className="text-sm text-[var(--text-secondary)] italic">"{session.notes}"</p>
         </div>
       )}
 
       {isActive && (
-        <div className="flex gap-2 pt-2 border-t border-gray-50 mt-4">
+        <div className="flex gap-2 pt-2 border-t border-[var(--border-subtle)] mt-4">
           {canJoinNow ? (
             <Link
               to={`/session/${session._id}`}
@@ -139,7 +169,7 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
           ) : isVideoSession ? (
             <button
               disabled
-              className="flex-1 text-sm font-medium py-2 rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed relative group"
+              className="flex-1 text-sm font-medium py-2 rounded-lg bg-[var(--bg-card)] text-gray-400 cursor-not-allowed relative group"
             >
               🎥 Join Session
               <span className="absolute bottom-full mb-2 hidden group-hover:block w-max bg-gray-800 text-white text-xs px-2 py-1 rounded left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
@@ -160,7 +190,7 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
 
           <button
             onClick={() => onReschedule(session)}
-            className="flex-1 text-sm font-medium py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex-1 text-sm font-medium py-2 rounded-lg border border-[var(--border-subtle)] text-gray-700 hover:bg-[var(--bg-card)] transition-colors"
           >
             Reschedule
           </button>
@@ -186,41 +216,45 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
 
       {/* Pending session — Accept / Suggest Alternative / Reject */}
       {isPending && (
-        <div className="flex gap-2 pt-2 border-t border-gray-50 mt-4">
+        <div className="flex gap-2 pt-2 border-t border-[var(--border-subtle)] mt-4">
           {isReceiver ? (
             <>
               <button
+                onClick={() => onDecline(session._id)}
+                className="flex-1 text-sm font-semibold py-2 rounded-lg bg-transparent border border-[#4B5563] text-[#9CA3AF] hover:border-[#EF4444] hover:text-[#EF4444] transition-colors"
+              >
+                ✕ Decline
+              </button>
+              <button
                 onClick={() => onAccept(session._id)}
-                className="flex-1 text-sm font-semibold py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors shadow-sm"
+                className="flex-1 text-sm font-semibold py-2 rounded-lg bg-[#7C6FE0] text-white hover:bg-[#6B5FCC] transition-colors shadow-sm border border-transparent"
               >
                 ✓ Accept
-              </button>
-              {onSuggestAlternative && (
-                <button
-                  onClick={() => onSuggestAlternative(session)}
-                  className="flex-1 text-sm font-semibold py-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
-                >
-                  Suggest Alternative
-                </button>
-              )}
-              <button
-                onClick={() => onCancel(session._id)}
-                className="px-3 text-sm font-semibold py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-              >
-                Reject
               </button>
             </>
           ) : (
             <div className="flex flex-1 items-center justify-between">
-              <span className="text-sm font-medium text-gray-500 italic">Awaiting their reply…</span>
+              <span className="text-sm font-medium text-[var(--text-muted-new)] italic">Awaiting their reply...</span>
               <button
                 onClick={() => onCancel(session._id)}
-                className="text-xs font-semibold py-1.5 px-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                className="text-xs font-semibold py-1.5 px-3 rounded-lg bg-transparent border border-[#4B5563] text-[#9CA3AF] hover:border-[#EF4444] hover:text-[#EF4444] transition-colors"
               >
                 Cancel Request
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Declined / Cancelled Actions */}
+      {(isDeclined || isCancelled) && isSender && (
+        <div className="flex gap-2 pt-2 border-t border-[var(--border-subtle)] mt-4">
+          <button
+            onClick={() => onReschedule(session)}
+            className="flex-1 text-sm font-semibold py-2 rounded-lg border border-[var(--border-subtle)] text-[var(--text-primary)] hover:bg-[var(--surface2)] transition-colors"
+          >
+            Reschedule
+          </button>
         </div>
       )}
 

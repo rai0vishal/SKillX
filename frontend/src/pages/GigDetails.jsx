@@ -130,7 +130,7 @@ const GigDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[var(--bg-card)] flex items-center justify-center px-4">
         <LoadingSpinner message="Fetching your data…" />
       </div>
     )
@@ -138,7 +138,7 @@ const GigDetails = () => {
 
   if (!gig) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[var(--bg-card)] flex items-center justify-center px-4">
         <p className="text-sm text-gray-600">Gig not found.</p>
       </div>
     )
@@ -149,7 +149,7 @@ const GigDetails = () => {
     : []
 
   return (
-    <main role="main" aria-label="Gig Details" className="min-h-screen bg-gray-100 px-4 py-10 flex justify-center">
+    <main role="main" aria-label="Gig Details" className="min-h-screen bg-[var(--bg-card)] px-4 py-10 flex justify-center">
       <div className="w-full max-w-3xl space-y-6">
         <button
           onClick={() => navigate(-1)}
@@ -170,7 +170,7 @@ const GigDetails = () => {
         )}
 
         {/* Gig Card */}
-        <div className="bg-white rounded-2xl shadow-md p-6">
+        <div className="bg-[var(--bg-card)] rounded-2xl shadow-md p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-1">
             {gig.title}
           </h1>
@@ -206,7 +206,7 @@ const GigDetails = () => {
               <span className="font-medium">Location:</span>{' '}
               {gig.location}
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
               Posted by: {gig.postedBy || 'Unknown'}
             </p>
           </div>
@@ -215,7 +215,7 @@ const GigDetails = () => {
           <div className="flex flex-wrap items-center justify-between gap-3 mt-4 border-t pt-3">
             {isOwner ? (
               <div className="flex gap-3">
-                <span className="text-xs text-gray-500 self-center">
+                <span className="text-xs text-[var(--text-secondary)] self-center">
                   You are the owner of this gig.
                 </span>
                 <button
@@ -250,7 +250,7 @@ const GigDetails = () => {
 
         {/* OWNER: see all requests with Accept / Reject */}
         {isOwner && (
-          <div className="bg-white rounded-2xl shadow-md p-6">
+          <div className="bg-[var(--bg-card)] rounded-2xl shadow-md p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-3">
               Requests for this Gig
             </h2>
@@ -265,7 +265,7 @@ const GigDetails = () => {
                 {applications.map((app) => (
                   <div
                     key={app._id}
-                    className="border border-gray-200 rounded-xl p-3 text-sm"
+                    className="border border-[var(--border-subtle)] rounded-xl p-3 text-sm"
                   >
                     <p className="text-gray-800">
                       <span className="font-medium">From: </span>
@@ -276,7 +276,7 @@ const GigDetails = () => {
                         {app.message}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">
                       Status:{' '}
                       <span
                         className={

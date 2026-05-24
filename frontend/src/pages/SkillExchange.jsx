@@ -19,129 +19,161 @@ import { API_BASE_URL } from '../config/api.js'
 const MatchScoreRing = ({ score, size = 52 }) => {
   const r = 20
   const c = 2 * Math.PI * r
-  const fill = (score / 100) * c
-  const color = score >= 80 ? 'var(--green)' : score >= 50 ? '#D97706' : 'var(--red)'
+  
+  const isNeutral = score === '--' || score == null;
+  const numericScore = isNeutral ? 0 : Number(score);
+  
+  const fill = isNeutral ? 0 : (numericScore / 100) * c
+  const color = isNeutral ? 'var(--border-strong)' : numericScore >= 70 ? 'var(--green)' : numericScore >= 40 ? '#F59E0B' : 'var(--text-muted)'
+  const textColor = isNeutral ? 'var(--text-muted)' : color;
+
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-label={`${score}% match`} role="img">
+    <svg width={size} height={size} viewBox="0 0 48 48" aria-label={isNeutral ? 'No match score' : `${numericScore}% match`} role="img">
       <circle cx="24" cy="24" r={r} fill="none" stroke="var(--border)" strokeWidth="4" />
-      <circle
-        cx="24" cy="24" r={r} fill="none" stroke={color} strokeWidth="4"
-        strokeDasharray={`${fill} ${c}`} strokeLinecap="round"
-        transform="rotate(-90 24 24)"
-      />
-      <text x="24" y="28" textAnchor="middle" fontSize="11" fontWeight="700" fill={color}>
-        {score}%
+      {!isNeutral && (
+        <circle
+          cx="24" cy="24" r={r} fill="none" stroke={color} strokeWidth="4"
+          strokeDasharray={`${fill} ${c}`} strokeLinecap="round"
+          transform="rotate(-90 24 24)"
+        />
+      )}
+      <text x="24" y="28" textAnchor="middle" fontSize="11" fontWeight="700" fill={textColor}>
+        {isNeutral ? '--' : `${numericScore}%`}
       </text>
     </svg>
   )
 }
 
 /* ─── Match Card ────────────────────────────────────────── */
-const MatchCard = ({ match, onRequest, isRec = false }) => (
-  <motion.div
-    whileHover={{ y: -3, scale: 1.01 }}
-    transition={{ type: 'spring', stiffness: 360, damping: 22 }}
-    style={{
-      background: 'var(--surface)',
-      border: isRec ? '2px solid var(--border-strong)' : '1px solid var(--border)',
-      borderRadius: 'var(--radius-lg)',
-      padding: 20,
-      boxShadow: isRec ? 'var(--shadow-md)' : 'var(--shadow-sm)',
-      position: 'relative',
-      overflow: 'hidden',
-    }}
-  >
-    {isRec && (
-      <div style={{
-        position: 'absolute', top: 10, right: 10,
-        display: 'flex', alignItems: 'center', gap: 4,
-        padding: '2px 8px', borderRadius: 9999,
-        background: 'var(--accent-dim)', color: 'var(--accent)',
-        fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
-      }}>
-        <Sparkles size={9} aria-hidden="true" /> RECOMMENDED
-      </div>
-    )}
+function MatchCard({ match, isRec = false, onRequest, currentUid, currentEmail }) {
+  const isOwnPost = (currentUid && match.userId === currentUid) || (currentEmail && match.email === currentEmail);
+  
+  // Use backend provided matchScore if available, otherwise fallback
+  const finalScore = match.matchScore ?? null;
 
-    {/* Header */}
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-      <div style={{
-        width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-        background: 'var(--accent-dim)', color: 'var(--accent)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 16, fontWeight: 700, border: '2px solid var(--border-strong)',
-      }}>
-        {match.name?.[0]?.toUpperCase() || '?'}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
-          {match.name}
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <MapPin size={11} aria-hidden="true" /> {match.location}
-        </div>
-      </div>
-      <MatchScoreRing score={match.matchScore ?? 80} />
-    </div>
-
-    {/* Skills */}
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 50 }}>Offers:</span>
-        <span style={{
-          padding: '3px 10px', borderRadius: 9999,
-          background: 'var(--blue-bg)', color: 'var(--blue)',
-          border: '1px solid var(--blue)', fontSize: 12, fontWeight: 500,
-        }}>{match.skillOffered}</span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 50 }}>Wants:</span>
-        <span style={{
-          padding: '3px 10px', borderRadius: 9999,
-          background: 'var(--accent-dim)', color: 'var(--accent)',
-          border: '1px solid var(--border-strong)', fontSize: 12, fontWeight: 500,
-        }}>{match.skillWanted}</span>
-      </div>
-    </div>
-
-    {/* AI Insight */}
-    {match.aiInsight && (
-      <div style={{
-        marginBottom: 12, padding: '10px 12px',
-        background: 'var(--bg-overlay)', borderRadius: 'var(--radius-md)',
-        border: '1px solid var(--border)',
-      }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Sparkles size={11} aria-hidden="true" /> AI Insight
-        </p>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>{match.aiInsight}</p>
-      </div>
-    )}
-
-    {/* Action */}
-    <button
-      onClick={() => onRequest(match)}
+  return (
+    <motion.div
+      whileHover={{ y: -3, scale: 1.01 }}
+      transition={{ type: 'spring', stiffness: 360, damping: 22 }}
       style={{
-        width: '100%', padding: 9,
-        background: 'var(--accent)', color: '#fff',
-        border: 'none', borderRadius: 'var(--radius-md)',
-        fontSize: 13, fontWeight: 600, cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        transition: 'background var(--transition-fast)',
+        background: 'var(--surface)',
+        border: isRec ? '2px solid var(--border-strong)' : '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: 20,
+        boxShadow: isRec ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+        position: 'relative',
+        overflow: 'hidden',
       }}
-      onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-hover)' }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)' }}
     >
-      <Send size={14} aria-hidden="true" /> Request Exchange
-    </button>
-  </motion.div>
-)
+      {isRec && (
+        <div style={{
+          position: 'absolute', top: 10, right: 10,
+          display: 'flex', alignItems: 'center', gap: 4,
+          padding: '2px 8px', borderRadius: 9999,
+          background: 'var(--accent-dim)', color: 'var(--accent)',
+          fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
+        }}>
+          <Sparkles size={9} aria-hidden="true" /> RECOMMENDED
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+          background: 'var(--accent-dim)', color: 'var(--accent)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16, fontWeight: 700, border: '2px solid var(--border-strong)',
+        }}>
+          {match.name?.[0]?.toUpperCase() || '?'}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
+            {match.name}
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <MapPin size={11} aria-hidden="true" /> {match.location}
+          </div>
+        </div>
+        <MatchScoreRing score={finalScore} />
+      </div>
+
+      {/* Skills */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 50 }}>Offers:</span>
+          <span style={{
+            padding: '3px 10px', borderRadius: 9999,
+            background: 'var(--blue-bg)', color: 'var(--blue)',
+            border: '1px solid var(--blue)', fontSize: 12, fontWeight: 500,
+          }}>{match.skillOffered}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 50 }}>Wants:</span>
+          <span style={{
+            padding: '3px 10px', borderRadius: 9999,
+            background: 'var(--accent-dim)', color: 'var(--accent)',
+            border: '1px solid var(--border-strong)', fontSize: 12, fontWeight: 500,
+          }}>{match.skillWanted}</span>
+        </div>
+      </div>
+
+      {/* AI Insight */}
+      {match.aiInsight && (
+        <div style={{
+          marginBottom: 12, padding: '10px 12px',
+          background: 'var(--bg-overlay)', borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border)',
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Sparkles size={11} aria-hidden="true" /> AI Insight
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>{match.aiInsight}</p>
+        </div>
+      )}
+
+      {/* Action */}
+      {isOwnPost ? (
+        <div style={{
+          width: '100%', padding: '8px 0',
+          border: '1px solid var(--accent-dim)',
+          borderRadius: 'var(--radius-md)',
+          color: 'var(--accent)',
+          fontSize: 13, fontWeight: 600,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'var(--accent-dim)',
+          cursor: 'default',
+          userSelect: 'none'
+        }}>
+          ✦ Your Exchange Listing
+        </div>
+      ) : (
+        <button
+          onClick={() => onRequest(match)}
+          style={{
+            width: '100%', padding: 9,
+            background: 'var(--accent)', color: '#fff',
+            border: 'none', borderRadius: 'var(--radius-md)',
+            fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            transition: 'background var(--transition-fast)',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-hover)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)' }}
+        >
+          <Send size={14} aria-hidden="true" /> Request Exchange
+        </button>
+      )}
+    </motion.div>
+  )
+}
 
 /* ─── Main Component ────────────────────────────────────── */
 const SkillExchange = () => {
   const navigate = useNavigate()
   const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
   const currentEmail = storedUser.email
+  const currentUid = storedUser.uid || storedUser.id
 
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
@@ -164,7 +196,8 @@ const SkillExchange = () => {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch(`${API_BASE_URL}/api/skill-exchange`)
+      const url = currentUid ? `${API_BASE_URL}/api/skill-exchange?currentUserId=${encodeURIComponent(currentUid)}` : `${API_BASE_URL}/api/skill-exchange`
+      const res = await fetch(url)
       if (!res.ok) throw new Error('Failed to fetch skill exchange entries')
       const data = await res.json()
       setEntries(data)
@@ -177,9 +210,9 @@ const SkillExchange = () => {
   }
 
   const fetchRecommendations = async () => {
-    if (!currentEmail) return
+    if (!currentUid) return
 
-    const cacheKey = `skillx_recommendations_${currentEmail}`
+    const cacheKey = `skillx_recommendations_${currentUid}`
     const cachedData = localStorage.getItem(cacheKey)
     if (cachedData) {
       try {
@@ -190,7 +223,7 @@ const SkillExchange = () => {
 
     try {
       setLoadingRecommendations(true)
-      const res = await fetch(`${API_BASE_URL}/api/skill-exchange/recommendations?email=${encodeURIComponent(currentEmail)}`)
+      const res = await fetch(`${API_BASE_URL}/api/skill-exchange/recommendations?userId=${encodeURIComponent(currentUid)}`)
       if (res.ok) {
         const data = await res.json()
         setRecommendations(data)
@@ -206,7 +239,7 @@ const SkillExchange = () => {
   useEffect(() => {
     fetchEntries()
     fetchRecommendations()
-  }, [currentEmail])
+  }, [currentUid])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -219,13 +252,15 @@ const SkillExchange = () => {
     setError(null)
 
     try {
-      if (!currentEmail) {
+      if (!currentUid) {
         toast.error('You must be signed in to create a skill exchange profile.')
         setSubmitting(false)
         return
       }
 
-      const payload = { ...form, email: currentEmail, matchScore: 80 }
+      console.log('handleSave called', form)
+
+      const payload = { ...form, userId: currentUid, email: currentEmail, matchScore: 80 }
       const res = await fetch(`${API_BASE_URL}/api/skill-exchange`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -238,7 +273,7 @@ const SkillExchange = () => {
       setForm({ name: storedUser.name || '', skillOffered: '', skillWanted: '', location: 'Remote' })
       toast.success('Exchange profile saved! Refreshing matches…')
 
-      localStorage.removeItem(`skillx_recommendations_${currentEmail}`)
+      localStorage.removeItem(`skillx_recommendations_${currentUid}`)
       fetchRecommendations()
     } catch (err) {
       console.error(err)
@@ -250,12 +285,8 @@ const SkillExchange = () => {
 
   const handleRequestExchange = async (user) => {
     try {
-      if (!currentEmail) {
+      if (!currentUid) {
         toast.error('You must be signed in to send a request.')
-        return
-      }
-      if (!user.email) {
-        toast.error('This user has no linked email for exchange requests.')
         return
       }
 
@@ -263,7 +294,14 @@ const SkillExchange = () => {
       const res = await fetch(`${API_BASE_URL}/api/exchange-requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fromEmail: currentEmail, toEmail: user.email, message }),
+        body: JSON.stringify({ 
+          fromUserId: currentUid, 
+          toUserId: user.userId, 
+          exchangeId: user._id,
+          message,
+          fromEmail: currentEmail,
+          toEmail: user.email
+        }),
       })
       if (!res.ok) throw new Error('Failed to send exchange request')
       toast.success(`Exchange request sent to ${user.name}!`)
@@ -294,7 +332,7 @@ const SkillExchange = () => {
     marginBottom: 6,
   }
 
-  const otherEntries = entries.filter(u => u.email !== currentEmail)
+  const otherEntries = entries.filter(u => u.userId !== currentUid)
   const filteredEntries = searchQuery
     ? otherEntries.filter(u =>
         u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -489,7 +527,7 @@ const SkillExchange = () => {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
                 {recommendations.map(match => (
-                  <MatchCard key={`rec-${match._id}`} match={match} onRequest={handleRequestExchange} isRec />
+                  <MatchCard key={`rec-${match._id}`} match={match} onRequest={handleRequestExchange} isRec currentUid={currentUid} currentEmail={currentEmail} />
                 ))}
               </div>
             )}
@@ -532,7 +570,7 @@ const SkillExchange = () => {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
                 {filteredEntries.map(match => (
-                  <MatchCard key={match._id} match={match} onRequest={handleRequestExchange} />
+                  <MatchCard key={match._id} match={match} onRequest={handleRequestExchange} currentUid={currentUid} currentEmail={currentEmail} />
                 ))}
               </div>
             )}
