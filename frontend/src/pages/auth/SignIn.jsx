@@ -2,9 +2,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { signInWithEmailAndPassword } from 'firebase/auth'
-// src/pages/auth/SignUp.jsx
 import { auth } from '../../firebase/firebaseConfig'
-
 import { API_BASE_URL } from '../../config/api.js'
 
 const SignIn = () => {
@@ -23,7 +21,6 @@ const SignIn = () => {
     setError(null)
 
     try {
-      // ✅ Firebase sign in
       const userCredential = await signInWithEmailAndPassword(
         auth,
         form.email,
@@ -32,8 +29,6 @@ const SignIn = () => {
 
       const user = userCredential.user
 
-      // Optional: you can fetch profile from backend and store name too
-      // For now, we just set email, uid
       localStorage.setItem(
         'user',
         JSON.stringify({
@@ -62,46 +57,48 @@ const SignIn = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 mt-16">
-        <h1 className="text-2xl font-bold text-gray-800 mb-1">Sign In</h1>
-        <p className="text-sm text-gray-600 mb-4">
-          Welcome back to SkillX. Continue where you left off.
-        </p>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--bg)' }}>
+      <div className="w-full max-w-md card-glass p-8 mt-16 relative overflow-hidden">
+        {/* Glow effect */}
+        <div style={{ position: 'absolute', top: -50, left: -50, width: 200, height: 200, background: 'var(--accent)', filter: 'blur(100px)', opacity: 0.15, pointerEvents: 'none' }} />
+
+        <div style={{ textAlign: 'center', marginBottom: 28, position: 'relative' }}>
+          <h1 className="text-h1" style={{ marginBottom: 8 }}>Welcome Back</h1>
+          <p className="text-caption">
+            Sign in to your SkillX account to continue.
+          </p>
+        </div>
 
         {error && (
-          <div className="mb-4 text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg">
-            {error}
+          <div style={{ marginBottom: 24, padding: '12px 16px', background: 'var(--red-bg)', color: 'var(--red-text)', border: '0.5px solid var(--red)', borderRadius: 'var(--radius-md)', fontSize: 13, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <i className="ti ti-alert-circle" style={{ marginTop: 2 }} />
+            <span>{error}</span>
           </div>
         )}
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'relative' }}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+            <label className="input-label">Email</label>
             <input
               type="email"
               name="email"
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="input"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <label className="input-label">Password</label>
             <input
               type="password"
               name="password"
               value={form.password}
               onChange={handleChange}
               required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="input"
               placeholder="••••••••"
             />
           </div>
@@ -109,15 +106,16 @@ const SignIn = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-60"
+            className="btn-primary"
+            style={{ width: '100%', justifyContent: 'center', marginTop: 8, padding: '10px' }}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? <><i className="ti ti-loader animate-spin" /> Signing in...</> : 'Sign In'}
           </button>
         </form>
 
-        <p className="text-xs text-gray-500 mt-4 text-center">
+        <p className="text-caption" style={{ marginTop: 24, textAlign: 'center' }}>
           Don&apos;t have an account?{' '}
-          <Link to="/signup" className="text-indigo-600 font-medium">
+          <Link to="/signup" style={{ color: 'var(--accent-light)', fontWeight: 500, textDecoration: 'none' }}>
             Sign Up
           </Link>
         </p>

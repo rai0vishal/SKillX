@@ -76,7 +76,7 @@ const Achievements = ({ badges, loading }) => {
                 padding: '16px 12px',
                 borderRadius: 'var(--radius-md)',
                 border: `1px solid ${isUnlocked ? badgeDef.border : 'var(--border)'}`,
-                background: isUnlocked ? badgeDef.bg : 'var(--bg-surface-2)',
+                background: isUnlocked ? badgeDef.bg : 'var(--surface2)',
                 transition: 'all var(--transition-base)',
                 ...(isUnlocked ? { cursor: 'default' } : { opacity: 0.6, filter: 'grayscale(0.6)' }),
               }}
@@ -95,7 +95,7 @@ const Achievements = ({ badges, loading }) => {
               </div>
 
               <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: isUnlocked ? 'var(--text-primary)' : 'var(--text-muted)', margin: 0, lineHeight: 1.3 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: isUnlocked ? 'var(--text)' : 'var(--text-muted)', margin: 0, lineHeight: 1.3 }}>
                   {badgeDef.name}
                 </p>
               </div>

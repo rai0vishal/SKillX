@@ -23,7 +23,7 @@ router.get('/:email', async (req, res) => {
 // POST /api/profile → create or update profile
 router.post('/', async (req, res) => {
   try {
-    const { email, name, role, location, bio, skills, stats } = req.body;
+    const { email, name, role, location, bio, skills, stats, socialLinks } = req.body;
 
     if (!email || !name) {
       return res.status(400).json({ message: 'Email and name are required' });
@@ -44,6 +44,7 @@ router.post('/', async (req, res) => {
         location,
         bio,
         skills: skillsArray,
+        socialLinks: socialLinks || [],
         stats: {
           gigsPosted: stats?.gigsPosted ?? 0,
           gigsCompleted: stats?.gigsCompleted ?? 0,

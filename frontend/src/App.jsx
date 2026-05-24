@@ -15,6 +15,7 @@ import Chat from './pages/Chat'
 import VideoSession from './pages/VideoSession'
 import AdminDashboard from './pages/AdminDashboard'
 import Search from './pages/Search'
+import Browse from './pages/Browse'
 
 import SignIn from './pages/auth/SignIn'
 import SignUp from './pages/auth/SignUp'
@@ -53,18 +54,21 @@ const App = () => {
   const { theme } = useTheme()
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-page)' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
       {/* Toast provider — renders bottom-right */}
       <Toaster
         position="bottom-right"
-        theme={theme}
+        theme="dark"
         richColors
         expand
         closeButton
         toastOptions={{
           style: {
             fontFamily: "'Inter', sans-serif",
-            fontSize: '14px',
+            fontSize: '13px',
+            background: 'var(--panel)',
+            border: '0.5px solid var(--border)',
+            color: 'var(--text)',
           },
         }}
       />
@@ -124,9 +128,21 @@ const App = () => {
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <PageWrapper>
-                    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 16px' }}>
-                      <Profile />
-                    </div>
+                    <Profile />
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile/:userId" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <Profile />
+                  </PageWrapper>
+                </ProtectedRoute>
+              } />
+              <Route path="/browse" element={
+                <ProtectedRoute>
+                  <PageWrapper>
+                    <Browse />
                   </PageWrapper>
                 </ProtectedRoute>
               } />

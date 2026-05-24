@@ -49,7 +49,7 @@ const StarRow = ({ count = 5 }) => (
 ══════════════════════════════════════════════════════════ */
 const LandingPage = () => {
   return (
-    <div style={{ background: 'var(--bg-page)', color: 'var(--text-primary)', overflowX: 'hidden' }}>
+    <div style={{ background: 'var(--bg)', color: 'var(--text)', overflowX: 'hidden' }}>
 
       {/* ── SECTION 1: HERO ───────────────────────────────── */}
       <section
@@ -61,7 +61,7 @@ const LandingPage = () => {
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
-          background: 'radial-gradient(ellipse 80% 60% at 50% 0%, #EEF2FF 0%, var(--bg-page) 70%)',
+          background: 'radial-gradient(ellipse 80% 60% at 50% 0%, #EEF2FF 0%, var(--bg) 70%)',
           padding: '80px 24px 60px',
           textAlign: 'center',
         }}
@@ -103,10 +103,10 @@ const LandingPage = () => {
                 padding: '5px 14px',
                 borderRadius: 9999,
                 border: '1px solid var(--border-strong)',
-                background: 'var(--primary-light)',
+                background: 'var(--accent-dim)',
                 fontSize: 12,
                 fontWeight: 600,
-                color: 'var(--primary)',
+                color: 'var(--accent)',
                 textDecoration: 'none',
                 transition: 'all 150ms',
               }}
@@ -121,7 +121,7 @@ const LandingPage = () => {
           <motion.h1
             variants={fadeUp}
             className="text-hero"
-            style={{ margin: '0 0 20px', color: 'var(--text-primary)' }}
+            style={{ margin: '0 0 20px', color: 'var(--text)' }}
           >
             <span className="gradient-text">Exchange Skills.</span>
             <br />Grow Together.
@@ -131,7 +131,7 @@ const LandingPage = () => {
           <motion.p
             variants={fadeUp}
             style={{
-              fontSize: 18, lineHeight: 1.7, color: 'var(--text-secondary)',
+              fontSize: 18, lineHeight: 1.7, color: 'var(--text-muted)',
               maxWidth: 520, margin: '0 auto 36px',
             }}
           >
@@ -149,12 +149,12 @@ const LandingPage = () => {
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 padding: '14px 28px', borderRadius: 10, fontWeight: 700, fontSize: 15,
-                background: 'var(--primary)', color: '#fff',
+                background: 'var(--accent)', color: '#fff',
                 textDecoration: 'none', boxShadow: '0 4px 14px rgba(91,79,232,0.4)',
                 transition: 'all 200ms',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-hover)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.transform = 'translateY(0)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.transform = 'translateY(0)' }}
             >
               Get Started Free
               <ChevronRight size={16} aria-hidden="true" />
@@ -164,12 +164,12 @@ const LandingPage = () => {
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 padding: '14px 28px', borderRadius: 10, fontWeight: 600, fontSize: 15,
-                background: 'transparent', color: 'var(--text-secondary)',
+                background: 'transparent', color: 'var(--text-muted)',
                 border: '1.5px solid var(--border)', textDecoration: 'none',
                 transition: 'all 200ms',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'var(--primary-light)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.background = 'var(--accent-dim)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent' }}
             >
               <Play size={15} aria-hidden="true" />
               See How It Works
@@ -178,7 +178,7 @@ const LandingPage = () => {
 
           {/* Social proof */}
           <motion.p variants={fadeUp} style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Join <strong style={{ color: 'var(--text-primary)' }}>500+</strong> learners already exchanging skills
+            Join <strong style={{ color: 'var(--text)' }}>500+</strong> learners already exchanging skills
           </motion.p>
         </motion.div>
 
@@ -198,11 +198,11 @@ const LandingPage = () => {
             style={{ width: 220, zIndex: 1 }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ fontSize: 16 }}>👩‍💻</span>
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Priya S.</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Priya S.</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Offers: React</div>
               </div>
             </div>
@@ -214,15 +214,15 @@ const LandingPage = () => {
             style={{ width: 240, zIndex: 3 }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <ArrowLeftRight size={18} color="var(--primary)" aria-hidden="true" />
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>Match Found!</span>
+              <ArrowLeftRight size={18} color="var(--accent)" aria-hidden="true" />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>Match Found!</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-secondary)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-muted)' }}>
               <span>React ↔ UI Design</span>
-              <CheckCircle2 size={14} color="var(--success)" aria-hidden="true" />
+              <CheckCircle2 size={14} color="var(--green)" aria-hidden="true" />
             </div>
             <div style={{ marginTop: 8, height: 3, borderRadius: 9999, background: 'var(--border)' }}>
-              <div style={{ width: '80%', height: '100%', borderRadius: 9999, background: 'var(--primary)' }} />
+              <div style={{ width: '80%', height: '100%', borderRadius: 9999, background: 'var(--accent)' }} />
             </div>
           </HeroCard>
 
@@ -235,7 +235,7 @@ const LandingPage = () => {
                 <span style={{ fontSize: 16 }}>🎨</span>
               </div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Arjun M.</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Arjun M.</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Offers: Design</div>
               </div>
             </div>
@@ -247,7 +247,7 @@ const LandingPage = () => {
       {/* ── SECTION 2: HOW IT WORKS ───────────────────────── */}
       <section
         id="how-it-works"
-        style={{ padding: '96px 24px', background: 'var(--bg-surface)', textAlign: 'center' }}
+        style={{ padding: '96px 24px', background: 'var(--surface)', textAlign: 'center' }}
       >
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <motion.div
@@ -255,13 +255,13 @@ const LandingPage = () => {
           >
             <motion.p
               variants={fadeUp}
-              style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: 12 }}
+              style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}
             >
               How It Works
             </motion.p>
             <motion.h2
               variants={fadeUp}
-              style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 64, color: 'var(--text-primary)' }}
+              style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 64, color: 'var(--text)' }}
             >
               Exchange skills in 3 simple steps
             </motion.h2>
@@ -285,17 +285,17 @@ const LandingPage = () => {
                   <div
                     style={{
                       width: 56, height: 56, borderRadius: '50%',
-                      background: 'var(--primary)', color: '#fff',
+                      background: 'var(--accent)', color: '#fff',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 15, fontWeight: 700, position: 'relative', zIndex: 1,
                     }}
                   >
                     {num}
                   </div>
-                  <Icon size={32} color="var(--primary)" aria-hidden="true" />
+                  <Icon size={32} color="var(--accent)" aria-hidden="true" />
                   <div>
-                    <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>{title}</h3>
-                    <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)' }}>{desc}</p>
+                    <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>{title}</h3>
+                    <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-muted)' }}>{desc}</p>
                   </div>
                 </motion.div>
               ))}
@@ -307,14 +307,14 @@ const LandingPage = () => {
       {/* ── SECTION 3: FEATURES ───────────────────────────── */}
       <section
         id="features"
-        style={{ padding: '96px 24px', background: 'var(--bg-page)', textAlign: 'center' }}
+        style={{ padding: '96px 24px', background: 'var(--bg)', textAlign: 'center' }}
       >
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
-            <motion.p variants={fadeUp} style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: 12 }}>
+            <motion.p variants={fadeUp} style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
               Features
             </motion.p>
-            <motion.h2 variants={fadeUp} style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 64, color: 'var(--text-primary)' }}>
+            <motion.h2 variants={fadeUp} style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 64, color: 'var(--text)' }}>
               Everything you need to grow
             </motion.h2>
 
@@ -344,8 +344,8 @@ const LandingPage = () => {
                   >
                     <Icon size={24} color={color} strokeWidth={1.8} aria-hidden="true" />
                   </div>
-                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: 'var(--text-primary)' }}>{title}</h3>
-                  <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)' }}>{desc}</p>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: 'var(--text)' }}>{title}</h3>
+                  <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-muted)' }}>{desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -356,7 +356,7 @@ const LandingPage = () => {
       {/* ── SECTION 4: STATS ──────────────────────────────── */}
       <section
         id="stats"
-        style={{ padding: '80px 24px', background: 'var(--primary-dark)', color: '#fff', textAlign: 'center' }}
+        style={{ padding: '80px 24px', background: 'var(--accent-hover)', color: '#fff', textAlign: 'center' }}
       >
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <motion.div
@@ -387,14 +387,14 @@ const LandingPage = () => {
       {/* ── SECTION 5: TESTIMONIALS ───────────────────────── */}
       <section
         id="testimonials"
-        style={{ padding: '96px 24px', background: 'var(--bg-surface)' }}
+        style={{ padding: '96px 24px', background: 'var(--surface)' }}
       >
         <div style={{ maxWidth: 1000, margin: '0 auto', textAlign: 'center' }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
-            <motion.p variants={fadeUp} style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: 12 }}>
+            <motion.p variants={fadeUp} style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
               Testimonials
             </motion.p>
-            <motion.h2 variants={fadeUp} style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 48, color: 'var(--text-primary)' }}>
+            <motion.h2 variants={fadeUp} style={{ fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 48, color: 'var(--text)' }}>
               What learners are saying
             </motion.h2>
 
@@ -423,14 +423,14 @@ const LandingPage = () => {
                   style={{ textAlign: 'left' }}
                 >
                   <StarRow count={stars} />
-                  <p style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--text-secondary)', margin: '14px 0 20px', fontStyle: 'italic' }}>
+                  <p style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--text-muted)', margin: '14px 0 20px', fontStyle: 'italic' }}>
                     "{quote}"
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div
                       style={{
                         width: 36, height: 36, borderRadius: '50%',
-                        background: 'var(--primary-light)', color: 'var(--primary)',
+                        background: 'var(--accent-dim)', color: 'var(--accent)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontWeight: 700, fontSize: 13, flexShrink: 0,
                       }}
@@ -438,7 +438,7 @@ const LandingPage = () => {
                       {initials}
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{name}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{name}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{role}</div>
                     </div>
                   </div>
@@ -450,7 +450,7 @@ const LandingPage = () => {
       </section>
 
       {/* ── SECTION 6: CTA BANNER ─────────────────────────── */}
-      <section style={{ padding: '80px 24px', background: 'var(--bg-page)' }}>
+      <section style={{ padding: '80px 24px', background: 'var(--bg)' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <motion.div
             initial={{ opacity: 0, y: 32 }}
@@ -458,7 +458,7 @@ const LandingPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.55 }}
             style={{
-              background: 'linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%)',
+              background: 'linear-gradient(135deg, var(--accent) 0%, #7C3AED 100%)',
               borderRadius: 24, padding: '64px 48px', textAlign: 'center',
               position: 'relative', overflow: 'hidden',
             }}
@@ -494,7 +494,7 @@ const LandingPage = () => {
                 to="/signup"
                 style={{
                   padding: '12px 28px', borderRadius: 10, fontWeight: 700, fontSize: 15,
-                  background: '#fff', color: 'var(--primary)', textDecoration: 'none',
+                  background: '#fff', color: 'var(--accent)', textDecoration: 'none',
                   display: 'inline-flex', alignItems: 'center', gap: 8,
                   transition: 'all 200ms',
                   boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
@@ -527,7 +527,7 @@ const LandingPage = () => {
       {/* ── FOOTER ────────────────────────────────────────── */}
       <footer
         style={{
-          background: 'var(--bg-surface)',
+          background: 'var(--surface)',
           borderTop: '1px solid var(--border)',
           padding: '48px 24px 24px',
         }}
@@ -536,10 +536,10 @@ const LandingPage = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 48, marginBottom: 40 }}>
             {/* Brand */}
             <div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)', marginBottom: 10 }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent)', marginBottom: 10 }}>
                 Skill<span className="gradient-text">X</span>
               </div>
-              <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)', maxWidth: 280 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-muted)', maxWidth: 280 }}>
                 A platform to exchange skills, post gigs, and grow together — completely free.
               </p>
               <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
@@ -556,13 +556,13 @@ const LandingPage = () => {
                     aria-label={label}
                     style={{
                       width: 34, height: 34, borderRadius: 8,
-                      border: '1px solid var(--border)', background: 'var(--bg-surface-2)',
+                      border: '1px solid var(--border)', background: 'var(--surface2)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'var(--text-secondary)', textDecoration: 'none',
+                      color: 'var(--text-muted)', textDecoration: 'none',
                       transition: 'all 150ms',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--primary-light)' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-surface-2)' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--accent-dim)' }}
+                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--surface2)' }}
                   >
                     <Icon size={15} aria-hidden="true" />
                   </a>
@@ -572,7 +572,7 @@ const LandingPage = () => {
 
             {/* Quick links */}
             <div>
-              <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16, letterSpacing: '0.01em' }}>Quick Links</h3>
+              <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 16, letterSpacing: '0.01em' }}>Quick Links</h3>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
                   { to: '/dashboard',    label: 'Dashboard' },
@@ -584,7 +584,7 @@ const LandingPage = () => {
                     <Link
                       to={to}
                       style={{ fontSize: 14, color: 'var(--text-muted)', textDecoration: 'none', transition: 'color 150ms' }}
-                      onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)' }}
                       onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
                     >
                       {label}
@@ -596,7 +596,7 @@ const LandingPage = () => {
 
             {/* Contact */}
             <div>
-              <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16, letterSpacing: '0.01em' }}>Contact</h3>
+              <h3 style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 16, letterSpacing: '0.01em' }}>Contact</h3>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <li style={{ fontSize: 14, color: 'var(--text-muted)' }}>support@skillx.com</li>
                 <li style={{ fontSize: 14, color: 'var(--text-muted)' }}>+91 98765 43210</li>

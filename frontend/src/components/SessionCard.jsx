@@ -17,7 +17,7 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
       const distance = sessionTime - now;
 
       if (distance < 0) {
-        setTimeLeft('Session Started');
+        setTimeLeft('Live now');
         return;
       }
 
@@ -44,13 +44,13 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
     switch (status) {
       case 'Scheduled':
       case 'Rescheduled':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-[var(--green-bg)] text-[var(--green-text)] border border-[var(--green)]';
       case 'Completed':
-        return 'bg-green-100 text-green-700';
+        return 'bg-[var(--accent-dim)] text-[var(--accent-light)] border border-[var(--accent)]';
       case 'Cancelled':
-        return 'bg-red-100 text-red-700';
+        return 'bg-[var(--red-bg)] text-[var(--red-text)] border border-[var(--red)]';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-[var(--surface2)] text-[var(--text-muted)] border border-[var(--border)]';
     }
   };
 
@@ -108,13 +108,14 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${getStatusColor(session.status)}`}>
             {session.status === 'Pending'
               ? session.requestedBy === userEmail
-                ? 'Awaiting their confirmation'
+                ? 'Awaiting their reply'
                 : 'Confirm your slot'
               : session.status}
           </span>
           {isActive && timeLeft && (
-            <span className={`text-[10px] font-bold ${timeLeft === 'Session Started' ? 'text-green-600 animate-pulse' : 'text-orange-500'}`}>
-              ⏳ {timeLeft}
+            <span className={`text-[10px] font-bold flex items-center gap-1 ${timeLeft === 'Live now' ? 'text-[var(--accent-light)] bg-[var(--accent-dim)] px-2 py-0.5 rounded-full border border-[var(--accent)]' : 'text-orange-500'}`}>
+              {timeLeft === 'Live now' && <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />}
+              {timeLeft !== 'Live now' && '⏳'} {timeLeft}
             </span>
           )}
         </div>
@@ -211,7 +212,7 @@ const SessionCard = ({ session, onReschedule, onCancel, onComplete, onReview, us
             </>
           ) : (
             <div className="flex flex-1 items-center justify-between">
-              <span className="text-sm font-medium text-gray-500 italic">Waiting for their confirmation…</span>
+              <span className="text-sm font-medium text-gray-500 italic">Awaiting their reply…</span>
               <button
                 onClick={() => onCancel(session._id)}
                 className="text-xs font-semibold py-1.5 px-3 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"

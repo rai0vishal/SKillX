@@ -67,7 +67,7 @@ const GigDetails = () => {
   }, [isOwner])
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this gig?')) return
+    if (!true) return
     try {
       const res = await fetch(`${API_BASE_URL}/api/gigs/${id}`, {
         method: 'DELETE',
