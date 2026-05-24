@@ -1,7 +1,7 @@
 import React from 'react';
 
 const STATUS_CONFIG = {
-  Pending: { color: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' },
+  Pending: { color: 'bg-[var(--bg-card)] text-gray-600', dot: 'bg-gray-400' },
   'In Progress': { color: 'bg-blue-50 text-blue-600', dot: 'bg-blue-500' },
   Completed: { color: 'bg-green-50 text-green-600', dot: 'bg-green-500' },
 };
@@ -16,7 +16,7 @@ const TaskCard = ({ task, onStatusChange, onDelete, currentUserEmail }) => {
   };
 
   return (
-    <div className={`flex items-start gap-3 p-3 bg-white rounded-xl border transition-all ${isCompleted ? 'border-green-100 opacity-70' : 'border-gray-100 hover:shadow-sm'} group`}>
+    <div className={`flex items-start gap-3 p-3 bg-[var(--bg-card)] rounded-xl border transition-all ${isCompleted ? 'border-green-100 opacity-70' : 'border-gray-100 hover:shadow-sm'} group`}>
       {/* Checkbox toggle */}
       <button
         onClick={cycleStatus}

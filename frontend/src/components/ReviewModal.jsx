@@ -39,14 +39,14 @@ const ReviewModal = ({ isOpen, onClose, onSubmit, isSubmitting, sessionId, revie
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+      <div className="bg-[var(--bg-card)] rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-100 text-center">
           <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center text-2xl mx-auto mb-3">
             ✅
           </div>
           <h2 className="text-xl font-bold text-gray-800">Session Completed!</h2>
-          <p className="text-sm text-gray-500 mt-1">Rate your experience with this session</p>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">Rate your experience with this session</p>
         </div>
 
         {/* Body */}
@@ -102,11 +102,11 @@ const ReviewModal = ({ isOpen, onClose, onSubmit, isSubmitting, sessionId, revie
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-between gap-3">
+        <div className="p-6 border-t border-gray-100 bg-[var(--bg-card)] flex justify-between gap-3">
           <button
             type="button"
             onClick={handleSkip}
-            className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-gray-700 transition-colors"
           >
             Skip
           </button>

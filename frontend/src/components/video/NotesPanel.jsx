@@ -45,7 +45,7 @@ const NotesPanel = memo(({ sessionId, userEmail }) => {
   useEffect(() => () => clearTimeout(debounceRef.current), []);
 
   const statusConfig = {
-    idle: { text: '', color: 'text-gray-500' },
+    idle: { text: '', color: 'text-[var(--text-secondary)]' },
     saving: { text: '💾 Saving…', color: 'text-yellow-400' },
     saved: { text: '✅ Saved', color: 'text-emerald-400' },
     error: { text: '❌ Save failed', color: 'text-red-400' },

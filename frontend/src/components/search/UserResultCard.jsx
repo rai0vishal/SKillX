@@ -5,15 +5,15 @@ const UserResultCard = ({ user }) => {
   const { name, email, skills, stats, trustScore, location } = user;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition p-5 flex flex-col h-full">
+    <div className="bg-[var(--bg-card)] rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition p-5 flex flex-col h-full">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xl flex-shrink-0">
             {name ? name.charAt(0).toUpperCase() : '?'}
           </div>
           <div>
-            <h3 className="font-bold text-gray-900 text-lg">{name}</h3>
-            {location && <p className="text-xs text-gray-500 mt-0.5">📍 {location}</p>}
+            <h3 className="font-bold text-[var(--text-primary)] text-lg">{name}</h3>
+            {location && <p className="text-xs text-[var(--text-secondary)] mt-0.5">📍 {location}</p>}
           </div>
         </div>
         <div className="text-right flex-shrink-0">
@@ -24,11 +24,11 @@ const UserResultCard = ({ user }) => {
       </div>
 
       <div className="mt-4 flex-1">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Skills</p>
+        <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Skills</p>
         <div className="flex flex-wrap gap-2">
           {skills && skills.length > 0 ? (
             skills.slice(0, 4).map((skill, index) => (
-              <span key={index} className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg text-xs font-medium">
+              <span key={index} className="bg-[var(--bg-card)] text-gray-700 px-2.5 py-1 rounded-lg text-xs font-medium">
                 {skill}
               </span>
             ))
@@ -36,7 +36,7 @@ const UserResultCard = ({ user }) => {
             <span className="text-xs text-gray-400">No skills listed</span>
           )}
           {skills && skills.length > 4 && (
-            <span className="bg-gray-50 text-gray-500 px-2.5 py-1 rounded-lg text-xs font-medium">
+            <span className="bg-[var(--bg-card)] text-[var(--text-secondary)] px-2.5 py-1 rounded-lg text-xs font-medium">
               +{skills.length - 4} more
             </span>
           )}
@@ -47,7 +47,7 @@ const UserResultCard = ({ user }) => {
         <div>
           <p className="text-[10px] text-gray-400 font-semibold uppercase">Trust Score</p>
           <div className="flex items-center gap-1.5 mt-1">
-            <div className="w-full bg-gray-100 rounded-full h-1.5 max-w-[60px]">
+            <div className="w-full bg-[var(--bg-card)] rounded-full h-1.5 max-w-[60px]">
               <div 
                 className={`h-1.5 rounded-full ${trustScore >= 80 ? 'bg-green-500' : trustScore >= 50 ? 'bg-yellow-500' : 'bg-red-400'}`} 
                 style={{ width: `${Math.min(trustScore || 0, 100)}%` }}

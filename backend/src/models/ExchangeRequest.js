@@ -2,18 +2,30 @@ import mongoose from 'mongoose'
 
 const exchangeRequestSchema = new mongoose.Schema(
   {
-    fromEmail: {
+    fromUserId: {
       type: String,
       required: true,
       trim: true,
-      lowercase: true,
+    },
+
+    toUserId: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    exchangeId: {
+      type: String,
+    },
+
+    fromEmail: {
+      type: String,
+      trim: true,
     },
 
     toEmail: {
       type: String,
-      required: true,
       trim: true,
-      lowercase: true,
     },
 
     message: {

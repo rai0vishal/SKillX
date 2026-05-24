@@ -661,7 +661,7 @@ const Dashboard = () => {
           >
             {stats.matches && stats.matches.length > 0 && (
               <div className="card-accent relative overflow-hidden">
-                <div className="absolute -right-20 -top-20 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
+                <div className="absolute -right-20 -top-20 w-64 h-64 bg-[var(--bg-card)] opacity-5 rounded-full blur-3xl"></div>
                 <h2 className="text-2xl font-bold flex items-center gap-3 relative z-10">
                   <span className="text-3xl">✨</span> Perfect Matches Found!
                 </h2>
@@ -673,7 +673,7 @@ const Dashboard = () => {
                     <div key={i} className="card flex flex-col justify-between">
                       <div>
                         <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-lg">
+                          <div className="w-10 h-10 rounded-full bg-[var(--bg-card)]/20 flex items-center justify-center font-bold text-lg">
                             {match.matchedExchange.name ? match.matchedExchange.name.charAt(0).toUpperCase() : '?'}
                           </div>
                           <p className="font-bold text-lg">{match.matchedExchange.name}</p>

@@ -9,14 +9,17 @@ const Profile = () => {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
   const currentUserEmail = storedUser.email;
+  const currentUid = storedUser.uid || storedUser.id;
 
   const targetEmail = userId || currentUserEmail;
+  const targetUid = userId || currentUid;
   const isOwnProfile = targetEmail === currentUserEmail;
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [gigs, setGigs] = useState([]);
   const [exchanges, setExchanges] = useState([]);
+  const [exchangeRequests, setExchangeRequests] = useState({ sent: [], received: [] });
   const [reviews, setReviews] = useState([]);
   const [activeTab, setActiveTab] = useState('overview'); // overview | gigs | exchanges | reviews
 
@@ -84,10 +87,16 @@ const Profile = () => {
           setGigs(allGigs.filter(g => g.creatorEmail === targetEmail));
         }
 
-        // Fetch Exchanges
-        const exRes = await fetch(`${API_BASE_URL}/api/sessions/user/${targetEmail}`);
+        // Fetch Exchanges (User's posted SkillExchange profiles)
+        const exRes = await fetch(`${API_BASE_URL}/api/skill-exchange?userId=${targetUid}`);
         if (exRes.ok) {
           setExchanges(await exRes.json());
+        }
+
+        // Fetch Exchange Requests
+        const reqRes = await fetch(`${API_BASE_URL}/api/exchange-requests?userId=${targetUid}`);
+        if (reqRes.ok) {
+          setExchangeRequests(await reqRes.json());
         }
 
         // Fetch Reviews
@@ -135,6 +144,33 @@ const Profile = () => {
 
   const stats = profile.stats || { gigsPosted: 0, gigsCompleted: 0, skillExchanges: 0, skillExchangesCompleted: 0, averageRating: 0, totalReviews: 0 };
   const skillArray = Array.isArray(profile.skills) ? profile.skills : (profile.skills || '').split(',').map(s => s.trim()).filter(Boolean);
+
+  const handleUpdateRequest = async (id, newStatus) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/exchange-requests/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!res.ok) throw new Error('Failed to update request')
+      
+      const updated = await res.json()
+      
+      setExchangeRequests(prev => ({
+        received: prev.received.map(r => r._id === updated._id ? updated : r),
+        sent: prev.sent.map(r => r._id === updated._id ? updated : r),
+      }))
+
+      if (newStatus === 'accepted') {
+        toast.success('Exchange request accepted!')
+      } else if (newStatus === 'rejected') {
+        toast.info('Exchange request rejected.')
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error('Could not update request. Please try again.')
+    }
+  }
 
   const calculateCompleteness = () => {
     let score = 0;
@@ -245,28 +281,28 @@ const Profile = () => {
                 </button>
               )}
               {isOwnProfile && showSocialInput && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '4px' }}>
                   <select 
                     value={newSocialType}
                     onChange={(e) => setNewSocialType(e.target.value)}
-                    style={{ background: 'transparent', border: 'none', color: 'var(--text)', fontSize: 11, outline: 'none', cursor: 'pointer' }}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: 11, outline: 'none', cursor: 'pointer' }}
                   >
-                    <option value="github">GitHub</option>
-                    <option value="linkedin">LinkedIn</option>
-                    <option value="twitter">Twitter</option>
-                    <option value="portfolio">Portfolio</option>
+                    <option value="github" style={{ background: 'var(--bg-input)' }}>GitHub</option>
+                    <option value="linkedin" style={{ background: 'var(--bg-input)' }}>LinkedIn</option>
+                    <option value="twitter" style={{ background: 'var(--bg-input)' }}>Twitter</option>
+                    <option value="portfolio" style={{ background: 'var(--bg-input)' }}>Portfolio</option>
                   </select>
                   <input 
                     type="url" 
                     placeholder="https://..." 
                     value={newSocialUrl}
                     onChange={(e) => setNewSocialUrl(e.target.value)}
-                    style={{ background: 'transparent', border: 'none', color: 'var(--text)', fontSize: 12, width: 120, outline: 'none' }}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: 12, width: 120, outline: 'none' }}
                   />
-                  <button onClick={handleAddSocialLink} disabled={isSaving} style={{ background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: 11, cursor: 'pointer' }}>
+                  <button onClick={handleAddSocialLink} disabled={isSaving} style={{ background: 'var(--brand-purple)', color: 'white', border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: 11, cursor: 'pointer' }}>
                     {isSaving ? '...' : 'Save'}
                   </button>
-                  <button onClick={() => setShowSocialInput(false)} style={{ background: 'transparent', color: 'var(--text-dim)', border: 'none', fontSize: 14, cursor: 'pointer' }}>
+                  <button onClick={() => setShowSocialInput(false)} style={{ background: 'transparent', color: 'var(--text-secondary)', border: 'none', fontSize: 14, cursor: 'pointer' }}>
                     &times;
                   </button>
                 </div>
@@ -471,112 +507,122 @@ const Profile = () => {
         {activeTab === 'exchanges' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
             
-            {/* Incoming Action Needed */}
+            {/* SECTION A — My Exchange Profile */}
             <div>
-              <h4 className="text-h4" style={{ marginBottom: 12, color: 'var(--text)' }}>Incoming — action needed</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {exchanges.filter(e => e.receiverEmail === currentUserEmail && e.status === 'pending').length === 0 ? (
-                  <p className="text-caption">No pending incoming requests.</p>
-                ) : (
-                  exchanges.filter(e => e.receiverEmail === currentUserEmail && e.status === 'pending').map(exchange => (
-                    <div key={exchange._id} className="card" style={{ display: 'flex', borderLeft: '2px solid var(--accent)', padding: 20, gap: 16 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>
-                        {exchange.requesterEmail.charAt(0).toUpperCase()}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
-                          <span style={{ color: 'var(--text)', fontWeight: 500 }}>{exchange.requesterEmail.split('@')[0]}</span> wants to exchange with you
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                          <span style={{ background: 'var(--accent-dim)', color: 'var(--accent-light)', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{exchange.skillRequested}</span>
-                          <i className="ti ti-arrows-exchange" style={{ color: 'var(--text-muted)' }} />
-                          <span style={{ background: 'var(--surface2)', color: 'var(--text)', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{exchange.skillOffered}</span>
-                        </div>
-                        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>{exchange.message}</p>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button className="btn-primary" style={{ background: 'var(--green)', borderColor: 'var(--green)', padding: '6px 12px', fontSize: 12 }}>Accept</button>
-                          <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12 }}>Message</button>
-                          <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12 }}>Propose time</button>
-                          <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12, color: 'var(--red)', border: 'none', background: 'transparent' }}>Decline</button>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(exchange.createdAt).toLocaleDateString()}</span>
-                        <span style={{ background: 'var(--accent-dim)', color: 'var(--accent-light)', padding: '2px 8px', borderRadius: 9999, fontSize: 10, fontWeight: 600 }}>Awaiting your reply</span>
-                      </div>
+              <h4 className="text-h4" style={{ marginBottom: 16, color: 'var(--text)' }}>
+                {isOwnProfile ? 'My Exchange Profile' : 'Exchange Profile'}
+              </h4>
+              {exchanges.length === 0 ? (
+                <div className="card" style={{ padding: 32, textAlign: 'center' }}>
+                  <i className="ti ti-arrows-exchange" style={{ fontSize: 32, color: 'var(--text-muted)', marginBottom: 16 }} />
+                  <p className="text-caption">No posted exchanges yet.</p>
+                </div>
+              ) : (
+                exchanges.map(exchange => (
+                  <div key={exchange._id} className="card" style={{ padding: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <span style={{ background: 'var(--accent-dim)', color: 'var(--accent-light)', padding: '4px 10px', borderRadius: 6, fontSize: 13, fontWeight: 600 }}>
+                        Offers: {exchange.skillOffered}
+                      </span>
+                      <i className="ti ti-arrows-exchange" style={{ color: 'var(--text-muted)' }} />
+                      <span style={{ background: 'var(--surface2)', color: 'var(--text)', padding: '4px 10px', borderRadius: 6, fontSize: 13, fontWeight: 600 }}>
+                        Wants: {exchange.skillWanted}
+                      </span>
                     </div>
-                  ))
-                )}
-              </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Posted on {new Date(exchange.createdAt).toLocaleDateString()} • {exchange.location}</span>
+                      <span style={{ 
+                        background: 'var(--green-bg)', color: 'var(--green)', 
+                        padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600 
+                      }}>Active</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
-            {/* Sent By You */}
-            <div>
-              <h4 className="text-h4" style={{ marginBottom: 12, color: 'var(--text)' }}>Sent by you</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {exchanges.filter(e => e.requesterEmail === currentUserEmail && e.status === 'pending').length === 0 ? (
-                  <p className="text-caption">No pending sent requests.</p>
-                ) : (
-                  exchanges.filter(e => e.requesterEmail === currentUserEmail && e.status === 'pending').map(exchange => (
-                    <div key={exchange._id} className="card" style={{ display: 'flex', borderLeft: '2px solid var(--border)', padding: 20, gap: 16 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>
-                        {exchange.receiverEmail.charAt(0).toUpperCase()}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
-                          You sent this request to <span style={{ color: 'var(--text)', fontWeight: 500 }}>{exchange.receiverEmail.split('@')[0]}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                          <span style={{ background: 'var(--surface2)', color: 'var(--text)', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{exchange.skillOffered}</span>
-                          <i className="ti ti-arrows-exchange" style={{ color: 'var(--text-muted)' }} />
-                          <span style={{ background: 'var(--accent-dim)', color: 'var(--accent-light)', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 500 }}>{exchange.skillRequested}</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12 }}>Message</button>
-                          <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12, color: 'var(--red)', border: 'none', background: 'transparent' }}>Withdraw request</button>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(exchange.createdAt).toLocaleDateString()}</span>
-                        <span style={{ background: 'var(--surface2)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 9999, fontSize: 10, fontWeight: 600 }}>Awaiting their reply</span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+            {/* SECTION B — Exchange Requests */}
+            {isOwnProfile && (
+              <div>
+                <h4 className="text-h4" style={{ marginBottom: 16, color: 'var(--text)' }}>Exchange Requests</h4>
+                
+                <div style={{ display: 'flex', gap: 24, marginBottom: 16, borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ paddingBottom: 8, borderBottom: '2px solid var(--accent)', color: 'var(--accent)', fontSize: 14, fontWeight: 600 }}>
+                    Received ({exchangeRequests.received?.length || 0})
+                  </div>
+                  <div style={{ paddingBottom: 8, color: 'var(--text-muted)', fontSize: 14, fontWeight: 500 }}>
+                    Sent ({exchangeRequests.sent?.length || 0})
+                  </div>
+                </div>
 
-            {/* Active Exchanges */}
-            <div>
-              <h4 className="text-h4" style={{ marginBottom: 12, color: 'var(--text)' }}>Active exchanges</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {exchanges.filter(e => e.status === 'accepted' || e.status === 'active').length === 0 ? (
-                  <p className="text-caption">No active exchanges right now.</p>
-                ) : (
-                  exchanges.filter(e => e.status === 'accepted' || e.status === 'active').map(exchange => (
-                    <div key={exchange._id} className="card" style={{ display: 'flex', borderLeft: '2px solid var(--green)', padding: 20, gap: 16 }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--green)', textTransform: 'uppercase', marginBottom: 4 }}>Ongoing exchange</div>
-                        <div style={{ fontSize: 14, color: 'var(--text)', marginBottom: 8, fontWeight: 500 }}>
-                          With {(exchange.requesterEmail === currentUserEmail ? exchange.receiverEmail : exchange.requesterEmail).split('@')[0]}
+                {/* Received Requests */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {exchangeRequests.received?.length === 0 ? (
+                    <p className="text-caption">No pending incoming requests.</p>
+                  ) : (
+                    exchangeRequests.received?.map(req => (
+                      <div key={req._id} className="card" style={{ display: 'flex', borderLeft: req.status === 'pending' ? '2px solid var(--accent)' : req.status === 'accepted' ? '2px solid var(--green)' : '2px solid var(--border)', padding: 20, gap: 16 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>
+                          <i className="ti ti-user" />
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
-                          0 of 1 sessions completed. Next session: Not scheduled yet.
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>
+                            Request from {req.fromEmail || 'another user'}
+                          </div>
+                          <p style={{ fontSize: 13, color: 'var(--text)', marginBottom: 12 }}>"{req.message}"</p>
+                          {req.status === 'pending' && (
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              <button onClick={() => handleUpdateRequest(req._id, 'accepted')} className="btn-primary" style={{ padding: '6px 12px', fontSize: 12 }}>Accept</button>
+                              <button onClick={() => handleUpdateRequest(req._id, 'rejected')} className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12, color: 'var(--red)', border: 'none', background: 'transparent' }}>Decline</button>
+                            </div>
+                          )}
+                          {req.status === 'accepted' && (
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              <button onClick={() => navigate('/chat')} className="btn-primary" style={{ padding: '6px 12px', fontSize: 12, background: 'var(--green)' }}>Message</button>
+                            </div>
+                          )}
                         </div>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button className="btn-primary" onClick={() => navigate(`/session/${exchange._id}`)} style={{ padding: '6px 12px', fontSize: 12 }}>Join session</button>
-                          <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12 }}>Message</button>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(req.createdAt).toLocaleDateString()}</span>
+                          {req.status === 'pending' && <span style={{ background: 'var(--accent-dim)', color: 'var(--accent-light)', padding: '2px 8px', borderRadius: 9999, fontSize: 10, fontWeight: 600 }}>Pending</span>}
+                          {req.status === 'accepted' && <span style={{ background: 'var(--green-bg)', color: 'var(--green)', padding: '2px 8px', borderRadius: 9999, fontSize: 10, fontWeight: 600 }}>Accepted</span>}
+                          {req.status === 'rejected' && <span style={{ background: 'var(--surface2)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: 9999, fontSize: 10, fontWeight: 600 }}>Declined</span>}
                         </div>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                        <span style={{ background: 'var(--green-bg)', color: 'var(--green)', padding: '2px 8px', borderRadius: 9999, fontSize: 10, fontWeight: 600 }}>0/1 sessions done</span>
+                    ))
+                  )}
+                </div>
+                {/* Sent Requests */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 24 }}>
+                  <h5 className="text-h5" style={{ color: 'var(--text-muted)' }}>Sent Requests</h5>
+                  {exchangeRequests.sent?.length === 0 ? (
+                    <p className="text-caption">You haven't sent any exchange requests yet.</p>
+                  ) : (
+                    exchangeRequests.sent?.map(req => (
+                      <div key={req._id} className="card" style={{ display: 'flex', borderLeft: req.status === 'pending' ? '2px solid var(--amber)' : req.status === 'accepted' ? '2px solid var(--green)' : '2px solid var(--red)', padding: 16, gap: 12, alignItems: 'center' }}>
+                        <div style={{ flex: 1 }}>
+                          <p className="text-sm font-medium text-white mb-1">Request sent to {req.toUserId}</p>
+                          <p className="text-xs text-gray-400">
+                            Sent {new Date(req.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span style={{
+                          padding: '4px 12px',
+                          borderRadius: 9999,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          background: req.status === 'pending' ? 'var(--amber-bg)' : req.status === 'accepted' ? 'var(--green-bg)' : 'var(--red-bg)',
+                          color: req.status === 'pending' ? 'var(--amber)' : req.status === 'accepted' ? 'var(--green)' : 'var(--red)',
+                          border: `1px solid ${req.status === 'pending' ? 'var(--amber)' : req.status === 'accepted' ? 'var(--green)' : 'var(--red)'}`
+                        }}>
+                          {req.status === 'pending' ? 'Pending' : req.status === 'accepted' ? 'Accepted' : 'Declined'}
+                        </span>
                       </div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
-
+            )}
           </div>
         )}
 

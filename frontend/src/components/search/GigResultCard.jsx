@@ -10,8 +10,8 @@ const GigResultCard = ({ gig }) => {
   else if (daysAgo > 1) timeString = `${daysAgo} days ago`;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition p-5 flex flex-col h-full relative group">
-      <div className="absolute top-4 right-4 text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
+    <div className="bg-[var(--bg-card)] rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition p-5 flex flex-col h-full relative group">
+      <div className="absolute top-4 right-4 text-xs font-semibold text-gray-400 bg-[var(--bg-card)] px-2 py-1 rounded-lg">
         {timeString}
       </div>
 
@@ -19,13 +19,13 @@ const GigResultCard = ({ gig }) => {
         <span className="inline-block bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-lg text-xs font-bold mb-2">
           {category}
         </span>
-        <h3 className="font-bold text-gray-900 text-lg leading-tight group-hover:text-indigo-600 transition-colors line-clamp-2">
+        <h3 className="font-bold text-[var(--text-primary)] text-lg leading-tight group-hover:text-indigo-600 transition-colors line-clamp-2">
           {title}
         </h3>
       </div>
 
       <div className="mt-4 flex-1">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Required Skills</p>
+        <p className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Required Skills</p>
         <div className="flex flex-wrap gap-2">
           {skills && skills.length > 0 ? (
             skills.slice(0, 3).map((skill, index) => (
@@ -37,7 +37,7 @@ const GigResultCard = ({ gig }) => {
             <span className="text-xs text-gray-400">Open to all</span>
           )}
           {skills && skills.length > 3 && (
-            <span className="bg-gray-50 text-gray-500 border border-gray-100 px-2 py-0.5 rounded-md text-[11px] font-semibold">
+            <span className="bg-[var(--bg-card)] text-[var(--text-secondary)] border border-gray-100 px-2 py-0.5 rounded-md text-[11px] font-semibold">
               +{skills.length - 3}
             </span>
           )}
@@ -56,7 +56,7 @@ const GigResultCard = ({ gig }) => {
       </div>
 
       <div className="mt-4 flex items-center justify-between">
-        <span className="text-xs text-gray-500 font-medium">📍 {location || 'Remote'}</span>
+        <span className="text-xs text-[var(--text-secondary)] font-medium">📍 {location || 'Remote'}</span>
         <Link
           to={`/gigs/${_id}`}
           className="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm"

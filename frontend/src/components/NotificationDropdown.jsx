@@ -22,8 +22,8 @@ const NotificationDropdown = ({
       });
 
   return (
-    <div role="region" aria-label="Notifications panel" className="absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
-      <div className="p-4 border-b border-gray-100 bg-gray-50/50" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div role="region" aria-label="Notifications panel" className="absolute right-0 mt-2 w-80 md:w-96 bg-[var(--bg-card)] rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+      <div className="p-4 border-b border-gray-100 bg-[var(--bg-card)]/50" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h3 className="font-bold text-gray-800 text-lg">Notifications</h3>
         <button
           onClick={onMarkAllRead}
@@ -103,7 +103,7 @@ const NotificationDropdown = ({
         )}
       </div>
 
-      <div className="p-3 border-t border-gray-100 bg-gray-50/50 flex justify-between gap-2">
+      <div className="p-3 border-t border-gray-100 bg-[var(--bg-card)]/50 flex justify-between gap-2">
         <button 
           onClick={onMarkAllRead}
           className="flex-1 py-2 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"

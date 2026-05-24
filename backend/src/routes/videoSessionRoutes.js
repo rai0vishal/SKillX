@@ -4,6 +4,7 @@ import Session from '../models/Session.js';
 import VideoSession from '../models/VideoSession.js';
 import SessionAttendance from '../models/SessionAttendance.js';
 import SessionNotes from '../models/SessionNotes.js';
+import { emitNotification } from '../socket/notificationSocket.js';
 
 const router = express.Router();
 
@@ -53,7 +54,7 @@ router.post('/join', async (req, res) => {
     // The frontend SessionCard UI already enforces the 15-minute early join window.
 
     // Get or create the VideoSession room atomically to prevent race condition 500 errors
-    const roomId = `session_${sessionId}`;
+    const roomId = session.roomId || `session_${sessionId}`;
     const now = new Date();
 
     let videoSession = await VideoSession.findOneAndUpdate(
@@ -90,6 +91,20 @@ router.post('/join', async (req, res) => {
       console.log(`[Video Session] Room ${roomId} status changed to 'active'`);
     }
 
+    // Send join notification to the other participant
+    const otherUserEmail = session.participants.find(p => p !== userEmail);
+    if (otherUserEmail) {
+      emitNotification(otherUserEmail, {
+        _id: new mongoose.Types.ObjectId().toString(),
+        type: 'session_joined',
+        title: 'Session Started',
+        message: `${userEmail.split('@')[0]} has joined the session.`,
+        link: `/session/${session._id}`,
+        createdAt: now,
+        isRead: false
+      });
+    }
+
     console.log(`[Video Session] Join Successful: roomId=${roomId}`);
     res.json({ videoSession, roomId });
   } catch (error) {
@@ -124,7 +139,15 @@ router.get('/:sessionId', async (req, res) => {
     }
 
     const videoSession = await VideoSession.findOne({ sessionId });
-    res.json({ session, videoSession: videoSession || null });
+    
+    // Count active participants based on attendance that haven't left
+    const activeParticipantCount = await SessionAttendance.countDocuments({
+      sessionId,
+      joinedAt: { $ne: null },
+      leftAt: null
+    });
+
+    res.json({ session, videoSession: videoSession || null, activeParticipantCount });
   } catch (error) {
     console.error('Error fetching video session:', error);
     res.status(500).json({ message: 'Failed to fetch video session.' });

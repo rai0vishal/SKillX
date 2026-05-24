@@ -94,16 +94,16 @@ const AdminDashboard = () => {
 
   if (checkingAuth) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Verifying administrator privileges...</p>
+      <div className="min-h-screen bg-[var(--bg-card)] flex items-center justify-center">
+        <p className="text-[var(--text-secondary)]">Verifying administrator privileges...</p>
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white p-8 rounded-2xl shadow-md max-w-md w-full text-center">
+      <div className="min-h-screen bg-[var(--bg-card)] flex items-center justify-center px-4">
+        <div className="bg-[var(--bg-card)] p-8 rounded-2xl shadow-md max-w-md w-full text-center">
           <span className="text-4xl">⚠️</span>
           <h1 className="text-xl font-bold text-gray-800 mt-4 mb-2">Access Denied</h1>
           <p className="text-sm text-gray-600 mb-6">
@@ -121,16 +121,16 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-8 flex justify-center">
+    <div className="min-h-screen bg-[var(--bg-card)] px-4 py-8 flex justify-center">
       <div className="w-full max-w-5xl">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Control Panel</h1>
-            <p className="text-gray-500 text-sm mt-1">Manage SkillX system, users, and platform statistics.</p>
+            <h1 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Admin Control Panel</h1>
+            <p className="text-[var(--text-secondary)] text-sm mt-1">Manage SkillX system, users, and platform statistics.</p>
           </div>
           <button 
             onClick={fetchData}
-            className="px-4 py-2 border border-gray-300 bg-white rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+            className="px-4 py-2 border border-gray-300 bg-[var(--bg-card)] rounded-lg text-sm font-semibold text-gray-700 hover:bg-[var(--bg-card)] transition"
           >
             🔄 Refresh
           </button>
@@ -144,59 +144,59 @@ const AdminDashboard = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-[var(--bg-card)] rounded-2xl shadow-sm border border-gray-100 p-6">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Users</p>
             <p className="text-3xl font-extrabold text-indigo-600 mt-2">{stats.totalUsers}</p>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-[var(--bg-card)] rounded-2xl shadow-sm border border-gray-100 p-6">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Sessions</p>
             <p className="text-3xl font-extrabold text-emerald-600 mt-2">{stats.totalSessions}</p>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-[var(--bg-card)] rounded-2xl shadow-sm border border-gray-100 p-6">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Exchanges</p>
             <p className="text-3xl font-extrabold text-purple-600 mt-2">{stats.totalExchanges}</p>
           </div>
         </div>
 
         {/* User Management Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-[var(--bg-card)] rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-100">
-            <h2 className="text-lg font-bold text-gray-900">User Directory</h2>
-            <p className="text-gray-500 text-xs mt-0.5">Suspend, activate, or manage user access permissions.</p>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">User Directory</h2>
+            <p className="text-[var(--text-secondary)] text-xs mt-0.5">Suspend, activate, or manage user access permissions.</p>
           </div>
 
           {loading ? (
-            <div className="p-8 text-center text-gray-500">Loading directory...</div>
+            <div className="p-8 text-center text-[var(--text-secondary)]">Loading directory...</div>
           ) : users.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">No users found.</div>
+            <div className="p-8 text-center text-[var(--text-secondary)]">No users found.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">User</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Role</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-right">Actions</th>
+                  <tr className="bg-[var(--bg-card)] border-b border-gray-100">
+                    <th className="px-6 py-3 text-xs font-bold text-[var(--text-secondary)] uppercase">User</th>
+                    <th className="px-6 py-3 text-xs font-bold text-[var(--text-secondary)] uppercase">Role</th>
+                    <th className="px-6 py-3 text-xs font-bold text-[var(--text-secondary)] uppercase">Status</th>
+                    <th className="px-6 py-3 text-xs font-bold text-[var(--text-secondary)] uppercase text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {users.map(user => (
-                    <tr key={user._id} className="hover:bg-gray-50/50">
+                    <tr key={user._id} className="hover:bg-[var(--bg-card)]/50">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
                             {user.name ? user.name[0].toUpperCase() : 'U'}
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900 text-sm">{user.name}</p>
-                            <p className="text-gray-500 text-xs">{user.email}</p>
+                            <p className="font-semibold text-[var(--text-primary)] text-sm">{user.name}</p>
+                            <p className="text-[var(--text-secondary)] text-xs">{user.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                          user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
+                          user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-[var(--bg-card)] text-gray-700'
                         }`}>
                           {user.role}
                         </span>

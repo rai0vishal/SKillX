@@ -12,7 +12,7 @@ const NotificationTabs = ({ activeTab, onTabChange }) => {
           className={`px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap transition-colors ${
             activeTab === tab
               ? 'bg-indigo-600 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-[var(--bg-card)] text-gray-600 hover:bg-gray-200'
           }`}
         >
           {tab}

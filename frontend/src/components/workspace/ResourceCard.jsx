@@ -22,7 +22,7 @@ const ResourceCard = ({ resource, onDelete, currentUserEmail }) => {
   const isOwner = resource.uploadedBy === currentUserEmail;
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:shadow-sm transition-shadow group">
+    <div className="flex items-center gap-3 p-3 bg-[var(--bg-card)] rounded-xl border border-gray-100 hover:shadow-sm transition-shadow group">
       <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-xl flex-shrink-0">
         {TYPE_ICONS[resource.resourceType] || '📎'}
       </div>
@@ -50,7 +50,7 @@ const ResourceCard = ({ resource, onDelete, currentUserEmail }) => {
         <a
           href={resource.url}
           download
-          className="p-1.5 text-xs text-gray-500 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+          className="p-1.5 text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-card)] rounded-lg transition-colors font-medium"
           title="Download"
         >
           ⬇

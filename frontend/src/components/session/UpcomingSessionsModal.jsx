@@ -29,14 +29,14 @@ const UpcomingSessionsModal = ({ isOpen, onClose, userEmail }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
+      <div className="bg-[var(--bg-card)] rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-800">
             Upcoming Sessions
           </h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--bg-card)] text-[var(--text-secondary)] transition-colors"
           >
             ✕
           </button>
@@ -46,11 +46,11 @@ const UpcomingSessionsModal = ({ isOpen, onClose, userEmail }) => {
           {loading ? (
             <div className="space-y-4 animate-pulse">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-20 bg-gray-100 rounded-xl"></div>
+                <div key={i} className="h-20 bg-[var(--bg-card)] rounded-xl"></div>
               ))}
             </div>
           ) : sessions.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No upcoming sessions found.</p>
+            <p className="text-[var(--text-secondary)] text-center py-8">No upcoming sessions found.</p>
           ) : (
             <div className="space-y-4">
               {sessions.map((session, idx) => {
@@ -73,7 +73,7 @@ const UpcomingSessionsModal = ({ isOpen, onClose, userEmail }) => {
                 const otherName = (session.participants?.find(p => p !== userEmail) || 'Unknown').split('@')[0];
 
                 return (
-                  <div key={session._id} className="flex flex-col gap-2 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors relative">
+                  <div key={session._id} className="flex flex-col gap-2 p-4 border border-gray-100 rounded-xl hover:bg-[var(--bg-card)] transition-colors relative">
                     {/* Badge */}
                     <div className="absolute top-4 right-4 bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-1 rounded">
                       {timeText}
@@ -83,7 +83,7 @@ const UpcomingSessionsModal = ({ isOpen, onClose, userEmail }) => {
                       {userEmail.split('@')[0]} ↔ {otherName}
                     </h4>
                     
-                    <p className="text-sm text-gray-500 flex items-center gap-2">
+                    <p className="text-sm text-[var(--text-secondary)] flex items-center gap-2">
                       <span className="font-medium text-gray-700">{dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span> 
                       • 
                       <span>{new Date(`1970-01-01T${session.time}`).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</span>
@@ -91,7 +91,7 @@ const UpcomingSessionsModal = ({ isOpen, onClose, userEmail }) => {
                     
                     <div className="flex flex-wrap gap-2 mt-2">
                       {session.exchangeRoles?.[userEmail]?.mentorSkills?.map(s => (
-                        <span key={s} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{s}</span>
+                        <span key={s} className="text-xs bg-[var(--bg-card)] text-gray-600 px-2 py-0.5 rounded">{s}</span>
                       ))}
                     </div>
                   </div>
@@ -101,10 +101,10 @@ const UpcomingSessionsModal = ({ isOpen, onClose, userEmail }) => {
           )}
         </div>
 
-        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
+        <div className="p-6 border-t border-gray-100 bg-[var(--bg-card)] flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-lg transition-colors"
+            className="px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 bg-[var(--bg-card)] rounded-lg transition-colors"
           >
             Close
           </button>

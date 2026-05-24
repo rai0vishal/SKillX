@@ -9,7 +9,7 @@ const tabs = [
 
 const WorkspaceTabs = ({ activeTab, onTabChange }) => {
   return (
-    <div className="flex border-b border-gray-100 bg-white overflow-x-auto scrollbar-hide">
+    <div className="flex border-b border-gray-100 bg-[var(--bg-card)] overflow-x-auto scrollbar-hide">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -17,7 +17,7 @@ const WorkspaceTabs = ({ activeTab, onTabChange }) => {
           className={`flex-1 min-w-[80px] px-4 py-3 text-xs font-semibold whitespace-nowrap transition-all border-b-2 ${
             activeTab === tab.id
               ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              : 'border-transparent text-[var(--text-secondary)] hover:text-gray-700 hover:bg-[var(--bg-card)]'
           }`}
         >
           {tab.label}

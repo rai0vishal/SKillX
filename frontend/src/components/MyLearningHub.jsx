@@ -84,19 +84,19 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
     switch (status) {
       case 'Completed': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
       case 'Paused': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      default: return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+      default: return 'bg-[var(--brand-purple-alpha)] text-[var(--brand-purple-light)] border-[var(--border-brand)]';
     }
   };
 
   const renderProgressBar = (progress) => (
-    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+    <div className="w-full bg-[var(--border-subtle)] rounded-full h-2.5 overflow-hidden">
       <div
         className="h-2.5 rounded-full transition-all duration-500 ease-out"
         style={{
           width: `${progress}%`,
           background: progress === 100
             ? 'linear-gradient(90deg, #10b981, #059669)'
-            : 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+            : 'linear-gradient(90deg, #7C6FE0, #9B8FF0)',
         }}
       ></div>
     </div>
@@ -107,7 +107,7 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
     if (!rm || !rm.milestones) return null;
 
     return (
-      <div ref={expandedRef} className="mt-4 bg-gray-50 rounded-xl border border-gray-200 p-6 space-y-4">
+      <div ref={expandedRef} className="mt-4 bg-[var(--bg-card)] rounded-xl border border-[var(--border-subtle)] p-6 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-lg font-bold text-gray-800">{rm.goalTitle || roadmap.goal}</h4>
@@ -118,10 +118,10 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
             ✕ Close
           </button>
         </div>
-        <p className="text-sm text-gray-500 mb-4">{rm.description}</p>
+        <p className="text-sm text-[var(--text-secondary)] mb-4">{rm.description}</p>
 
         {/* Progress Summary */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4">
+        <div className="bg-[var(--bg-card)] rounded-xl border border-gray-100 p-4 mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-gray-700">Overall Progress</span>
             <span className="text-sm font-bold text-indigo-600">{roadmap.progress}%</span>
@@ -143,7 +143,7 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
                 className={`flex flex-col sm:flex-row gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer ${
                   isCompleted
                     ? 'bg-emerald-50/50 border-emerald-200'
-                    : 'bg-white border-gray-100 hover:border-indigo-200 hover:shadow-sm'
+                    : 'bg-[var(--bg-card)] border-gray-100 hover:border-indigo-200 hover:shadow-sm'
                 }`}
                 onClick={() => handleToggleWeek(roadmap._id, idx)}
               >
@@ -172,7 +172,7 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
                     }`}>
                       {milestone.week}
                     </span>
-                    <h5 className={`text-sm font-bold ${isCompleted ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
+                    <h5 className={`text-sm font-bold ${isCompleted ? 'text-[var(--text-secondary)] line-through' : 'text-gray-800'}`}>
                       {milestone.title}
                     </h5>
                   </div>
@@ -182,8 +182,8 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
                         key={tIdx}
                         className={`text-xs px-2 py-0.5 rounded-full border ${
                           isCompleted
-                            ? 'bg-gray-100 text-gray-400 border-gray-200'
-                            : 'bg-gray-50 text-gray-600 border-gray-200'
+                            ? 'bg-[var(--bg-card)] text-gray-400 border-[var(--border-subtle)]'
+                            : 'bg-[var(--bg-card)] text-gray-600 border-[var(--border-subtle)]'
                         }`}
                       >
                         {topic}
@@ -207,13 +207,13 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
   if (!userEmail) return null;
 
   return (
-    <div className="bg-white rounded-2xl shadow-md p-6 lg:p-8 mt-6">
+    <div className="bg-[var(--bg-card)] rounded-2xl shadow-md p-6 lg:p-8 mt-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <span className="text-3xl">📚</span> My Learning Hub
           </h2>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-[var(--text-secondary)] text-sm mt-1">
             Your saved roadmaps, progress tracking, and learning analytics — all in one place.
           </p>
         </div>
@@ -243,32 +243,32 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-12">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-600 mb-4"></div>
-          <p className="text-gray-500 text-sm font-medium">Loading your learning hub...</p>
+          <p className="text-[var(--text-secondary)] text-sm font-medium">Loading your learning hub...</p>
         </div>
       ) : roadmaps.length > 0 ? (
         <div className="space-y-4">
           {roadmaps.map((roadmap) => (
             <div key={roadmap._id}>
               {/* Card */}
-              <div className="bg-gray-50 rounded-xl border border-gray-200 p-5 hover:shadow-md transition-all duration-300">
+              <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-brand)] p-5 hover:shadow-md transition-all duration-300">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   {/* Left — Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-bold text-gray-800 truncate">
+                      <h3 className="text-lg font-bold text-[var(--text-primary)] truncate">
                         {roadmap.generatedRoadmap?.goalTitle || roadmap.goal}
                       </h3>
                       <span className={`text-xs font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${getStatusColor(roadmap.status)}`}>
                         {roadmap.status}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400 mb-3">
+                    <p className="text-xs text-[var(--text-secondary)] mb-3">
                       Saved: {new Date(roadmap.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </p>
                     {/* Progress Bar */}
                     <div className="flex items-center gap-3">
                       <div className="flex-1">{renderProgressBar(roadmap.progress)}</div>
-                      <span className="text-sm font-bold text-gray-600 whitespace-nowrap">{roadmap.progress}%</span>
+                      <span className="text-sm font-bold text-[var(--text-primary)] whitespace-nowrap">{roadmap.progress}%</span>
                     </div>
                   </div>
 
@@ -276,17 +276,17 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => handleOpen(roadmap._id)}
-                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all border ${
                         expandedId === roadmap._id
-                          ? 'bg-indigo-600 text-white shadow-md'
-                          : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'
+                          ? 'bg-[var(--brand-purple)] text-white border-[var(--brand-purple)] shadow-md'
+                          : 'bg-transparent text-[var(--brand-purple)] border-[var(--brand-purple)] hover:bg-[rgba(124,111,224,0.1)]'
                       }`}
                     >
                       {expandedId === roadmap._id ? 'Close' : 'Open'}
                     </button>
                     <button
                       onClick={() => handleContinue(roadmap)}
-                      className="px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all"
+                      className="px-4 py-2 rounded-lg text-sm font-semibold bg-[var(--brand-purple)] text-white hover:bg-[#6b5edd] shadow-md hover:shadow-lg transition-all border border-transparent"
                     >
                       Continue
                     </button>
@@ -296,13 +296,13 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleDelete(roadmap._id)}
-                          className="px-3 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-all"
+                          className="px-3 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-all border border-transparent"
                         >
                           Confirm
                         </button>
                         <button
                           onClick={() => setDeleteConfirmId(null)}
-                          className="px-3 py-2 rounded-lg text-sm font-semibold bg-gray-200 text-gray-600 hover:bg-gray-300 transition-all"
+                          className="px-3 py-2 rounded-lg text-sm font-semibold bg-transparent border border-[#4B5563] text-[#9CA3AF] hover:bg-[var(--surface2)] hover:text-[var(--text-primary)] transition-all"
                         >
                           Cancel
                         </button>
@@ -310,7 +310,7 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
                     ) : (
                       <button
                         onClick={() => setDeleteConfirmId(roadmap._id)}
-                        className="px-4 py-2 rounded-lg text-sm font-semibold bg-white text-red-500 border border-red-200 hover:bg-red-50 transition-all"
+                        className="px-4 py-2 rounded-lg text-sm font-semibold bg-transparent text-[#9CA3AF] border border-[#4B5563] hover:text-[#EF4444] hover:border-[#EF4444] transition-all"
                       >
                         Delete
                       </button>
@@ -325,10 +325,10 @@ const MyLearningHub = ({ userEmail, refreshKey }) => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+        <div className="text-center py-16 bg-[var(--bg-card)] rounded-2xl border border-dashed border-gray-300">
           <div className="text-5xl mb-4">📖</div>
           <h3 className="text-lg font-bold text-gray-800 mb-2">No Saved Roadmaps</h3>
-          <p className="text-gray-500 text-sm max-w-md mx-auto">
+          <p className="text-[var(--text-secondary)] text-sm max-w-md mx-auto">
             Generate a learning roadmap above and save it here to start tracking your progress!
           </p>
         </div>
