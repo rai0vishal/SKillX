@@ -3,7 +3,7 @@ import Gig from '../models/Gig.js';
 import SkillExchange from '../models/SkillExchange.js';
 import UserProfile from '../models/UserProfile.js';
 
-// Dashboard routes — relies on client-provided identifiers for auth in this MVP
+// Dashboard routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /**

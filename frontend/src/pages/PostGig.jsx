@@ -1,10 +1,14 @@
 import React, { useState } from 'react'
 import { toast } from 'sonner'
-import { API_BASE_URL } from '../config/api.js';
+import { apiFetch } from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 const MAX_REGENERATIONS = 5
 
 const PostGig = () => {
+  const { user: firebaseUser } = useAuth();
+  const currentUserEmail = firebaseUser?.email || 'Anonymous';
+
   const [form, setForm] = useState({
     title: '',
     category: 'Web Development',
@@ -51,10 +55,10 @@ const PostGig = () => {
         budget: Number(form.budget),
         duration: form.duration,
         location: form.location,
-        postedBy: JSON.parse(localStorage.getItem('user') || '{}').email || 'Anonymous',
+        postedBy: currentUserEmail,
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/gigs`, {
+      const res = await apiFetch(`/api/gigs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -116,7 +120,7 @@ const PostGig = () => {
         description: form.description,
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/gigs/enhance`, {
+      const res = await apiFetch(`/api/gigs/enhance`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

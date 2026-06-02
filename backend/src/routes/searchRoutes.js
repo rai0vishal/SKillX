@@ -1,7 +1,7 @@
 import express from 'express';
 import { searchUsers, searchGigs, getSearchSuggestions } from '../controllers/searchController.js';
 
-// Search routes — relies on client-provided identifiers for auth in this MVP
+// Search routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /** GET /api/search/users - Search users by name, skills, or location */

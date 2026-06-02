@@ -5,7 +5,7 @@ import { calculateExchangeRoles } from '../services/roleService.js';
 import { getUpcomingSession, getAllUpcomingSessions } from '../controllers/sessionController.js';
 import { emitSessionUpdate } from '../socket/notificationSocket.js';
 
-// Session routes — relies on client-provided identifiers for auth in this MVP
+// Session routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /**

@@ -48,7 +48,7 @@ SkillX solves these challenges by providing a centralized, intelligent ecosystem
 ## ✨ Features
 
 ### Core Features
-- **User Authentication**: Secure JWT & Firebase-based auth system.
+- **User Authentication**: Secure Firebase-based end-to-end auth system.
 - **Dynamic User Profiles**: Comprehensive profiles with dynamic completion tracking.
 - **Skill Matching Algorithm**: Intelligent pairing based on offered and desired skills.
 - **Gig Marketplace**: Post, browse, and participate in collaborative project gigs.
@@ -269,14 +269,15 @@ Create a `.env` file in the `backend` directory:
 
 ```env
 MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/skillx
-JWT_SECRET=your_super_secret_jwt_key
 
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_SECRET=your_api_secret
 
 GEMINI_API_KEY=your_google_gemini_key
-FIREBASE_API_KEY=your_firebase_web_api_key
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_CLIENT_EMAIL=your_client_email
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
 PORT=5000
 ```
@@ -294,7 +295,7 @@ VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 
 ## 🔐 Security Features
 
-* **JWT Authentication**: Short-lived access tokens with secure payload verification.
+* **Firebase Auth**: Secure Firebase ID tokens with robust backend verification using `firebase-admin`.
 * **Protected Routes**: Frontend routing guards to block unauthenticated views.
 * **Role-based Access Control**: Hardened backend endpoints strictly verifying Admin/User payloads.
 * **Permission Handling**: Users can only modify their own profiles and delete their own gigs.

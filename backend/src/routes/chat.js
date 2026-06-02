@@ -2,7 +2,7 @@ import express from 'express';
 import ChatRoom from '../models/ChatRoom.js';
 import Message from '../models/Message.js';
 
-// Chat routes — relies on client-provided identifiers for auth in this MVP
+// Chat routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /**

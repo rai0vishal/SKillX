@@ -6,6 +6,8 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
+import { useAuth } from '../context/AuthContext'
+import { apiFetch } from '../api/apiClient'
 const Hand = ({ size, color, style }) => <i className="ti ti-hand-stop" style={{ fontSize: size || 'inherit', color, ...style }} />;
 const ArrowLeftRight = ({ size, color, style }) => <i className="ti ti-arrows-exchange" style={{ fontSize: size || 'inherit', color, ...style }} />;
 const UserCircle = ({ size, color, style }) => <i className="ti ti-user-circle" style={{ fontSize: size || 'inherit', color, ...style }} />;
@@ -28,13 +30,10 @@ import SessionModal from '../components/SessionModal'
 import ReviewModal from '../components/ReviewModal'
 import UpcomingSessionsModal from '../components/session/UpcomingSessionsModal'
 
-
-import { API_BASE_URL } from '../config/api.js'
-
 const Dashboard = () => {
   const navigate = useNavigate()
-  const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
-  const userEmail = storedUser.email
+  const { user: firebaseUser } = useAuth()
+  const userEmail = firebaseUser?.email
   const [hubRefreshKey, setHubRefreshKey] = useState(0)
   
   const [activeTab, setActiveTab] = useState('overview')
@@ -85,10 +84,10 @@ const Dashboard = () => {
   const fetchStats = async () => {
     try {
       const url = userEmail
-        ? `${API_BASE_URL}/api/dashboard?email=${encodeURIComponent(userEmail)}`
-        : `${API_BASE_URL}/api/dashboard`
+        ? `/api/dashboard?email=${encodeURIComponent(userEmail)}`
+        : `/api/dashboard`
 
-      const res = await fetch(url)
+      const res = await apiFetch(url)
       if (!res.ok) throw new Error('Failed to fetch dashboard stats')
       const data = await res.json()
       setStats(data)
@@ -106,8 +105,8 @@ const Dashboard = () => {
         return
       }
       setLoadingRequests(true)
-      const res = await fetch(
-        `${API_BASE_URL}/api/exchange-requests?email=${encodeURIComponent(
+      const res = await apiFetch(
+        `/api/exchange-requests?email=${encodeURIComponent(
           userEmail,
         )}`,
       )
@@ -127,8 +126,8 @@ const Dashboard = () => {
 
   const handleUpdateRequest = async (id, newStatus) => {
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/exchange-requests/${id}`,
+      const res = await apiFetch(
+        `/api/exchange-requests/${id}`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -166,8 +165,8 @@ const Dashboard = () => {
         return
       }
       setLoadingGigApps(true)
-      const res = await fetch(
-        `${API_BASE_URL}/api/gig-applications?email=${encodeURIComponent(
+      const res = await apiFetch(
+        `/api/gig-applications?email=${encodeURIComponent(
           userEmail,
         )}`,
       )
@@ -188,8 +187,8 @@ const Dashboard = () => {
 
   const handleUpdateGigApplication = async (id, newStatus) => {
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/gig-applications/${id}`,
+      const res = await apiFetch(
+        `/api/gig-applications/${id}`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -228,7 +227,7 @@ const Dashboard = () => {
         return
       }
       setLoadingSessions(true)
-      const res = await fetch(`${API_BASE_URL}/api/sessions?email=${encodeURIComponent(userEmail)}`)
+      const res = await apiFetch(`/api/sessions?email=${encodeURIComponent(userEmail)}`)
       if (!res.ok) throw new Error('Failed to fetch sessions')
       const data = await res.json()
       setUpcomingSessions(data.filter(s => ['Scheduled', 'Rescheduled', 'Pending'].includes(s.status)))
@@ -243,7 +242,7 @@ const Dashboard = () => {
     setIsSubmittingSession(true)
     try {
       if (editingSession && editingSession._id) {
-        const res = await fetch(`${API_BASE_URL}/api/sessions/${editingSession._id}/reschedule`, {
+        const res = await apiFetch(`/api/sessions/${editingSession._id}/reschedule`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(sessionData),
@@ -264,7 +263,7 @@ const Dashboard = () => {
     // Removed window.confirm for now, assumes inline confirm is handled at the component level or passes through
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/${action}`, { method: 'PUT' })
+      const res = await apiFetch(`/api/sessions/${sessionId}/${action}`, { method: 'PUT' })
       if (!res.ok) throw new Error(`Failed to ${action} session`)
       fetchUpcomingSessions()
       if (action === 'accept') toast.success('Session accepted!')
@@ -280,7 +279,7 @@ const Dashboard = () => {
   const handleReviewSubmit = async ({ sessionId, reviewedUserEmail, rating, feedback }) => {
     setIsSubmittingReview(true)
     try {
-      const res = await fetch(`${API_BASE_URL}/api/reviews`, {
+      const res = await apiFetch(`/api/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -312,11 +311,11 @@ const Dashboard = () => {
     setLoadingAnalytics(true)
     try {
       const [userRes, activityRes, skillsRes, badgesRes, recentRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/analytics/user?email=${encodeURIComponent(userEmail)}`),
-        fetch(`${API_BASE_URL}/api/analytics/activity?email=${encodeURIComponent(userEmail)}`),
-        fetch(`${API_BASE_URL}/api/analytics/skills?email=${encodeURIComponent(userEmail)}`),
-        fetch(`${API_BASE_URL}/api/analytics/badges?email=${encodeURIComponent(userEmail)}`),
-        fetch(`${API_BASE_URL}/api/analytics/recent-activity?email=${encodeURIComponent(userEmail)}`),
+        apiFetch(`/api/analytics/user?email=${encodeURIComponent(userEmail)}`),
+        apiFetch(`/api/analytics/activity?email=${encodeURIComponent(userEmail)}`),
+        apiFetch(`/api/analytics/skills?email=${encodeURIComponent(userEmail)}`),
+        apiFetch(`/api/analytics/badges?email=${encodeURIComponent(userEmail)}`),
+        apiFetch(`/api/analytics/recent-activity?email=${encodeURIComponent(userEmail)}`),
       ])
 
       setAnalyticsData({
@@ -608,17 +607,46 @@ const Dashboard = () => {
               <div>
                 <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0, marginBottom: 16 }}>Badges</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-                  {[
-                    { name: 'First Exchange', emoji: '🤝' },
-                    { name: 'Session Rookie', emoji: '🌱' },
-                    { name: 'Top Rated', emoji: '⭐' },
-                    { name: 'Skill Explorer', emoji: '🧭' },
-                    { name: 'Connector', emoji: '🔗' },
-                    { name: 'Learner', emoji: '📚' },
+                                  {[
+                    { 
+                      name: 'First Exchange', 
+                      emoji: '🤝',
+                      isEarned: (analyticsData.user?.completedExchanges || 0) >= 1,
+                      progress: Math.min(((analyticsData.user?.completedExchanges || 0) / 1) * 100, 100)
+                    },
+                    { 
+                      name: 'Session Rookie', 
+                      emoji: '🌱',
+                      isEarned: (analyticsData.user?.completedExchanges || 0) >= 3,
+                      progress: Math.min(((analyticsData.user?.completedExchanges || 0) / 3) * 100, 100)
+                    },
+                    { 
+                      name: 'Top Rated', 
+                      emoji: '⭐',
+                      isEarned: (analyticsData.user?.averageRating || 0) >= 4.5,
+                      progress: Math.min(((analyticsData.user?.averageRating || 0) / 4.5) * 100, 100)
+                    },
+                    { 
+                      name: 'Skill Explorer', 
+                      emoji: '🧭',
+                      isEarned: (analyticsData.skills?.length || 0) >= 5,
+                      progress: Math.min(((analyticsData.skills?.length || 0) / 5) * 100, 100)
+                    },
+                    { 
+                      name: 'Connector', 
+                      emoji: '🔗',
+                      isEarned: (analyticsData.user?.requestsSent || 0) >= 5,
+                      progress: Math.min(((analyticsData.user?.requestsSent || 0) / 5) * 100, 100)
+                    },
+                    { 
+                      name: 'Learner', 
+                      emoji: '📚',
+                      isEarned: (analyticsData.user?.completedExchanges || 0) >= 2,
+                      progress: Math.min(((analyticsData.user?.completedExchanges || 0) / 2) * 100, 100)
+                    },
                   ].map((badgeDef, i) => {
-                    const earnedBadge = (analyticsData.badges || []).find(b => b.name === badgeDef.name);
-                    const isEarned = !!earnedBadge;
-                    const progress = earnedBadge ? 100 : (i * 20 + 15); // mock progress if unearned based on index
+                    const isEarned = badgeDef.isEarned;
+                    const progress = badgeDef.progress;
                     
                     return (
                       <div key={i} style={{ 

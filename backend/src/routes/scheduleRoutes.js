@@ -7,7 +7,7 @@ import {
   scheduleSession
 } from '../controllers/scheduleController.js';
 
-// Schedule routes — relies on client-provided identifiers for auth in this MVP
+// Schedule routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /** GET /api/schedule/availability/:email - Fetch user's availability schedule */

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config/api';
+import { apiFetch } from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 const SKILL_CHIPS = ['React', 'Node.js', 'Python', 'Design', 'Figma', 'UI/UX', 'Marketing', 'Java', 'Data Science'];
 const TABS = ['All', 'Gigs', 'Skill Exchanges', 'People'];
@@ -16,15 +17,16 @@ const Browse = () => {
   const [gigs, setGigs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const currentUser = useMemo(() => JSON.parse(localStorage.getItem('user') || '{}'), []);
+  const { user: firebaseUser } = useAuth();
+  const currentUser = firebaseUser || {};
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const [usersRes, gigsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/search/users?limit=50`),
-          fetch(`${API_BASE_URL}/api/search/gigs?limit=50`)
+          apiFetch(`/api/search/users?limit=50`),
+          apiFetch(`/api/search/gigs?limit=50`)
         ]);
         
         const usersData = usersRes.ok ? await usersRes.json() : { users: [] };

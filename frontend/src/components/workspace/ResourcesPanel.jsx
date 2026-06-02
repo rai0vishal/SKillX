@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ResourceCard from './ResourceCard';
-import { API_BASE_URL } from '../../config/api.js';
+import { apiFetch } from '../../api/apiClient';
 
 const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
   const [resources, setResources] = useState([]);
@@ -18,7 +18,7 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
   const fetchResources = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/workspace/resources/${workspaceId}`);
+      const res = await apiFetch(`/api/workspace/resources/${workspaceId}`);
       const data = await res.json();
       setResources(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -40,7 +40,7 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
 
     try {
       setUploading(true);
-      const res = await fetch(`${API_BASE_URL}/api/workspace/resource/upload`, {
+      const res = await apiFetch(`/api/workspace/resource/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -60,7 +60,7 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
     e.preventDefault();
     if (!linkForm.title.trim() || !linkForm.url.trim()) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/workspace/resource/link`, {
+      const res = await apiFetch(`/api/workspace/resource/link`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workspaceId, uploadedBy: currentUserEmail, ...linkForm }),
@@ -77,7 +77,7 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
   const handleDelete = async (resourceId) => {
     if (!true) return;
     try {
-      await fetch(`${API_BASE_URL}/api/workspace/resource/${resourceId}`, { method: 'DELETE' });
+      await apiFetch(`/api/workspace/resource/${resourceId}`, { method: 'DELETE' });
       setResources((prev) => prev.filter((r) => r._id !== resourceId));
     } catch (err) {
       console.error('Failed to delete resource', err);

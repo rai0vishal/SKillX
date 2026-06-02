@@ -9,7 +9,8 @@ import ResourcesPanel from '../components/workspace/ResourcesPanel';
 import NotesPanel from '../components/workspace/NotesPanel';
 import TaskPanel from '../components/workspace/TaskPanel';
 
-import { API_BASE_URL } from '../config/api.js';
+import { apiFetch } from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../config/socket.js';
 import { toast } from 'sonner';
 let socket;
@@ -74,13 +75,14 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
-  const user = useMemo(() => JSON.parse(localStorage.getItem('user') || 'null'), []);
+  const { user: firebaseUser } = useAuth();
+  const user = firebaseUser;
   const userEmail = user?.email;
   const location = useLocation();
 
   const fetchMessages = useCallback(async (roomId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/chat/messages/${roomId}`);
+      const res = await apiFetch(`/api/chat/messages/${roomId}`);
       const data = await res.json();
       setMessages(data);
     } catch (error) {
@@ -90,7 +92,7 @@ const Chat = () => {
 
   const fetchRoomSessions = useCallback(async (roomId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/sessions/room/${roomId}`);
+      const res = await apiFetch(`/api/sessions/room/${roomId}`);
       const data = await res.json();
       setRoomSessions(data);
       // Auto-open tray if pending sessions
@@ -104,7 +106,7 @@ const Chat = () => {
 
   const fetchWorkspace = useCallback(async (roomId, roomParticipants) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/workspace/${roomId}`, {
+      const res = await apiFetch(`/api/workspace/${roomId}`, {
         headers: { participants: roomParticipants.join(',') }
       });
       const data = await res.json();
@@ -144,7 +146,7 @@ const Chat = () => {
 
   const fetchRooms = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/chat/${userEmail}`);
+      const res = await apiFetch(`/api/chat/${userEmail}`);
       const data = await res.json();
       setRooms(data);
 
@@ -272,7 +274,7 @@ const Chat = () => {
     setIsSubmittingSession(true);
     try {
       if (editingSession && editingSession._id && editingSession.status !== 'Pending') {
-        const res = await fetch(`${API_BASE_URL}/api/sessions/${editingSession._id}/reschedule`, {
+        const res = await apiFetch(`/api/sessions/${editingSession._id}/reschedule`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(sessionData),
@@ -296,7 +298,7 @@ const Chat = () => {
           requestedBy: userEmail,
           force: true
         };
-        const res = await fetch(`${API_BASE_URL}/api/schedule/session/schedule`, {
+        const res = await apiFetch(`/api/schedule/session/schedule`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -309,7 +311,7 @@ const Chat = () => {
         }
 
         if (editingSession && editingSession._id && editingSession.status === 'Pending') {
-          await fetch(`${API_BASE_URL}/api/sessions/${editingSession._id}/cancel`, { method: 'PUT' });
+          await apiFetch(`/api/sessions/${editingSession._id}/cancel`, { method: 'PUT' });
         }
       }
       setIsSessionModalOpen(false);
@@ -325,7 +327,7 @@ const Chat = () => {
 
   const handleSessionAction = async (sessionId, action) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/${action}`, { method: 'PUT' });
+      const res = await apiFetch(`/api/sessions/${sessionId}/${action}`, { method: 'PUT' });
       if (!res.ok) throw new Error(`Failed to ${action} session`);
       fetchRoomSessions(activeRoom._id);
       if (action === 'accept') toast.success('Session accepted!');
@@ -341,7 +343,7 @@ const Chat = () => {
   const handleReviewSubmit = async ({ sessionId, reviewedUserEmail, rating, feedback }) => {
     setIsSubmittingReview(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/reviews`, {
+      const res = await apiFetch(`/api/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reviewerEmail: userEmail, reviewedUserEmail, sessionId, rating, feedback }),

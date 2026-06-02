@@ -1,21 +1,12 @@
-import UserProfile from '../models/UserProfile.js';
-
 // checkRole.js — Validates user role and suspension status.
-// Attaches the fetched UserProfile document to req.userProfile.
+// MUST be used AFTER the authenticate middleware, which sets req.user and req.userProfile.
 export const checkRole = (allowedRoles) => {
   return async (req, res, next) => {
     try {
-      // For MVP without JWT middleware, reads email from various request fields
-      const userEmail = req.headers['user-email'] || req.body.userEmail || req.query.email;
-
-      if (!userEmail) {
-        return res.status(401).json({ message: 'Authentication required. Missing user email.' });
-      }
-
-      const user = await UserProfile.findOne({ email: userEmail });
+      const user = req.userProfile;
 
       if (!user) {
-        return res.status(404).json({ message: 'User profile not found.' });
+        return res.status(404).json({ message: 'User profile not found. Please complete registration.' });
       }
 
       if (user.status === 'suspended') {
@@ -26,7 +17,6 @@ export const checkRole = (allowedRoles) => {
         return res.status(403).json({ message: 'Access denied. Insufficient permissions.' });
       }
 
-      req.userProfile = user;
       next();
     } catch (error) {
       console.error('Role check error:', error);

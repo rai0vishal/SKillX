@@ -7,7 +7,7 @@ import {
   archiveNotifications
 } from '../controllers/notificationController.js';
 
-// Notification routes — relies on client-provided identifiers for auth in this MVP
+// Notification routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /** GET /api/notifications - Fetch user's notifications */

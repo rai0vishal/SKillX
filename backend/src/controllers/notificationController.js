@@ -2,9 +2,8 @@ import * as notificationService from '../services/notificationService.js';
 
 export const getNotifications = async (req, res) => {
   try {
-    // Assuming email is passed in headers for simple auth (like the rest of the app)
-    const email = req.headers['user-email'];
-    if (!email) return res.status(401).json({ message: 'Unauthorized' });
+    // Email is now verified via Firebase ID token by the authenticate middleware
+    const email = req.user.email;
 
     const notifications = await notificationService.getUserNotifications(email);
     res.status(200).json(notifications);
@@ -15,8 +14,7 @@ export const getNotifications = async (req, res) => {
 
 export const getUnreadCount = async (req, res) => {
   try {
-    const email = req.headers['user-email'];
-    if (!email) return res.status(401).json({ message: 'Unauthorized' });
+    const email = req.user.email;
 
     const count = await notificationService.getUnreadCount(email);
     res.status(200).json({ count });
@@ -37,8 +35,7 @@ export const markAsRead = async (req, res) => {
 
 export const markAllAsRead = async (req, res) => {
   try {
-    const email = req.headers['user-email'];
-    if (!email) return res.status(401).json({ message: 'Unauthorized' });
+    const email = req.user.email;
 
     await notificationService.markAllAsRead(email);
     res.status(200).json({ message: 'All notifications marked as read' });
@@ -49,8 +46,7 @@ export const markAllAsRead = async (req, res) => {
 
 export const archiveNotifications = async (req, res) => {
   try {
-    const email = req.headers['user-email'];
-    if (!email) return res.status(401).json({ message: 'Unauthorized' });
+    const email = req.user.email;
 
     await notificationService.archiveAll(email);
     res.status(200).json({ message: 'Notifications archived' });

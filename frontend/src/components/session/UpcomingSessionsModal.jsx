@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../../config/api.js';
+import { apiFetch } from '../../api/apiClient';
 
 const UpcomingSessionsModal = ({ isOpen, onClose, userEmail }) => {
   const [sessions, setSessions] = useState([]);
@@ -10,7 +10,7 @@ const UpcomingSessionsModal = ({ isOpen, onClose, userEmail }) => {
       const fetchAllUpcoming = async () => {
         try {
           setLoading(true);
-          const res = await fetch(`${API_BASE_URL}/api/sessions/all-upcoming?email=${encodeURIComponent(userEmail)}`);
+          const res = await apiFetch(`/api/sessions/all-upcoming?email=${encodeURIComponent(userEmail)}`);
           if (res.ok) {
             const data = await res.json();
             setSessions(data);

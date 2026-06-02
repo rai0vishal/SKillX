@@ -3,7 +3,7 @@ import Review from '../models/Review.js';
 import Session from '../models/Session.js';
 import UserProfile from '../models/UserProfile.js';
 
-// Review routes — relies on client-provided identifiers for auth in this MVP
+// Review routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /**

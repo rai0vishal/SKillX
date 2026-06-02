@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
 import { auth } from '../firebase/firebaseConfig'
-import { API_BASE_URL } from '../config/api.js'
+import { useAuth } from '../context/AuthContext'
 import NotificationBell from './NotificationBell'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -22,34 +22,27 @@ const VISIBLE_LINKS = NAV_LINKS.filter(l => !l.hide)
 const Navbar = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const [user, setUser] = useState(null)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const { user: firebaseUser, userProfile, loading } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   // Unread state (mocked or could be fetched later)
-  const [unreadExchanges, setUnreadExchanges] = useState(1)
-  const [unreadMessages, setUnreadMessages] = useState(3)
+  const [unreadExchanges, setUnreadExchanges] = useState(0)
+  const [unreadMessages, setUnreadMessages] = useState(0)
 
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
-    setUser(storedUser)
-    if (storedUser?.email) {
-      fetch(`${API_BASE_URL}/api/profile/${storedUser.email}`)
-        .then(res => res.ok ? res.json() : null)
-        .then(profile => { if (profile) setIsAdmin(profile.role === 'admin') })
-        .catch(err => console.error('Error fetching role for navbar:', err))
-    } else {
-      setIsAdmin(false)
-    }
-  }, [location])
+  // Derive user display info from AuthContext
+  const user = firebaseUser ? {
+    email: firebaseUser.email,
+    name: firebaseUser.displayName || userProfile?.name || '',
+    uid: firebaseUser.uid,
+  } : null
+  const isAdmin = userProfile?.role === 'admin'
 
   useEffect(() => { setMobileOpen(false) }, [location])
 
   const handleLogout = async () => {
     try {
       await signOut(auth)
-      localStorage.removeItem('user')
-      setUser(null)
+      localStorage.removeItem('user') // Clean up any legacy data
       navigate('/signin')
     } catch (error) {
       console.error('Logout error:', error)

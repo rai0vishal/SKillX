@@ -6,7 +6,7 @@ import SessionAttendance from '../models/SessionAttendance.js';
 import SessionNotes from '../models/SessionNotes.js';
 import { emitNotification } from '../socket/notificationSocket.js';
 
-// Video Session routes — relies on client-provided identifiers for auth in this MVP
+// Video Session routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /**
