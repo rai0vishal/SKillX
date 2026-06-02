@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+/**
+ * Roadmap — stores an AI-generated learning path for a specific user goal.
+ * Tracks progress across generated weeks and active status.
+ */
 const roadmapSchema = new mongoose.Schema(
   {
     userEmail: {

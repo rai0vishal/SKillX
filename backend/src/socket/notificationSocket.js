@@ -1,5 +1,8 @@
+// notificationSocket.js — Handles server-to-client push events via Socket.io.
+// Exposes utility functions to emit notifications and session updates to connected users.
+
 let io;
-let onlineUsers; // Map of socket.id -> email
+let onlineUsers;
 
 export const initNotificationSocket = (socketIoInstance, usersMap) => {
   io = socketIoInstance;
@@ -14,7 +17,6 @@ export const initNotificationSocket = (socketIoInstance, usersMap) => {
 export const emitNotification = (userEmail, notificationData) => {
   if (!io || !onlineUsers) return;
 
-  // Find all socket IDs for this userEmail
   const socketIds = [];
   for (const [id, email] of onlineUsers.entries()) {
     if (email === userEmail) {
@@ -22,7 +24,6 @@ export const emitNotification = (userEmail, notificationData) => {
     }
   }
 
-  // Emit to all of the user's active socket connections
   socketIds.forEach(socketId => {
     io.to(socketId).emit('newNotification', notificationData);
   });

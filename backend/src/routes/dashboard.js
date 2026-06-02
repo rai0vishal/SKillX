@@ -3,9 +3,14 @@ import Gig from '../models/Gig.js';
 import SkillExchange from '../models/SkillExchange.js';
 import UserProfile from '../models/UserProfile.js';
 
+// Dashboard routes — relies on client-provided identifiers for auth in this MVP
 const router = express.Router();
 
-// GET /api/dashboard?email=someone@gmail.com
+/**
+ * GET /api/dashboard
+ * Aggregates global platform statistics. If 'email' is provided, also computes 
+ * personalized perfect matches based on skill overlaps.
+ */
 router.get('/', async (req, res) => {
   try {
     const { email } = req.query;

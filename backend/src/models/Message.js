@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+/**
+ * Message — an individual text message within a ChatRoom.
+ * Tracks read status for unread badge notifications.
+ */
 const messageSchema = new mongoose.Schema(
   {
     chatRoomId: {

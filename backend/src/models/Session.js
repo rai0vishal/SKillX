@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+/**
+ * Session — tracks a scheduled skill exchange or coaching meeting between users.
+ * Supports metadata for video/in-person modes and participant roles.
+ */
 const sessionSchema = new mongoose.Schema(
   {
     roomId: {

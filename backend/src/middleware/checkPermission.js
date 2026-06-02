@@ -1,9 +1,5 @@
-/**
- * Middleware to check if a user has a specific permission.
- * Note: Assumes `req.userProfile` has been set by a previous middleware like `checkRole`.
- * 
- * @param {String} requiredPermission - The permission required to access the route
- */
+// checkPermission.js — Validates specific user permissions.
+// Assumes req.userProfile is already populated by checkRole.
 export const checkPermission = (requiredPermission) => {
   return async (req, res, next) => {
     try {

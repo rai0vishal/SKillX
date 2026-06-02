@@ -7,21 +7,22 @@ import {
   deleteRoadmap,
 } from '../controllers/roadmapController.js';
 
+// Roadmap routes — relies on client-provided identifiers for auth in this MVP
 const router = express.Router();
 
-// POST /api/roadmap/generate — Generate a roadmap preview (not saved)
+/** POST /api/roadmap/generate - Generate a roadmap preview (not saved) */
 router.post('/generate', generateRoadmap);
 
-// POST /api/roadmap/save — Save a roadmap to DB
+/** POST /api/roadmap/save - Save a roadmap to DB */
 router.post('/save', saveRoadmap);
 
-// GET /api/roadmap/user?email=... — Get all saved roadmaps for a user
+/** GET /api/roadmap/user - Get all saved roadmaps for a user */
 router.get('/user', getUserRoadmaps);
 
-// PUT /api/roadmap/progress — Toggle week completion and update progress
+/** PUT /api/roadmap/progress - Toggle week completion and update progress */
 router.put('/progress', updateProgress);
 
-// DELETE /api/roadmap/:id — Delete a roadmap
+/** DELETE /api/roadmap/:id - Delete a roadmap */
 router.delete('/:id', deleteRoadmap);
 
 export default router;

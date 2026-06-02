@@ -1,11 +1,16 @@
 import express from 'express'
 import SkillExchange from '../models/SkillExchange.js'
-import Profile from '../models/UserProfile.js'   // ✅ NEW: for auto stats update
+import Profile from '../models/UserProfile.js'
 import { generateMatchInsights } from '../services/aiService.js'
 
+// SkillExchange routes — relies on client-provided identifiers for auth in this MVP
 const router = express.Router()
 
-// ✅ GET /api/skill-exchange/recommendations → get top matched profiles with AI insights
+/**
+ * GET /api/skill-exchange/recommendations
+ * Fetches the top 3 best-matched profiles for a user and generates AI insights
+ * explaining why they match and suggesting an exchange plan.
+ */
 router.get('/recommendations', async (req, res) => {
   try {
     const { userId } = req.query
@@ -14,29 +19,22 @@ router.get('/recommendations', async (req, res) => {
       return res.status(400).json({ message: 'User ID is required to fetch recommendations' })
     }
 
-    // 1. Get the current user's profile
     const currentUserProfile = await SkillExchange.findOne({ userId }).sort({ createdAt: -1 })
     
     if (!currentUserProfile) {
-      // User hasn't created a profile yet
       return res.status(200).json([])
     }
-
-    // 2. Get other users, sort by matchScore
     const potentialMatches = await SkillExchange.find({ userId: { $ne: userId } })
       .sort({ matchScore: -1 })
-      .limit(3) // Top 3 matches
+      .limit(3)
 
     if (potentialMatches.length === 0) {
       return res.status(200).json([])
     }
 
-    // 3. Get AI insights
     const insights = await generateMatchInsights(currentUserProfile, potentialMatches)
 
-    // 4. Merge insights into matches
     const recommendedMatches = potentialMatches.map((match) => {
-      // find insight for this match by id
       const insightData = insights.find(i => i.id === match._id.toString())
       return {
         ...match.toObject(),
@@ -52,20 +50,24 @@ router.get('/recommendations', async (req, res) => {
   }
 })
 
-// ✅ POST /api/skill-exchange → create an entry + auto-increment stats
+/**
+ * POST /api/skill-exchange
+ * Creates or updates a user's skill exchange profile. 
+ * Increments the user's total skill exchanges count on their first post.
+ */
 router.post('/', async (req, res) => {
   try {
     const {
       name,
-      userId,          // 👈 this is the logged-in user's UID
-      email,           // 👈 we still need email for auto-increment in Profile
+      userId,
+      email,
       skillOffered,
       skillWanted,
       location,
       matchScore,
     } = req.body
 
-    console.log('POST /api/skill-exchange body:', req.body)
+
 
     const existing = await SkillExchange.findOne({ userId });
     const entry = await SkillExchange.findOneAndUpdate(
@@ -81,14 +83,13 @@ router.post('/', async (req, res) => {
       { new: true, upsert: true }
     )
 
-    // ✅ AUTO-INCREMENT skillExchanges in Profile only if new
     if (!existing) {
       try {
         if (email) {
           await Profile.findOneAndUpdate(
             { email },
             { $inc: { 'stats.skillExchanges': 1 } },
-            { upsert: true }  // auto create profile if it doesn't exist
+            { upsert: true }
           )
         }
       } catch (err) {
@@ -108,6 +109,12 @@ router.post('/', async (req, res) => {
   }
 })
 
+/**
+ * Computes a compatibility score (0-100) between two users.
+ * Tokenizes 'skillOffered' and 'skillWanted' by whitespace/commas.
+ * A match is found if any token in one user's list is a substring of the other's.
+ * Score = (myNeedsMet + theirNeedsMet) / (totalNeeds) * 100.
+ */
 function computeMatchScore(currentUser, candidate) {
   const normalize = (str) => (str || '').toLowerCase().trim();
   const splitStr = (str) => normalize(str).split(/[\s,]+/).filter(Boolean);
@@ -131,36 +138,36 @@ function computeMatchScore(currentUser, candidate) {
   return Math.min(Math.round(rawScore), 100);
 }
 
-// ✅ GET /api/skill-exchange → list all entries or filter by userId/currentUserId
+/**
+ * GET /api/skill-exchange
+ * Fetches all skill exchange profiles. If 'currentUserId' is provided, dynamically
+ * computes and sorts other users by their match score against the current user.
+ */
 router.get('/', async (req, res) => {
   try {
     const { userId, currentUserId } = req.query;
 
     if (userId) {
-      // Used by Profile page to fetch just one user's entries
       const entries = await SkillExchange.find({ userId }).sort({ createdAt: -1 });
       return res.json(entries);
     }
 
     let entriesDocs = await SkillExchange.find({}).sort({ createdAt: -1 });
-    // Reset the default MongoDB 80 score to null
     let entries = entriesDocs.map(p => ({ ...p.toObject(), matchScore: null }));
 
-    // If currentUserId is passed, calculate matchScores relative to their profile
     if (currentUserId) {
       const currentUserProfile = await SkillExchange.findOne({ userId: currentUserId }).sort({ createdAt: -1 });
       if (currentUserProfile) {
         entries = entries.map(p => {
-          if (p.userId === currentUserId) return p; // Don't score own profile
+          if (p.userId === currentUserId) return p;
           return {
             ...p,
             matchScore: computeMatchScore(currentUserProfile, p)
           };
         });
         
-        // Sort descending by matchScore for other users
         entries.sort((a, b) => {
-          if (a.userId === currentUserId) return -1; // Keep own profile at top or ignore
+          if (a.userId === currentUserId) return -1;
           const scoreA = a.matchScore || 0;
           const scoreB = b.matchScore || 0;
           return scoreB - scoreA;

@@ -1,6 +1,10 @@
 // src/models/GigApplication.js
 import mongoose from 'mongoose';
 
+/**
+ * GigApplication — represents a user's bid/application for a specific Gig.
+ * Tracks the applicant's message and the owner's decision (pending/accepted/rejected).
+ */
 const gigApplicationSchema = new mongoose.Schema(
   {
     gigId: {
@@ -10,10 +14,8 @@ const gigApplicationSchema = new mongoose.Schema(
     },
     gigTitle: { type: String, required: true },
 
-    // who posted the gig (owner)
     gigOwnerEmail: { type: String, required: true },
 
-    // who is applying
     applicantEmail: { type: String, required: true },
 
     message: { type: String, default: '' },

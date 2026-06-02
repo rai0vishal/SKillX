@@ -2,9 +2,14 @@ import express from 'express'
 import ExchangeRequest from '../models/ExchangeRequest.js'
 import Profile from '../models/UserProfile.js'
 import ChatRoom from '../models/ChatRoom.js'
+
+// ExchangeRequest routes — relies on client-provided identifiers for auth in this MVP
 const router = express.Router()
 
-// POST /api/exchange-requests → create a new request
+/**
+ * POST /api/exchange-requests
+ * Initiates a new skill exchange request and increments the sender's skill exchanges metric.
+ */
 router.post('/', async (req, res) => {
   try {
     const { fromUserId, toUserId, exchangeId, message, fromEmail, toEmail } = req.body
@@ -24,8 +29,6 @@ router.post('/', async (req, res) => {
       toEmail,
       status: 'pending',
     })
-
-    // ✅ Increment "skillExchanges" for the sender
     try {
       if (fromEmail) {
         await Profile.findOneAndUpdate(
@@ -48,8 +51,10 @@ router.post('/', async (req, res) => {
   }
 })
 
-// GET /api/exchange-requests?userId=some_uid or ?email=some_email
-// Returns { received: [...], sent: [...] }
+/**
+ * GET /api/exchange-requests
+ * Fetches requests either received or sent by the user.
+ */
 router.get('/', async (req, res) => {
   try {
     const { userId, email } = req.query
@@ -71,7 +76,6 @@ router.get('/', async (req, res) => {
     }
 
     const [received, sent] = await Promise.all([
-      // only requests from OTHER people to you
       ExchangeRequest.find(receivedQuery).sort({ createdAt: -1 }),
       ExchangeRequest.find(sentQuery).sort({ createdAt: -1 }),
     ])
@@ -83,7 +87,10 @@ router.get('/', async (req, res) => {
   }
 })
 
-// PATCH /api/exchange-requests/:id → update request status
+/**
+ * PATCH /api/exchange-requests/:id
+ * Updates request status. On acceptance, increments completed metrics and creates a ChatRoom.
+ */
 router.patch('/:id', async (req, res) => {
   try {
     const { status } = req.body
@@ -93,7 +100,6 @@ router.patch('/:id', async (req, res) => {
       return res.status(400).json({ message: 'Invalid status' })
     }
 
-    // 👇 Get the existing request to know previous status + emails
     const existing = await ExchangeRequest.findById(req.params.id)
     if (!existing) {
       return res.status(404).json({ message: 'Request not found' })
@@ -103,7 +109,6 @@ router.patch('/:id', async (req, res) => {
     existing.status = status
     await existing.save()
 
-    // ✅ If status becomes "accepted" (and was not accepted before)
     if (previousStatus !== 'accepted' && status === 'accepted') {
       try {
         await Profile.findOneAndUpdate(

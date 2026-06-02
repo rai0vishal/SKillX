@@ -1,13 +1,17 @@
 import mongoose from 'mongoose';
 
+/**
+ * ChatRoom — represents a direct messaging channel between users.
+ * Rooms can be stand-alone or linked to a specific gig/exchange for context.
+ */
 const chatRoomSchema = new mongoose.Schema(
   {
     participants: {
-      type: [String], // Array of emails
+      type: [String],
       required: true,
     },
     referenceId: {
-      type: String, // Can be gigId or exchangeRequestId for context
+      type: String, // Links to a Gig or ExchangeRequest ID for context
       required: false,
     },
     referenceType: {
@@ -15,7 +19,7 @@ const chatRoomSchema = new mongoose.Schema(
       required: false,
     },
     title: {
-      type: String, // Context title like "React Portfolio"
+      type: String,
       required: false,
     },
   },

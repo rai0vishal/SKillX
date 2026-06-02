@@ -1,9 +1,13 @@
 import express from 'express';
 import UserProfile from '../models/UserProfile.js';
 
+// UserProfile routes — relies on client-provided identifiers for auth in this MVP
 const router = express.Router();
 
-// GET /api/profile/:email → get profile by email
+/**
+ * GET /api/profile/:email
+ * Fetches a user profile by email address.
+ */
 router.get('/:email', async (req, res) => {
   try {
     const email = req.params.email;
@@ -20,7 +24,10 @@ router.get('/:email', async (req, res) => {
   }
 });
 
-// POST /api/profile → create or update profile
+/**
+ * POST /api/profile
+ * Upserts a user profile. Handles initial creation and subsequent updates.
+ */
 router.post('/', async (req, res) => {
   try {
     const { email, name, role, location, bio, skills, stats, socialLinks } = req.body;
@@ -29,6 +36,9 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Email and name are required' });
     }
 
+    const safeEmail = typeof email === 'string' ? email.trim() : email;
+    const safeName = typeof name === 'string' ? name.trim() : name;
+
     const skillsArray = Array.isArray(skills)
       ? skills
       : typeof skills === 'string'
@@ -36,10 +46,10 @@ router.post('/', async (req, res) => {
         : [];
 
     const updatedProfile = await UserProfile.findOneAndUpdate(
-      { email },
+      { email: safeEmail },
       {
-        email,
-        name,
+        email: safeEmail,
+        name: safeName,
         role,
         location,
         bio,

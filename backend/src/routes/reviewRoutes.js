@@ -3,6 +3,7 @@ import Review from '../models/Review.js';
 import Session from '../models/Session.js';
 import UserProfile from '../models/UserProfile.js';
 
+// Review routes — relies on client-provided identifiers for auth in this MVP
 const router = express.Router();
 
 /**
@@ -25,7 +26,6 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Feedback must be 500 characters or less.' });
     }
 
-    // Verify session exists and is completed
     const session = await Session.findById(sessionId);
     if (!session) {
       return res.status(404).json({ message: 'Session not found.' });
@@ -34,17 +34,14 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'You can only review completed sessions.' });
     }
 
-    // Verify reviewer is a participant
     if (!session.participants.includes(reviewerEmail)) {
       return res.status(403).json({ message: 'You are not a participant of this session.' });
     }
 
-    // Prevent duplicate reviews
     if (session.reviewedBy && session.reviewedBy.includes(reviewerEmail)) {
       return res.status(409).json({ message: 'You have already reviewed this session.' });
     }
 
-    // Create the review
     const review = await Review.create({
       reviewerEmail,
       reviewedUserEmail,
@@ -53,11 +50,9 @@ router.post('/', async (req, res) => {
       feedback: feedback || '',
     });
 
-    // Mark this user as having reviewed the session
     session.reviewedBy.push(reviewerEmail);
     await session.save();
 
-    // Recalculate the reviewed user's average rating
     const allReviews = await Review.find({ reviewedUserEmail });
     const totalReviews = allReviews.length;
     const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
@@ -74,7 +69,6 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(review);
   } catch (error) {
-    // Handle MongoDB duplicate key error from the compound index
     if (error.code === 11000) {
       return res.status(409).json({ message: 'You have already reviewed this session.' });
     }

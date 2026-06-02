@@ -1,3 +1,7 @@
+/**
+ * Dashboard.jsx
+ * Main dashboard for user stats, session management, and exchange requests.
+ */
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -22,13 +26,8 @@ import MyLearningHub from '../components/MyLearningHub'
 import SessionCard from '../components/SessionCard'
 import SessionModal from '../components/SessionModal'
 import ReviewModal from '../components/ReviewModal'
-import AnalyticsCards from '../components/analytics/AnalyticsCards'
-import WeeklyChart from '../components/analytics/WeeklyChart'
-import SkillDistributionChart from '../components/analytics/SkillDistributionChart'
-import Achievements from '../components/analytics/Achievements'
-import RecentActivity from '../components/analytics/RecentActivity'
-import SessionCountdownCard from '../components/session/SessionCountdownCard'
 import UpcomingSessionsModal from '../components/session/UpcomingSessionsModal'
+
 
 import { API_BASE_URL } from '../config/api.js'
 
@@ -38,7 +37,6 @@ const Dashboard = () => {
   const userEmail = storedUser.email
   const [hubRefreshKey, setHubRefreshKey] = useState(0)
   
-  // Navigation Tabs state
   const [activeTab, setActiveTab] = useState('overview')
 
   const [stats, setStats] = useState({
@@ -53,25 +51,21 @@ const Dashboard = () => {
     sent: [],
   })
 
-  // ✅ NEW: state for gig applications
   const [gigApplications, setGigApplications] = useState({
     received: [],
     sent: [],
   })
 
-  // ✅ NEW: state for upcoming sessions
   const [upcomingSessions, setUpcomingSessions] = useState([])
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false)
   const [editingSession, setEditingSession] = useState(null)
   const [isSubmittingSession, setIsSubmittingSession] = useState(false)
   const [isUpcomingModalOpen, setIsUpcomingModalOpen] = useState(false)
 
-  // Review states
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
   const [reviewingSession, setReviewingSession] = useState(null)
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
 
-  // Analytics states
   const [analyticsData, setAnalyticsData] = useState({
     user: null,
     activity: [],

@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+/**
+ * SessionAttendance — logs when a user joins and leaves a video session.
+ * Used for analytics and verifying gig completion criteria.
+ */
 const sessionAttendanceSchema = new mongoose.Schema(
   {
     sessionId: {
@@ -27,7 +31,6 @@ const sessionAttendanceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Compound index — one attendance record per user per session
 sessionAttendanceSchema.index({ sessionId: 1, userEmail: 1 }, { unique: true });
 
 export default mongoose.model('SessionAttendance', sessionAttendanceSchema);

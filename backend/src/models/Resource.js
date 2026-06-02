@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+/**
+ * Resource — tracks files, links, and documents shared within a Workspace.
+ * Handles metadata and cloud storage references (Cloudinary).
+ */
 const resourceSchema = new mongoose.Schema(
   {
     workspaceId: {
@@ -9,7 +13,7 @@ const resourceSchema = new mongoose.Schema(
       index: true,
     },
     uploadedBy: {
-      type: String, // email
+      type: String, // Maps to UserProfile.email
       required: true,
     },
     resourceType: {
@@ -34,8 +38,6 @@ const resourceSchema = new mongoose.Schema(
       type: String, // Cloudinary public_id for deletion
       default: '',
     },
-    // Future-ready: version history
-    // versions: [{ url: String, uploadedAt: Date }]
   },
   { timestamps: true }
 );

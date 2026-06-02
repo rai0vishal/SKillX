@@ -3,6 +3,8 @@ import GigApplication from '../models/GigApplication.js';
 import Gig from '../models/Gig.js';
 import Profile from '../models/UserProfile.js';
 import ChatRoom from '../models/ChatRoom.js';
+
+// GigApplication routes — relies on client-provided identifiers for auth in this MVP
 const router = express.Router();
 
 /**
@@ -19,20 +21,17 @@ router.post('/', async (req, res) => {
         .json({ message: 'gigId and applicantEmail are required' });
     }
 
-    // find gig to get owner + title
     const gig = await Gig.findById(gigId);
     if (!gig) {
       return res.status(404).json({ message: 'Gig not found' });
     }
 
-    // prevent owner from applying to own gig (optional)
     if (gig.postedBy === applicantEmail) {
       return res
         .status(400)
         .json({ message: 'You cannot apply to your own gig.' });
     }
 
-    // optional: prevent duplicate applications
     const existing = await GigApplication.findOne({
       gigId,
       applicantEmail,
@@ -99,7 +98,6 @@ router.patch('/:id', async (req, res) => {
       return res.status(400).json({ message: 'Invalid status' });
     }
 
-    // get current application first
     const appBefore = await GigApplication.findById(req.params.id);
     if (!appBefore) {
       return res.status(404).json({ message: 'Application not found' });
@@ -113,7 +111,7 @@ router.patch('/:id', async (req, res) => {
       { new: true }
     );
 
-    // ✅ If we are newly accepting this application → increment gigsCompleted and create ChatRoom
+    // Increment completion stats and create a chat room upon new acceptance
     if (status === 'accepted' && !wasAcceptedBefore) {
       try {
         const ownerEmail = updated.gigOwnerEmail;

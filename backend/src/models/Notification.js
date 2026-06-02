@@ -1,9 +1,13 @@
 import mongoose from 'mongoose';
 
+/**
+ * Notification — stores alert events for a user (e.g. new message, session request).
+ * ReferenceId links the notification to its origin entity for navigation.
+ */
 const notificationSchema = new mongoose.Schema(
   {
     userId: {
-      type: String, // email
+      type: String, // Maps to UserProfile.email
       required: true,
       index: true,
     },
@@ -17,7 +21,7 @@ const notificationSchema = new mongoose.Schema(
       required: true,
     },
     referenceId: {
-      type: String, // ID to the specific document (gig, session, review)
+      type: String, // ID of the referenced gig, session, or review
       default: '',
     },
     isRead: {

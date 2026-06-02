@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+/**
+ * VideoSession — tracks the active state and duration of a WebRTC call.
+ * Maps 1:1 with a scheduled Session entity.
+ */
 const videoSessionSchema = new mongoose.Schema(
   {
     sessionId: {

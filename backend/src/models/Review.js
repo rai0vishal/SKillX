@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+/**
+ * Review — represents a post-session rating and feedback entry.
+ * Enforces a one-review-per-session-per-user limit via compound index.
+ */
 const reviewSchema = new mongoose.Schema(
   {
     reviewerEmail: {
@@ -30,7 +34,6 @@ const reviewSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Prevent duplicate reviews: one review per user per session
 reviewSchema.index({ reviewerEmail: 1, sessionId: 1 }, { unique: true });
 
 export default mongoose.model('Review', reviewSchema);

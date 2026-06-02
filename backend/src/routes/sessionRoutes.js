@@ -5,6 +5,7 @@ import { calculateExchangeRoles } from '../services/roleService.js';
 import { getUpcomingSession, getAllUpcomingSessions } from '../controllers/sessionController.js';
 import { emitSessionUpdate } from '../socket/notificationSocket.js';
 
+// Session routes — relies on client-provided identifiers for auth in this MVP
 const router = express.Router();
 
 /**
@@ -37,11 +38,6 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'requestedBy is required.' });
     }
 
-    // Note: We skip strict backend past-date validation here because 'date' and 'time'
-    // are stored without timezone info. The UTC backend might incorrectly flag valid 
-    // future local times as "past" for users behind UTC.
-    // Frontend UI should enforce reasonable date constraints.
-
     // Prevent duplicate: same participants + same chatRoom + same date/time + active status
     const duplicate = await Session.findOne({
       chatRoomId,
@@ -55,8 +51,6 @@ router.post('/', async (req, res) => {
 
     const exchangeRoles = await calculateExchangeRoles(participants[0], participants[1]);
 
-    // If isPreApproved (recipient selected their own availability slot),
-    // create directly as 'Scheduled'; otherwise 'Pending' so the other user can confirm.
     const initialStatus = isPreApproved ? 'Scheduled' : 'Pending';
     const roomId = initialStatus === 'Scheduled' ? new mongoose.Types.ObjectId().toString() : undefined;
 
