@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+/**
+ * Workspace — collaborative environment tied to a specific ChatRoom.
+ * Supports shared resources and task management for participants.
+ */
 const workspaceSchema = new mongoose.Schema(
   {
     chatRoomId: {
@@ -14,17 +18,13 @@ const workspaceSchema = new mongoose.Schema(
       default: null,
     },
     participants: {
-      type: [String], // array of emails
+      type: [String],
       required: true,
     },
     notes: {
       type: String,
       default: '',
     },
-    // Future-ready fields (not yet implemented):
-    // codeEditorEnabled: Boolean
-    // whiteboardEnabled: Boolean
-    // templateId: ObjectId
   },
   { timestamps: true }
 );

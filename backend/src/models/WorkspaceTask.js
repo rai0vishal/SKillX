@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+/**
+ * WorkspaceTask — a to-do item within a collaborative Workspace.
+ */
 const workspaceTaskSchema = new mongoose.Schema(
   {
     workspaceId: {
@@ -9,7 +12,7 @@ const workspaceTaskSchema = new mongoose.Schema(
       index: true,
     },
     createdBy: {
-      type: String, // email
+      type: String,
       required: true,
     },
     title: {
@@ -22,7 +25,7 @@ const workspaceTaskSchema = new mongoose.Schema(
       default: '',
     },
     assignedTo: {
-      type: String, // email
+      type: String,
       default: '',
     },
     status: {

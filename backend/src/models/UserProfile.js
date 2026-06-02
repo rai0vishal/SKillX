@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 import { PERMISSIONS } from '../services/permissionService.js';
 
+/**
+ * UserProfile — central identity for a user.
+ * Stores global stats, permissions, and availability preferences.
+ */
 const userProfileSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
@@ -14,7 +18,7 @@ const userProfileSchema = new mongoose.Schema(
     },
     location: { type: String, default: '' },
     bio: { type: String, default: '' },
-    skills: { type: [String], default: [] },
+    skills: { type: [String], default: [], index: true },
     socialLinks: {
       type: [
         {

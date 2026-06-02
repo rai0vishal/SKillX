@@ -1,3 +1,7 @@
+/**
+ * Profile.jsx
+ * Displays and manages the user's public and private profile details, stats, and reviews.
+ */
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -70,7 +74,6 @@ const Profile = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch Profile
         const profRes = await fetch(`${API_BASE_URL}/api/profile/${targetEmail}`);
         if (profRes.ok) {
           const profData = await profRes.json();
@@ -79,7 +82,6 @@ const Profile = () => {
           setProfile(profData);
         }
 
-        // Fetch Gigs
         const gigsRes = await fetch(`${API_BASE_URL}/api/gigs`);
         if (gigsRes.ok) {
           const allGigs = await gigsRes.json();
@@ -87,19 +89,16 @@ const Profile = () => {
           setGigs(allGigs.filter(g => g.creatorEmail === targetEmail));
         }
 
-        // Fetch Exchanges (User's posted SkillExchange profiles)
         const exRes = await fetch(`${API_BASE_URL}/api/skill-exchange?userId=${targetUid}`);
         if (exRes.ok) {
           setExchanges(await exRes.json());
         }
 
-        // Fetch Exchange Requests
         const reqRes = await fetch(`${API_BASE_URL}/api/exchange-requests?userId=${targetUid}`);
         if (reqRes.ok) {
           setExchangeRequests(await reqRes.json());
         }
 
-        // Fetch Reviews
         const revRes = await fetch(`${API_BASE_URL}/api/reviews/user/${targetEmail}`);
         if (revRes.ok) {
           setReviews(await revRes.json());

@@ -5,6 +5,7 @@ import UserProfile from '../models/UserProfile.js';
 import SkillExchange from '../models/SkillExchange.js';
 import Review from '../models/Review.js';
 
+// Analytics routes — relies on client-provided identifiers for auth in this MVP
 const router = express.Router();
 
 /**

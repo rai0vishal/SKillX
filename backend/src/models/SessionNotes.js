@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+/**
+ * SessionNotes — stores private collaborative or personal notes taken during a session.
+ */
 const sessionNotesSchema = new mongoose.Schema(
   {
     sessionId: {
@@ -23,7 +26,6 @@ const sessionNotesSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// One notes document per user per session
 sessionNotesSchema.index({ sessionId: 1, userEmail: 1 }, { unique: true });
 
 export default mongoose.model('SessionNotes', sessionNotesSchema);

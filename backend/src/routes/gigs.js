@@ -1,12 +1,16 @@
 // src/routes/gigs.js
 import express from 'express';
 import Gig from '../models/Gig.js';
-import Profile from '../models/UserProfile.js'; // ✅ for stats update
+import Profile from '../models/UserProfile.js';
 import { enhanceGigDescription } from '../services/aiService.js';
 
+// Gig routes — relies on client-provided identifiers for auth in this MVP
 const router = express.Router();
 
-// POST /api/gigs/enhance → AI-generated gig description using full context
+/**
+ * POST /api/gigs/enhance
+ * Uses AI to generate a professional gig description based on basic inputs.
+ */
 router.post('/enhance', async (req, res) => {
   try {
     const { title, category, skills, description } = req.body;
@@ -19,7 +23,7 @@ router.post('/enhance', async (req, res) => {
       return res.status(400).json({ message: 'Category is required for AI generation.' });
     }
 
-    // skills can be a string or array — normalize to ensure at least one
+    // Normalize skills to ensure at least one is provided
     const skillsList = Array.isArray(skills)
       ? skills.filter(Boolean)
       : (skills || '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -42,7 +46,10 @@ router.post('/enhance', async (req, res) => {
   }
 });
 
-// POST /api/gigs → create gig
+/**
+ * POST /api/gigs
+ * Creates a new Gig and increments the user's gigsPosted stat.
+ */
 router.post('/', async (req, res) => {
   try {
     const {
@@ -54,7 +61,7 @@ router.post('/', async (req, res) => {
       budget,
       duration,
       location,
-      postedBy,   // 👈 email of gig owner
+      postedBy,
     } = req.body;
 
     const gig = await Gig.create({
@@ -69,7 +76,6 @@ router.post('/', async (req, res) => {
       postedBy,
     });
 
-    // ✅ AUTO-INCREMENT gigsPosted in Profile for postedBy
     try {
       if (postedBy) {
         await Profile.findOneAndUpdate(
@@ -90,7 +96,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/gigs → list all gigs
+/**
+ * GET /api/gigs
+ * Fetches all gigs sorted by newest first.
+ */
 router.get('/', async (req, res) => {
   try {
     const gigs = await Gig.find().sort({ createdAt: -1 });
@@ -101,7 +110,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/gigs/:id → single gig
+/**
+ * GET /api/gigs/:id
+ * Fetches a single gig by ID.
+ */
 router.get('/:id', async (req, res) => {
   try {
     const gig = await Gig.findById(req.params.id);
@@ -113,7 +125,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/gigs/:id → delete gig
+/**
+ * DELETE /api/gigs/:id
+ * Deletes a gig by ID.
+ */
 router.delete('/:id', async (req, res) => {
   try {
     const gig = await Gig.findByIdAndDelete(req.params.id);

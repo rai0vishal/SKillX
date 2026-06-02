@@ -1,17 +1,11 @@
 import UserProfile from '../models/UserProfile.js';
 
-/**
- * Middleware to check user roles and status.
- * Note: Assumes `req.user.email` is already set by a previous authentication middleware
- * (or expects the email to be passed in headers/body for this basic implementation).
- * 
- * @param {Array<String>} allowedRoles - Array of roles allowed to access the route (e.g., ['admin'])
- */
+// checkRole.js — Validates user role and suspension status.
+// Attaches the fetched UserProfile document to req.userProfile.
 export const checkRole = (allowedRoles) => {
   return async (req, res, next) => {
     try {
-      // In a real app, you'd extract email from req.user (set by JWT middleware)
-      // For SkillX MVP, many routes receive email in req.headers or req.body
+      // For MVP without JWT middleware, reads email from various request fields
       const userEmail = req.headers['user-email'] || req.body.userEmail || req.query.email;
 
       if (!userEmail) {
@@ -32,7 +26,6 @@ export const checkRole = (allowedRoles) => {
         return res.status(403).json({ message: 'Access denied. Insufficient permissions.' });
       }
 
-      // Attach user profile to request for downstream use
       req.userProfile = user;
       next();
     } catch (error) {

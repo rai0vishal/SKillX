@@ -47,103 +47,100 @@ const io = new Server(server, {
 
 import { initNotificationSocket } from './src/socket/notificationSocket.js';
 
-const onlineUsers = new Map(); // socket.id -> email
+// ─── Socket.io ───────────────────────────────────────────────────────────────
+
+const onlineUsers = new Map();
 initNotificationSocket(io, onlineUsers);
 
 io.on('connection', (socket) => {
   console.log('✅ A user connected via Socket.io:', socket.id);
 
-  // User logs in and maps their socket to their email
+  // Triggered when client auth resolves; maps connection to user identity
   socket.on('registerUser', (email) => {
     onlineUsers.set(socket.id, email);
-    // Broadcast to everyone that this user is online
     io.emit('userStatusChange', { email, isOnline: true });
   });
 
+  // Triggered when user enters a specific text chat channel
   socket.on('joinRoom', (roomId) => {
     socket.join(roomId);
     console.log(`User joined room: ${roomId}`);
   });
 
+  // Triggered when user navigates away from a chat channel
   socket.on('leaveRoom', (roomId) => {
     socket.leave(roomId);
     console.log(`User left room: ${roomId}`);
   });
 
+  // Triggered when a new text message is submitted to a room
   socket.on('sendMessage', async (data) => {
     try {
       const { chatRoomId, senderEmail, text } = data;
-      // Save message to database
       const newMessage = await Message.create({ chatRoomId, senderEmail, text });
-      
-      // Emit to everyone in the room
       io.to(chatRoomId).emit('receiveMessage', newMessage);
     } catch (error) {
       console.error('Error sending message:', error);
     }
   });
 
-  // Typing indicators
+  // Triggered on keypress in the chat input
   socket.on('typing', ({ chatRoomId, email }) => {
     socket.to(chatRoomId).emit('userTyping', { email });
   });
 
+  // Triggered when chat input is blurred or after a timeout
   socket.on('stopTyping', ({ chatRoomId, email }) => {
     socket.to(chatRoomId).emit('userStoppedTyping', { email });
   });
 
-  // ─── WebRTC Signaling ────────────────────────────────────────────────────
-
-  // User joins a video room
+  // Triggered when user enters a WebRTC video session page
   socket.on('rtc:join-room', ({ roomId, userEmail }) => {
     socket.join(roomId);
     socket.data.rtcRoom = roomId;
     socket.data.rtcEmail = userEmail;
-    // Notify everyone else in the room that a new peer arrived
     socket.to(roomId).emit('rtc:peer-joined', { userEmail, socketId: socket.id });
     console.log(`[RTC] ${userEmail} joined room ${roomId}`);
   });
 
-  // Relay SDP offer to a specific peer
+  // Triggered during WebRTC signaling to propose a connection
   socket.on('rtc:offer', ({ roomId, offer, targetSocketId }) => {
     socket.to(targetSocketId).emit('rtc:offer', { offer, fromSocketId: socket.id });
   });
 
-  // Relay SDP answer back to the offerer
+  // Triggered during WebRTC signaling to accept a connection proposal
   socket.on('rtc:answer', ({ answer, targetSocketId }) => {
     socket.to(targetSocketId).emit('rtc:answer', { answer, fromSocketId: socket.id });
   });
 
-  // Relay ICE candidates between peers
+  // Triggered by local RTCPeerConnection to share network routing info
   socket.on('rtc:ice-candidate', ({ candidate, targetSocketId }) => {
     socket.to(targetSocketId).emit('rtc:ice-candidate', { candidate, fromSocketId: socket.id });
   });
 
-  // User leaves the video room
+  // Triggered when user disconnects from the video call
   socket.on('rtc:leave-room', ({ roomId, userEmail }) => {
     socket.leave(roomId);
     socket.to(roomId).emit('rtc:peer-left', { userEmail, socketId: socket.id });
     console.log(`[RTC] ${userEmail} left room ${roomId}`);
   });
 
-  // In-session chat message (separate from main chat rooms)
+  // Triggered for ephemeral chat messages inside a video session
   socket.on('rtc:chat-message', ({ roomId, senderEmail, text, timestamp }) => {
     io.to(roomId).emit('rtc:chat-message', { senderEmail, text, timestamp });
   });
 
-  // ─── Disconnect ───────────────────────────────────────────────────────────
   socket.on('disconnect', () => {
     console.log('❌ A user disconnected:', socket.id);
     const email = onlineUsers.get(socket.id);
     if (email) {
       onlineUsers.delete(socket.id);
-      // Check if user has other open tabs/sockets before marking offline
+      
       const hasOtherSockets = Array.from(onlineUsers.values()).includes(email);
       if (!hasOtherSockets) {
         io.emit('userStatusChange', { email, isOnline: false });
       }
     }
-    // Notify any RTC room this socket was in
     if (socket.data.rtcRoom) {
       socket.to(socket.data.rtcRoom).emit('rtc:peer-left', {
         userEmail: socket.data.rtcEmail,
@@ -152,44 +149,52 @@ io.on('connection', (socket) => {
     }
   });
 });
-// Middlewares
+// ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: allowedOrigins, // support multiple local dev origins
+    origin: allowedOrigins,
     credentials: true,
   })
 );
 app.use(express.json());
 
-// Health check route
-app.get('/', (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    message: 'SkillX backend is running ✅',
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-// Routes
+// ─── Routes ────────────────────────────────────────────────────────────────────
+// Core Gig listings and AI enhancements
 app.use('/api/gigs', gigsRouter);
+// Primary algorithm for skill matching and profiles
 app.use('/api/skill-exchange', skillExchangeRouter);
+// User profile CRUD
 app.use('/api/profile', profileRouter);
+// Personal metrics and aggregate stats
 app.use('/api/dashboard', dashboardRouter); 
+// Proposals between users for a skill swap
 app.use('/api/exchange-requests', exchangeRequestsRouter);
+// Bids on posted gigs
 app.use('/api/gig-applications', gigApplicationsRouter);
+// Real-time direct messaging between users
 app.use('/api/chat', chatRouter);
+// AI-generated learning roadmaps
 app.use('/api/roadmap', roadmapRouter);
+// Tracking and management for booked sessions
 app.use('/api/sessions', sessionRouter);
+// Ratings and text reviews for completed sessions
 app.use('/api/reviews', reviewRouter);
+// Platform-wide usage analytics (admin)
 app.use('/api/analytics', analyticsRouter);
+// Video call signaling and room management
 app.use('/api/video-session', videoSessionRouter);
+// Admin management and moderation tools
 app.use('/api/admin', adminRouter);
+// User alerts and real-time push events
 app.use('/api/notifications', notificationRouter);
+// Collaborative workspace tools (tasks, resources)
 app.use('/api/workspace', workspaceRouter);
+// Global search across users and gigs
 app.use('/api/search', searchRouter);
+// Calendar and availability management
 app.use('/api/schedule', scheduleRouter);
 
-// Global Error Handling Middleware
+// ─── Error Handling ────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('Unhandled Error:', err.stack);
   res.status(500).json({
@@ -198,7 +203,6 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message
   });
 });
-// DB + server start
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/skillx';
 

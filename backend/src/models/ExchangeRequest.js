@@ -1,17 +1,24 @@
 import mongoose from 'mongoose'
 
+/**
+ * ExchangeRequest — tracks a single skill swap proposal between two users.
+ * A request is always initiated by sender toward a specific exchange profile
+ * posted by the receiver. Status transitions: pending → accepted | rejected.
+ */
 const exchangeRequestSchema = new mongoose.Schema(
   {
     fromUserId: {
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
 
     toUserId: {
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
 
     exchangeId: {
@@ -35,8 +42,9 @@ const exchangeRequestSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['pending', 'accepted', 'rejected'],  // ✅ SAFETY CHECK
+      enum: ['pending', 'accepted', 'rejected'],
       default: 'pending',
+      index: true,
     },
   },
   { timestamps: true }
