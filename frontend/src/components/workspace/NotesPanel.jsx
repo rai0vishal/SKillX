@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { API_BASE_URL } from '../../config/api.js';
+import { apiFetch } from '../../api/apiClient';
 
 const NotesPanel = ({ workspaceId, initialNotes }) => {
   const [notes, setNotes] = useState(initialNotes || '');
@@ -14,7 +14,7 @@ const NotesPanel = ({ workspaceId, initialNotes }) => {
     async (content) => {
       try {
         setSaveStatus('saving');
-        const res = await fetch(`${API_BASE_URL}/api/workspace/notes/${workspaceId}`, {
+        const res = await apiFetch(`/api/workspace/notes/${workspaceId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notes: content }),

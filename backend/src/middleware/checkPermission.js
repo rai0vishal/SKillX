@@ -1,5 +1,5 @@
 // checkPermission.js — Validates specific user permissions.
-// Assumes req.userProfile is already populated by checkRole.
+// Assumes req.userProfile is already populated by the authenticate middleware.
 export const checkPermission = (requiredPermission) => {
   return async (req, res, next) => {
     try {

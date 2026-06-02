@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import LoadingSpinner from '../components/LoadingSpinner';
 
-import { API_BASE_URL } from '../config/api.js';
+import { apiFetch } from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 const PublicProfile = () => {
   const { email } = useParams()
@@ -16,7 +17,7 @@ const PublicProfile = () => {
       setLoading(true)
       setError(null)
 
-      const res = await fetch(`${API_BASE_URL}/api/profile/${email}`)
+      const res = await apiFetch(`/api/profile/${email}`)
       if (res.status === 404) {
         setError('Profile not found for this user.')
         setLoading(false)
@@ -35,8 +36,10 @@ const PublicProfile = () => {
     }
   }
 
+  const { user: firebaseUser } = useAuth();
+  
   const handleMessageClick = async () => {
-    const currentUser = JSON.parse(localStorage.getItem('user') || 'null')
+    const currentUser = firebaseUser;
     if (!currentUser) {
       alert('Please sign in to send messages')
       return
@@ -48,7 +51,7 @@ const PublicProfile = () => {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/chat/create`, {
+      const res = await apiFetch(`/api/chat/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

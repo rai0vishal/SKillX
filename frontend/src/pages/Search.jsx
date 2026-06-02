@@ -4,14 +4,16 @@ import FilterPanel from '../components/search/FilterPanel';
 import SortDropdown from '../components/search/SortDropdown';
 import UserResultCard from '../components/search/UserResultCard';
 import GigResultCard from '../components/search/GigResultCard';
-import { API_BASE_URL } from '../config/api.js';
+import { apiFetch } from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 const Search = () => {
   const [activeTab, setActiveTab] = useState('users'); // 'users' or 'gigs'
   const [query, setQuery] = useState('');
   
   // Results & Pagination
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user: firebaseUser } = useAuth();
+  const currentUser = firebaseUser || {};
   const [results, setResults] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -44,7 +46,7 @@ const Search = () => {
       });
 
       const endpoint = activeTab === 'users' ? 'users' : 'gigs';
-      const res = await fetch(`${API_BASE_URL}/api/search/${endpoint}?${params.toString()}`);
+      const res = await apiFetch(`/api/search/${endpoint}?${params.toString()}`);
       if (!res.ok) throw new Error('Search failed');
       
       const data = await res.json();

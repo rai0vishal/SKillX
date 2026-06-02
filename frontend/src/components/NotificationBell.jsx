@@ -2,8 +2,9 @@ import React from 'react'
 const Bell = ({ size, color, style }) => <i className="ti ti-bell" style={{ fontSize: size || 'inherit', color, ...style }} />
 import { useState, useEffect, useRef } from 'react'
 import NotificationDropdown from './NotificationDropdown'
-import { connectSocket } from '../config/socket'
-import { API_BASE_URL } from '../config/api.js'
+import { connectSocket, getSocket } from '../config/socket'
+import { apiFetch } from '../api/apiClient'
+import { useAuth } from '../context/AuthContext'
 
 const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -13,24 +14,25 @@ const NotificationBell = () => {
   const [loading, setLoading] = useState(false)
 
   const dropdownRef = useRef(null)
-  const user = JSON.parse(localStorage.getItem('user') || 'null')
-  const userEmail = user?.email
+  const { user: firebaseUser } = useAuth()
+  const userEmail = firebaseUser?.email
 
   useEffect(() => {
     if (!userEmail) return
 
-    const socket = connectSocket(userEmail)
+    const socket = getSocket()
+    connectSocket()
 
     const fetchInitialData = async () => {
       try {
         setLoading(true)
-        const countRes = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
+        const countRes = await apiFetch(`/api/notifications/unread-count`, {
           headers: { 'user-email': userEmail },
         })
         const countData = await countRes.json()
         setUnreadCount(countData.count || 0)
 
-        const notifRes = await fetch(`${API_BASE_URL}/api/notifications`, {
+        const notifRes = await apiFetch(`/api/notifications`, {
           headers: { 'user-email': userEmail },
         })
         const notifData = await notifRes.json()
@@ -70,7 +72,7 @@ const NotificationBell = () => {
   const handleNotificationClick = async notification => {
     if (!notification.isRead) {
       try {
-        await fetch(`${API_BASE_URL}/api/notifications/${notification._id}/read`, {
+        await apiFetch(`/api/notifications/${notification._id}/read`, {
           method: 'PUT',
           headers: { 'user-email': userEmail },
         })
@@ -86,7 +88,7 @@ const NotificationBell = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
+      await apiFetch(`/api/notifications/read-all`, {
         method: 'PUT',
         headers: { 'user-email': userEmail },
       })
@@ -99,7 +101,7 @@ const NotificationBell = () => {
 
   const handleClearAll = async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/notifications/archive`, {
+      await apiFetch(`/api/notifications/archive`, {
         method: 'PUT',
         headers: { 'user-email': userEmail },
       })

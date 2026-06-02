@@ -4,7 +4,7 @@ import Gig from '../models/Gig.js';
 import Profile from '../models/UserProfile.js';
 import ChatRoom from '../models/ChatRoom.js';
 
-// GigApplication routes — relies on client-provided identifiers for auth in this MVP
+// GigApplication routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /**

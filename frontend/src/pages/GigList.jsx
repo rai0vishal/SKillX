@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import LoadingSpinner from '../components/LoadingSpinner';
-import { API_BASE_URL } from '../config/api.js';
+import { apiFetch } from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 const GigList = () => {
-  const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
-  const userEmail = storedUser.email
+  const { user: firebaseUser } = useAuth();
+  const userEmail = firebaseUser?.email;
 
   const [gigs, setGigs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -24,7 +25,7 @@ const GigList = () => {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch(`${API_BASE_URL}/api/gigs`)
+      const res = await apiFetch(`/api/gigs`)
       if (!res.ok) throw new Error('Failed to fetch gigs')
       const data = await res.json()
       setGigs(data)
@@ -38,7 +39,7 @@ const GigList = () => {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/gigs/${id}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/gigs/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete gig')
       setGigs((prev) => prev.filter((g) => g._id !== id))
       toast.success('Gig deleted successfully')
@@ -66,7 +67,7 @@ const GigList = () => {
     
     setIsApplying(true)
     try {
-      const res = await fetch(`${API_BASE_URL}/api/gig-applications`, {
+      const res = await apiFetch(`/api/gig-applications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

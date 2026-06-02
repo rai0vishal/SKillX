@@ -3,7 +3,7 @@ import ExchangeRequest from '../models/ExchangeRequest.js'
 import Profile from '../models/UserProfile.js'
 import ChatRoom from '../models/ChatRoom.js'
 
-// ExchangeRequest routes — relies on client-provided identifiers for auth in this MVP
+// ExchangeRequest routes — secured by the global authenticate middleware
 const router = express.Router()
 
 /**

@@ -4,7 +4,7 @@ import Gig from '../models/Gig.js';
 import Profile from '../models/UserProfile.js';
 import { enhanceGigDescription } from '../services/aiService.js';
 
-// Gig routes — relies on client-provided identifiers for auth in this MVP
+// Gig routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /**

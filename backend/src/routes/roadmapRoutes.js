@@ -7,7 +7,7 @@ import {
   deleteRoadmap,
 } from '../controllers/roadmapController.js';
 
-// Roadmap routes — relies on client-provided identifiers for auth in this MVP
+// Roadmap routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /** POST /api/roadmap/generate - Generate a roadmap preview (not saved) */

@@ -6,7 +6,9 @@ import SessionControls from '../components/video/SessionControls';
 import SessionChat from '../components/video/SessionChat';
 import ReviewModal from '../components/ReviewModal';
 
-import { API_BASE_URL, SOCKET_URL } from '../config/api.js';
+import { SOCKET_URL } from '../config/api.js';
+import { apiFetch } from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 
 const ICE_SERVERS = {
@@ -20,8 +22,8 @@ const VideoSession = () => {
   const { id: sessionId } = useParams();
   const navigate = useNavigate();
 
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const userEmail = user?.email;
+  const { user: firebaseUser } = useAuth();
+  const userEmail = firebaseUser?.email;
 
   // ── Session state ──────────────────────────────────────────────────────────
   const [session, setSession] = useState(null);
@@ -81,7 +83,7 @@ const VideoSession = () => {
   // ── Load notes ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!sessionId || !userEmail) return;
-    fetch(`${API_BASE_URL}/api/video-session/notes/${sessionId}?email=${encodeURIComponent(userEmail)}`)
+    apiFetch(`/api/video-session/notes/${sessionId}?email=${encodeURIComponent(userEmail)}`)
       .then((r) => r.ok ? r.json() : { content: '' })
       .then((data) => setNotesContent(data.content || ''))
       .catch(() => {});
@@ -90,7 +92,7 @@ const VideoSession = () => {
   const saveNotes = async () => {
     setIsSavingNotes(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/video-session/notes`, {
+      const res = await apiFetch(`/api/video-session/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, userEmail, content: notesContent }),
@@ -177,7 +179,7 @@ const VideoSession = () => {
     if (!stream) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/video-session/join`, {
+      const res = await apiFetch(`/api/video-session/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, userEmail }),
@@ -291,7 +293,7 @@ const VideoSession = () => {
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/video-session/${sessionId}?email=${encodeURIComponent(userEmail)}`);
+        const res = await apiFetch(`/api/video-session/${sessionId}?email=${encodeURIComponent(userEmail)}`);
         const data = await res.json();
         if (data.activeParticipantCount === 2) {
           console.log('[Video Session] Both participants detected via polling, setting connection to connected');
@@ -343,13 +345,13 @@ const VideoSession = () => {
     }
 
     try {
-      await fetch(`${API_BASE_URL}/api/video-session/leave`, {
+      await apiFetch(`/api/video-session/leave`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, userEmail }),
       });
       if (!silent) {
-        await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/complete`, {
+        await apiFetch(`/api/sessions/${sessionId}/complete`, {
           method: 'PUT'
         });
       }
@@ -368,7 +370,7 @@ const VideoSession = () => {
       return;
     }
 
-    fetch(`${API_BASE_URL}/api/video-session/${sessionId}?email=${encodeURIComponent(userEmail)}`)
+    apiFetch(`/api/video-session/${sessionId}?email=${encodeURIComponent(userEmail)}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.session) {
@@ -687,7 +689,7 @@ const VideoSession = () => {
         onSubmit={async ({ rating, feedback }) => {
           setIsSubmittingReview(true);
           try {
-            await fetch(`${API_BASE_URL}/api/reviews`, {
+            await apiFetch(`/api/reviews`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ reviewerEmail: userEmail, reviewedUserEmail: remoteUserEmail, sessionId, rating, feedback }),

@@ -8,6 +8,7 @@ const skillExchanges = [
   {
     name: 'John Doe',
     email: 'john@example.com',
+    userId: 'seed_john_doe',
     skillOffered: 'JavaScript Development',
     skillWanted: 'UI/UX Design',
     location: 'Remote',
@@ -16,6 +17,7 @@ const skillExchanges = [
   {
     name: 'Jane Smith',
     email: 'jane@example.com',
+    userId: 'seed_jane_smith',
     skillOffered: 'Graphic Design',
     skillWanted: 'Branding & Identity',
     location: 'San Francisco, CA',
@@ -24,6 +26,7 @@ const skillExchanges = [
   {
     name: 'Alice Brown',
     email: 'alice@example.com',
+    userId: 'seed_alice_brown',
     skillOffered: 'Python Development',
     skillWanted: 'Machine Learning',
     location: 'Remote',
@@ -32,6 +35,7 @@ const skillExchanges = [
   {
     name: 'Bob White',
     email: 'bob@example.com',
+    userId: 'seed_bob_white',
     skillOffered: 'Video Editing',
     skillWanted: 'Content Strategy',
     location: 'New York, NY',
@@ -40,6 +44,7 @@ const skillExchanges = [
   {
     name: 'Charlie Green',
     email: 'charlie@example.com',
+    userId: 'seed_charlie_green',
     skillOffered: 'Content Writing',
     skillWanted: 'SEO',
     location: 'Remote',
@@ -48,6 +53,7 @@ const skillExchanges = [
   {
     name: 'Emily Black',
     email: 'emily@example.com',
+    userId: 'seed_emily_black',
     skillOffered: 'Social Media Management',
     skillWanted: 'Data Analytics',
     location: 'Los Angeles, CA',
@@ -56,6 +62,7 @@ const skillExchanges = [
   {
     name: 'David Lee',
     email: 'david@example.com',
+    userId: 'seed_david_lee',
     skillOffered: 'Marketing Strategy',
     skillWanted: 'Business Analysis',
     location: 'Chicago, IL',
@@ -64,6 +71,7 @@ const skillExchanges = [
   {
     name: 'Sarah White',
     email: 'sarah@example.com',
+    userId: 'seed_sarah_white',
     skillOffered: 'Project Management',
     skillWanted: 'Agile Coaching',
     location: 'Remote',
@@ -72,6 +80,7 @@ const skillExchanges = [
   {
     name: 'Mason Carter',
     email: 'mason@example.com',
+    userId: 'seed_mason_carter',
     skillOffered: 'Full-Stack Development',
     skillWanted: 'Cloud Computing',
     location: 'Austin, TX',
@@ -80,6 +89,7 @@ const skillExchanges = [
   {
     name: 'Sophia Martinez',
     email: 'sophia@example.com',
+    userId: 'seed_sophia_martinez',
     skillOffered: 'Data Visualization',
     skillWanted: 'Data Engineering',
     location: 'Remote',
@@ -89,7 +99,8 @@ const skillExchanges = [
 
 const connectDB = async () => {
   try {
-    await mongoose.connect('mongodb://127.0.0.1:27017/skillx');
+    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/skillx';
+    await mongoose.connect(mongoUri);
     console.log('MongoDB connected...');
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);

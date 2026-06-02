@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { API_BASE_URL } from '../config/api.js';
+import { apiFetch } from '../api/apiClient';
 
 const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, currentUserEmail, recipientEmail }) => {
   const [method, setMethod] = useState('custom'); // 'slots' or 'custom'
@@ -20,7 +20,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
 
   useEffect(() => {
     if (isOpen && recipientEmail) {
-      fetch(`${API_BASE_URL}/api/schedule/availability/${recipientEmail}`)
+      apiFetch(`/api/schedule/availability/${recipientEmail}`)
         .then(res => res.json())
         .then(data => {
           setRecipientAvail(data);
@@ -54,7 +54,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
       const endM = (endMins % 60).toString().padStart(2, '0');
       const endTime = `${endH}:${endM}`;
 
-      const res = await fetch(`${API_BASE_URL}/api/schedule/session/check-conflict`, {
+      const res = await apiFetch(`/api/schedule/session/check-conflict`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -71,7 +71,7 @@ const SessionModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialData, cu
         setConflictWarning(data);
 
         // Fetch suggestions
-        const sugRes = await fetch(`${API_BASE_URL}/api/schedule/session/suggestions`, {
+        const sugRes = await apiFetch(`/api/schedule/session/suggestions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

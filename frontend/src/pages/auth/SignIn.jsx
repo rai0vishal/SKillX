@@ -27,16 +27,7 @@ const SignIn = () => {
         form.password
       )
 
-      const user = userCredential.user
-
-      localStorage.setItem(
-        'user',
-        JSON.stringify({
-          email: user.email,
-          uid: user.uid,
-        })
-      )
-
+      // AuthContext's onAuthStateChanged listener will automatically pick up the new user
       navigate('/dashboard')
     } catch (error) {
       console.error('Sign in error:', error)
@@ -48,6 +39,8 @@ const SignIn = () => {
         message = 'Incorrect password.'
       } else if (error.code === 'auth/invalid-email') {
         message = 'Invalid email format.'
+      } else if (error.code === 'auth/invalid-credential') {
+        message = 'Invalid email or password.'
       }
 
       setError(message)

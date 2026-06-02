@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TaskCard from './TaskCard';
-import { API_BASE_URL } from '../../config/api.js';
+import { apiFetch } from '../../api/apiClient';
 
 const TaskPanel = ({ workspaceId, currentUserEmail }) => {
   const [tasks, setTasks] = useState([]);
@@ -15,7 +15,7 @@ const TaskPanel = ({ workspaceId, currentUserEmail }) => {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/workspace/tasks/${workspaceId}`);
+      const res = await apiFetch(`/api/workspace/tasks/${workspaceId}`);
       const data = await res.json();
       setTasks(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -29,7 +29,7 @@ const TaskPanel = ({ workspaceId, currentUserEmail }) => {
     e.preventDefault();
     if (!taskForm.title.trim()) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/workspace/task/create`, {
+      const res = await apiFetch(`/api/workspace/task/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workspaceId, createdBy: currentUserEmail, ...taskForm }),
@@ -45,7 +45,7 @@ const TaskPanel = ({ workspaceId, currentUserEmail }) => {
 
   const handleStatusChange = async (taskId, newStatus) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/workspace/task/${taskId}`, {
+      const res = await apiFetch(`/api/workspace/task/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -60,7 +60,7 @@ const TaskPanel = ({ workspaceId, currentUserEmail }) => {
   const handleDelete = async (taskId) => {
     if (!true) return;
     try {
-      await fetch(`${API_BASE_URL}/api/workspace/task/${taskId}`, { method: 'DELETE' });
+      await apiFetch(`/api/workspace/task/${taskId}`, { method: 'DELETE' });
       setTasks((prev) => prev.filter((t) => t._id !== taskId));
     } catch (err) {
       console.error('Failed to delete task', err);

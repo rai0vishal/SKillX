@@ -43,6 +43,7 @@ const SignUp = () => {
         await updateProfile(user, { displayName: form.name })
       }
 
+      // Create MongoDB profile — POST /api/profile is exempt from auth middleware
       try {
         await fetch(`${API_BASE_URL}/api/profile`, {
           method: 'POST',
@@ -56,15 +57,7 @@ const SignUp = () => {
         console.error('Profile API error (non-blocking):', err)
       }
 
-      localStorage.setItem(
-        'user',
-        JSON.stringify({
-          email: user.email,
-          name: form.name || user.displayName || '',
-          uid: user.uid,
-        })
-      )
-
+      // AuthContext's onAuthStateChanged listener will automatically pick up the new user
       navigate('/dashboard')
     } catch (error) {
       console.error('Sign up error:', error)

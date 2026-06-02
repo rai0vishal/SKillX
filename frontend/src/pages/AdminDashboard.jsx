@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config/api.js';
+import { apiFetch } from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const userEmail = storedUser.email;
+  const { user: firebaseUser } = useAuth();
+  const userEmail = firebaseUser?.email;
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -22,7 +23,7 @@ const AdminDashboard = () => {
         return;
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/profile/${userEmail}`);
+        const res = await apiFetch(`/api/profile/${userEmail}`);
         if (!res.ok) throw new Error('Failed to verify user profile');
         const profile = await res.json();
         
@@ -48,7 +49,7 @@ const AdminDashboard = () => {
     setError(null);
     try {
       // Fetch Stats
-      const statsRes = await fetch(`${API_BASE_URL}/api/admin/stats`, {
+      const statsRes = await apiFetch(`/api/admin/stats`, {
         headers: { 'user-email': userEmail }
       });
       if (!statsRes.ok) throw new Error('Failed to fetch platform stats');
@@ -56,7 +57,7 @@ const AdminDashboard = () => {
       setStats(statsData);
 
       // Fetch Users
-      const usersRes = await fetch(`${API_BASE_URL}/api/admin/users`, {
+      const usersRes = await apiFetch(`/api/admin/users`, {
         headers: { 'user-email': userEmail }
       });
       if (!usersRes.ok) throw new Error('Failed to fetch user list');
@@ -74,7 +75,7 @@ const AdminDashboard = () => {
     const action = currentStatus === 'suspended' ? 'activate' : 'suspend';
     setActionLoading(userId);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/${action}`, {
+      const res = await apiFetch(`/api/admin/users/${userId}/${action}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

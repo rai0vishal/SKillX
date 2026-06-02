@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { API_BASE_URL } from '../../config/api.js';
+import { apiFetch } from '../../api/apiClient';
 
 const SearchBar = ({ value, onChange, onSearch }) => {
   const [suggestions, setSuggestions] = useState([]);
@@ -23,7 +23,7 @@ const SearchBar = ({ value, onChange, onSearch }) => {
     }
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(value)}`);
+        const res = await apiFetch(`/api/search/suggestions?q=${encodeURIComponent(value)}`);
         const data = await res.json();
         setSuggestions(Array.isArray(data) ? data : []);
       } catch {

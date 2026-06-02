@@ -13,7 +13,7 @@ import {
   deleteTask,
 } from '../controllers/workspaceController.js';
 
-// Workspace routes — relies on client-provided identifiers for auth in this MVP
+// Workspace routes — secured by the global authenticate middleware
 const router = express.Router();
 
 /** GET /api/workspace/:chatRoomId - Fetch workspace metadata */

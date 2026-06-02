@@ -2,14 +2,15 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import LoadingSpinner from '../components/LoadingSpinner';
 
-import { API_BASE_URL } from '../config/api.js';
+import { apiFetch } from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 const GigDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
-  const userEmail = storedUser.email
+  const { user: firebaseUser } = useAuth();
+  const userEmail = firebaseUser?.email;
 
   const [gig, setGig] = useState(null)
   const [applications, setApplications] = useState([])
@@ -24,7 +25,7 @@ const GigDetails = () => {
   const fetchGig = async () => {
     try {
       setLoading(true)
-      const res = await fetch(`${API_BASE_URL}/api/gigs/${id}`)
+      const res = await apiFetch(`/api/gigs/${id}`)
       if (!res.ok) throw new Error('Failed to fetch gig')
       const data = await res.json()
       setGig(data)
@@ -40,8 +41,8 @@ const GigDetails = () => {
     if (!isOwner) return
     try {
       setLoadingApps(true)
-      const res = await fetch(
-        `${API_BASE_URL}/api/gig-applications?gigId=${id}`
+      const res = await apiFetch(
+        `/api/gig-applications?gigId=${id}`
       )
       if (!res.ok) throw new Error('Failed to fetch applications')
       const data = await res.json()
@@ -69,7 +70,7 @@ const GigDetails = () => {
   const handleDelete = async () => {
     if (!true) return
     try {
-      const res = await fetch(`${API_BASE_URL}/api/gigs/${id}`, {
+      const res = await apiFetch(`/api/gigs/${id}`, {
         method: 'DELETE',
       })
       if (!res.ok) throw new Error('Failed to delete gig')
@@ -89,7 +90,7 @@ const GigDetails = () => {
     try {
       setError(null)
       setInfo(null)
-      const res = await fetch(`${API_BASE_URL}/api/gig-applications`, {
+      const res = await apiFetch(`/api/gig-applications`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -109,8 +110,8 @@ const GigDetails = () => {
 
   const handleUpdateApplication = async (appId, newStatus) => {
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/gig-applications/${appId}`,
+      const res = await apiFetch(
+        `/api/gig-applications/${appId}`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },

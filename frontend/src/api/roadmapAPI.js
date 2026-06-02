@@ -1,13 +1,8 @@
-import { API_BASE_URL as BASE } from '../config/api.js';
-const API_BASE_URL = `${BASE}/api/roadmap`;
-
+import { apiFetch } from './apiClient';
 export const generateRoadmapAPI = async (email, goal) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/generate`, {
+    const response = await apiFetch(`/api/roadmap/generate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ email, goal }),
     });
 
@@ -24,11 +19,8 @@ export const generateRoadmapAPI = async (email, goal) => {
 
 export const saveRoadmapAPI = async (email, goal, generatedRoadmap) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/save`, {
+    const response = await apiFetch(`/api/roadmap/save`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ email, goal, generatedRoadmap }),
     });
 
@@ -45,7 +37,7 @@ export const saveRoadmapAPI = async (email, goal, generatedRoadmap) => {
 
 export const fetchUserRoadmapsAPI = async (email) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/user?email=${encodeURIComponent(email)}`);
+    const response = await apiFetch(`/api/roadmap/user?email=${encodeURIComponent(email)}`);
 
     if (!response.ok) {
       throw new Error('Failed to fetch roadmaps');
@@ -59,11 +51,8 @@ export const fetchUserRoadmapsAPI = async (email) => {
 
 export const updateProgressAPI = async (id, weekIndex) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/progress`, {
+    const response = await apiFetch(`/api/roadmap/progress`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ id, weekIndex }),
     });
 
@@ -80,7 +69,7 @@ export const updateProgressAPI = async (id, weekIndex) => {
 
 export const deleteRoadmapAPI = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/${id}`, {
+    const response = await apiFetch(`/api/roadmap/${id}`, {
       method: 'DELETE',
     });
 

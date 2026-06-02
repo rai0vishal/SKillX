@@ -3,7 +3,7 @@ import SkillExchange from '../models/SkillExchange.js'
 import Profile from '../models/UserProfile.js'
 import { generateMatchInsights } from '../services/aiService.js'
 
-// SkillExchange routes — relies on client-provided identifiers for auth in this MVP
+// SkillExchange routes — secured by the global authenticate middleware
 const router = express.Router()
 
 /**

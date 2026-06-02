@@ -17,7 +17,8 @@ const User = ({ size, color, style }) => <i className="ti ti-user" style={{ font
 const RefreshCw = ({ size, className, style }) => <i className={`ti ti-refresh ${className || ''}`} style={{ fontSize: size || 'inherit', ...style }} />;
 import LoadingSpinner from '../components/LoadingSpinner'
 import Skeleton from '../components/ui/Skeleton'
-import { API_BASE_URL } from '../config/api.js'
+import { apiFetch } from '../api/apiClient'
+import { useAuth } from '../context/AuthContext'
 
 /* ─── Match Score Ring SVG ──────────────────────────────── */
 const MatchScoreRing = ({ score, size = 52 }) => {
@@ -174,10 +175,10 @@ function MatchCard({ match, isRec = false, onRequest, currentUid, currentEmail }
 
 /* ─── Main Component ────────────────────────────────────── */
 const SkillExchange = () => {
-  const navigate = useNavigate()
-  const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
-  const currentEmail = storedUser.email
-  const currentUid = storedUser.uid || storedUser.id
+  const { user: firebaseUser, userProfile } = useAuth()
+  const currentEmail = firebaseUser?.email
+  const currentUid = firebaseUser?.uid
+  const storedUser = { name: firebaseUser?.displayName || userProfile?.name }
 
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
@@ -200,8 +201,8 @@ const SkillExchange = () => {
     try {
       setLoading(true)
       setError(null)
-      const url = currentUid ? `${API_BASE_URL}/api/skill-exchange?currentUserId=${encodeURIComponent(currentUid)}` : `${API_BASE_URL}/api/skill-exchange`
-      const res = await fetch(url)
+      const url = currentUid ? `/api/skill-exchange?currentUserId=${encodeURIComponent(currentUid)}` : `/api/skill-exchange`
+      const res = await apiFetch(url)
       if (!res.ok) throw new Error('Failed to fetch skill exchange entries')
       const data = await res.json()
       setEntries(data)
@@ -227,7 +228,7 @@ const SkillExchange = () => {
 
     try {
       setLoadingRecommendations(true)
-      const res = await fetch(`${API_BASE_URL}/api/skill-exchange/recommendations?userId=${encodeURIComponent(currentUid)}`)
+      const res = await apiFetch(`/api/skill-exchange/recommendations?userId=${encodeURIComponent(currentUid)}`)
       if (res.ok) {
         const data = await res.json()
         setRecommendations(data)
@@ -265,7 +266,7 @@ const SkillExchange = () => {
       console.log('handleSave called', form)
 
       const payload = { ...form, userId: currentUid, email: currentEmail, matchScore: 80 }
-      const res = await fetch(`${API_BASE_URL}/api/skill-exchange`, {
+      const res = await apiFetch(`/api/skill-exchange`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -295,7 +296,7 @@ const SkillExchange = () => {
       }
 
       const message = `Hi ${user.name}, I would like to exchange my skills (${user.skillWanted}) with yours (${user.skillOffered}).`
-      const res = await fetch(`${API_BASE_URL}/api/exchange-requests`, {
+      const res = await apiFetch(`/api/exchange-requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

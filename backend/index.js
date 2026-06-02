@@ -1,7 +1,7 @@
+import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
 import gigsRouter from './src/routes/gigs.js';
 import skillExchangeRouter from './src/routes/SkillExchange.js';
@@ -23,7 +23,8 @@ import scheduleRouter from './src/routes/scheduleRoutes.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import Message from './src/models/Message.js';
-dotenv.config();
+import { authenticate } from './src/middleware/authenticate.js';
+import { firebaseAuth } from './src/config/firebaseAdmin.js';
 
 const allowedOrigins = [process.env.CLIENT_URL || 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
 if (process.env.CLIENT_URL) {
@@ -52,14 +53,30 @@ import { initNotificationSocket } from './src/socket/notificationSocket.js';
 const onlineUsers = new Map();
 initNotificationSocket(io, onlineUsers);
 
-io.on('connection', (socket) => {
-  console.log('✅ A user connected via Socket.io:', socket.id);
+// ─── Socket.io Authentication ─────────────────────────────────────────────────
+// Verify Firebase ID token during handshake — reject unauthenticated connections
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) {
+      return next(new Error('Authentication required. Provide a Firebase ID token.'));
+    }
+    const decoded = await firebaseAuth.verifyIdToken(token);
+    socket.user = decoded; // Attach verified identity
+    next();
+  } catch (error) {
+    console.error('Socket auth failed:', error.code || error.message);
+    next(new Error('Authentication failed. Invalid or expired token.'));
+  }
+});
 
-  // Triggered when client auth resolves; maps connection to user identity
-  socket.on('registerUser', (email) => {
-    onlineUsers.set(socket.id, email);
-    io.emit('userStatusChange', { email, isOnline: true });
-  });
+io.on('connection', (socket) => {
+  const verifiedEmail = socket.user.email;
+  console.log('✅ Authenticated user connected via Socket.io:', verifiedEmail, socket.id);
+
+  // Auto-register user using the verified email from the token (no more trusting client input)
+  onlineUsers.set(socket.id, verifiedEmail);
+  io.emit('userStatusChange', { email: verifiedEmail, isOnline: true });
 
   // Triggered when user enters a specific text chat channel
   socket.on('joinRoom', (roomId) => {
@@ -157,6 +174,17 @@ app.use(
   })
 );
 app.use(express.json());
+
+// ─── Global Authentication ────────────────────────────────────────────────────
+// Apply Firebase token verification to all /api/* routes.
+// Exempt: POST /api/profile (first-time profile creation during signup)
+app.use('/api', (req, res, next) => {
+  // Allow unauthenticated profile creation for new signups
+  if (req.method === 'POST' && req.path === '/profile') {
+    return next();
+  }
+  return authenticate(req, res, next);
+});
 
 // ─── Routes ────────────────────────────────────────────────────────────────────
 // Core Gig listings and AI enhancements

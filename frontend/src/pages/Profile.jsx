@@ -5,15 +5,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { API_BASE_URL } from '../config/api.js';
+import { apiFetch } from '../api/apiClient';
+import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Profile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user: firebaseUser } = useAuth();
+  const storedUser = firebaseUser || {};
   const currentUserEmail = storedUser.email;
-  const currentUid = storedUser.uid || storedUser.id;
+  const currentUid = storedUser.uid;
 
   const targetEmail = userId || currentUserEmail;
   const targetUid = userId || currentUid;
@@ -38,7 +40,7 @@ const Profile = () => {
     try {
       const updatedLinks = [...(profile.socialLinks || []), { type: newSocialType, url: newSocialUrl, label: newSocialType }];
       
-      const res = await fetch(`${API_BASE_URL}/api/profile`, {
+      const res = await apiFetch(`/api/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -74,7 +76,7 @@ const Profile = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const profRes = await fetch(`${API_BASE_URL}/api/profile/${targetEmail}`);
+        const profRes = await apiFetch(`/api/profile/${targetEmail}`);
         if (profRes.ok) {
           const profData = await profRes.json();
           // Initialize socialLinks if undefined
@@ -82,24 +84,24 @@ const Profile = () => {
           setProfile(profData);
         }
 
-        const gigsRes = await fetch(`${API_BASE_URL}/api/gigs`);
+        const gigsRes = await apiFetch(`/api/gigs`);
         if (gigsRes.ok) {
           const allGigs = await gigsRes.json();
           // Filter by creator email
           setGigs(allGigs.filter(g => g.creatorEmail === targetEmail));
         }
 
-        const exRes = await fetch(`${API_BASE_URL}/api/skill-exchange?userId=${targetUid}`);
+        const exRes = await apiFetch(`/api/skill-exchange?userId=${targetUid}`);
         if (exRes.ok) {
           setExchanges(await exRes.json());
         }
 
-        const reqRes = await fetch(`${API_BASE_URL}/api/exchange-requests?userId=${targetUid}`);
+        const reqRes = await apiFetch(`/api/exchange-requests?userId=${targetUid}`);
         if (reqRes.ok) {
           setExchangeRequests(await reqRes.json());
         }
 
-        const revRes = await fetch(`${API_BASE_URL}/api/reviews/user/${targetEmail}`);
+        const revRes = await apiFetch(`/api/reviews/user/${targetEmail}`);
         if (revRes.ok) {
           setReviews(await revRes.json());
         }
@@ -146,7 +148,7 @@ const Profile = () => {
 
   const handleUpdateRequest = async (id, newStatus) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/exchange-requests/${id}`, {
+      const res = await apiFetch(`/api/exchange-requests/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

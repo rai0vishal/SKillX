@@ -1,7 +1,8 @@
 import express from 'express';
 import UserProfile from '../models/UserProfile.js';
 
-// UserProfile routes — relies on client-provided identifiers for auth in this MVP
+// UserProfile routes — POST is exempt from auth (for first-time signup).
+// All other routes are secured by the global authenticate middleware.
 const router = express.Router();
 
 /**
