@@ -3,6 +3,7 @@ import express from 'express';
 import Gig from '../models/Gig.js';
 import Profile from '../models/UserProfile.js';
 import { enhanceGigDescription } from '../services/aiService.js';
+import { aiLimiter } from '../middleware/rateLimiter.js';
 
 // Gig routes — secured by the global authenticate middleware
 const router = express.Router();
@@ -11,7 +12,7 @@ const router = express.Router();
  * POST /api/gigs/enhance
  * Uses AI to generate a professional gig description based on basic inputs.
  */
-router.post('/enhance', async (req, res) => {
+router.post('/enhance', aiLimiter, async (req, res) => {
   try {
     const { title, category, skills, description } = req.body;
 

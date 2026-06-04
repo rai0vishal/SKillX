@@ -2,6 +2,7 @@ import express from 'express'
 import SkillExchange from '../models/SkillExchange.js'
 import Profile from '../models/UserProfile.js'
 import { generateMatchInsights } from '../services/aiService.js'
+import { aiLimiter } from '../middleware/rateLimiter.js'
 
 // SkillExchange routes — secured by the global authenticate middleware
 const router = express.Router()
@@ -11,7 +12,7 @@ const router = express.Router()
  * Fetches the top 3 best-matched profiles for a user and generates AI insights
  * explaining why they match and suggesting an exchange plan.
  */
-router.get('/recommendations', async (req, res) => {
+router.get('/recommendations', aiLimiter, async (req, res) => {
   try {
     const { userId } = req.query
 

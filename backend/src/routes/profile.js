@@ -1,5 +1,6 @@
 import express from 'express';
 import UserProfile from '../models/UserProfile.js';
+import { profileSpamLimiter } from '../middleware/rateLimiter.js';
 
 // UserProfile routes — POST is exempt from auth (for first-time signup).
 // All other routes are secured by the global authenticate middleware.
@@ -29,7 +30,7 @@ router.get('/:email', async (req, res) => {
  * POST /api/profile
  * Upserts a user profile. Handles initial creation and subsequent updates.
  */
-router.post('/', async (req, res) => {
+router.post('/', profileSpamLimiter, async (req, res) => {
   try {
     const { email, name, role, location, bio, skills, stats, socialLinks } = req.body;
 
