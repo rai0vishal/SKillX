@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import helmet from 'helmet';
 
 import gigsRouter from './src/routes/gigs.js';
 import skillExchangeRouter from './src/routes/SkillExchange.js';
@@ -20,6 +21,7 @@ import notificationRouter from './src/routes/notificationRoutes.js';
 import workspaceRouter from './src/routes/workspaceRoutes.js';
 import searchRouter from './src/routes/searchRoutes.js';
 import scheduleRouter from './src/routes/scheduleRoutes.js';
+import aiRouter from './src/routes/ai.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import Message from './src/models/Message.js';
@@ -167,13 +169,15 @@ io.on('connection', (socket) => {
   });
 });
 // ─── Middleware ────────────────────────────────────────────────────────────────
+// helmet must be first — sets security headers on every response
+app.use(helmet());
 app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 
 // ─── Global Authentication ────────────────────────────────────────────────────
 // Apply Firebase token verification to all /api/* routes.
@@ -221,6 +225,8 @@ app.use('/api/workspace', workspaceRouter);
 app.use('/api/search', searchRouter);
 // Calendar and availability management
 app.use('/api/schedule', scheduleRouter);
+// AI proxy — Gemini calls are made server-side using GEMINI_API_KEY (never exposed to client)
+app.use('/api/ai', aiRouter);
 
 // ─── Error Handling ────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {

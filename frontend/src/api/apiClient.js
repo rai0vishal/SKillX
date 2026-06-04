@@ -3,6 +3,7 @@
 
 import { auth } from '../firebase/firebaseConfig'
 import { API_BASE_URL } from '../config/api.js'
+import { toast } from 'sonner'
 
 /**
  * Authenticated fetch wrapper.
@@ -51,6 +52,11 @@ export const apiFetch = async (endpoint, options = {}) => {
     // Optionally: sign out and redirect
     // await auth.signOut()
     // window.location.href = '/signin'
+  }
+
+  // Handle 429 — rate limit exceeded
+  if (response.status === 429) {
+    toast.warning("You're going too fast. Please wait a moment and try again.")
   }
 
   return response
