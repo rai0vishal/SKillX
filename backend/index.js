@@ -228,13 +228,45 @@ app.use('/api/schedule', scheduleRouter);
 // AI proxy — Gemini calls are made server-side using GEMINI_API_KEY (never exposed to client)
 app.use('/api/ai', aiRouter);
 
-// ─── Error Handling ────────────────────────────────────────────────────────────
+// ─── 404 Catch-All ───────────────────────────────────────────────────────────
+// Must be placed AFTER all valid routes and BEFORE the error middleware.
+// Catches any request that did not match a registered route.
+app.use((req, res) => {
+  res.status(404).json({
+    status: 'fail',
+    message: `Route ${req.originalUrl} not found`
+  });
+});
+
+// ─── Global Error Handling ────────────────────────────────────────────────────
+// 4-argument signature is required for Express to treat this as an error handler.
+// Handles both operational errors (AppError) and unexpected programmer errors.
 app.use((err, req, res, next) => {
-  console.error('Unhandled Error:', err.stack);
-  res.status(500).json({
-    message: 'Internal Server Error',
-    // Hide detailed errors in production
-    error: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
+  if (process.env.NODE_ENV === 'development') {
+    console.error('ERROR:', err);
+    return res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message,
+      stack: err.stack
+    });
+  }
+
+  // Production — only send operational errors to client
+  if (err.isOperational) {
+    return res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message
+    });
+  }
+
+  // Non-operational (unexpected) errors — hide details from client
+  console.error('UNEXPECTED ERROR:', err);
+  return res.status(500).json({
+    status: 'error',
+    message: 'Something went wrong. Please try again later.'
   });
 });
 const PORT = process.env.PORT || 5000;
@@ -256,3 +288,18 @@ mongoose
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err.message);
   });
+
+// ─── Process Crash Handlers ──────────────────────────────────────────────────
+// unhandledRejection: async code threw but no .catch() was present.
+// Gracefully closes the HTTP server before exiting so in-flight requests finish.
+process.on('unhandledRejection', (err) => {
+  console.error('UNHANDLED REJECTION! Shutting down...', err.name, err.message);
+  server.close(() => process.exit(1));
+});
+
+// uncaughtException: synchronous throw that bubbled all the way up.
+// Must exit immediately — the process is in an undefined state.
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION! Shutting down...', err.name, err.message);
+  process.exit(1);
+});
