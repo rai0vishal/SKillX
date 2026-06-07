@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 const skillExchangeSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    email: { type: String, default: '' },
     userId: { type: String, required: true },
     skillOffered: { type: String, required: true },
     skillWanted: { type: String, required: true },

@@ -39,6 +39,24 @@ router.post('/create', async (req, res) => {
 });
 
 /**
+ * GET /api/chat/room/:roomId
+ * Get a specific chat room by ID
+ */
+router.get('/room/:roomId', async (req, res) => {
+  try {
+    const { roomId } = req.params
+    const room = await ChatRoom.findById(roomId)
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' })
+    }
+    res.json(room)
+  } catch (error) {
+    console.error('Error fetching room by id:', error)
+    res.status(500).json({ message: 'Failed to fetch room' })
+  }
+})
+
+/**
  * GET /api/chat/:email
  * Get all chat rooms for a specific user
  */

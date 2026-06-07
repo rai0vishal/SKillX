@@ -56,7 +56,10 @@ export const apiFetch = async (endpoint, options = {}) => {
 
   // Handle 429 — rate limit exceeded
   if (response.status === 429) {
-    toast.warning("You're going too fast. Please wait a moment and try again.")
+    const isRecommendationsRoute = response.url?.includes('/skill-exchange/recommendations')
+    if (!isRecommendationsRoute) {
+      toast.warning("You're going too fast. Please wait a moment and try again.")
+    }
   }
 
   return response

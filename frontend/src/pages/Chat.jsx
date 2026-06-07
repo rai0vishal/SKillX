@@ -151,12 +151,44 @@ const Chat = () => {
       setRooms(data);
 
       if (location.state?.roomId) {
-        const targetRoom = data.find(r => r._id === location.state.roomId);
+        const roomId = location.state.roomId
+        let targetRoom = data.find(r => r._id === roomId)
+
+        if (!targetRoom) {
+          // Room not in list — fetch it directly
+          try {
+            const roomRes = await apiFetch(`/api/chat/room/${roomId}`)
+            if (roomRes.ok) {
+              targetRoom = await roomRes.json()
+              // Add it to rooms list so sidebar shows it
+              setRooms(prev => {
+                const exists = prev.find(r => r._id === targetRoom._id)
+                return exists ? prev : [targetRoom, ...prev]
+              })
+            }
+          } catch (e) {
+            console.warn('Could not fetch room directly:', e)
+          }
+        }
+
         if (targetRoom) {
-          const otherUser = targetRoom.participants.find((p) => p !== userEmail);
-          setSelectedPerson(otherUser);
-          handleRoomClick(targetRoom);
-          window.history.replaceState({}, document.title);
+          const otherUser = targetRoom.participants.find((p) => p !== userEmail && p && p.trim() !== '')
+            || targetRoom.participants.find((p) => p !== userEmail)
+            || 'Unknown User'
+          setSelectedPerson(otherUser)
+          handleRoomClick(targetRoom)
+          window.history.replaceState({}, document.title)
+        }
+      }
+
+      if (location.state?.selectPerson && !location.state?.roomId) {
+        const personEmail = location.state.selectPerson
+        const personRoom = data.find(r =>
+          r.participants.includes(personEmail)
+        )
+        if (personRoom) {
+          setSelectedPerson(personEmail)
+          window.history.replaceState({}, document.title)
         }
       }
     } catch (error) {
@@ -215,8 +247,9 @@ const Chat = () => {
 
   const groupedRooms = useMemo(() => {
     return rooms.reduce((acc, room) => {
-      const otherUser = room.participants.find((p) => p !== userEmail);
-      if (!otherUser) return acc;
+      const otherUser = room.participants.find((p) => p !== userEmail && p && p.trim() !== '')
+        || room.participants.find((p) => p !== userEmail)
+        || 'Unknown User';
       if (!acc[otherUser]) acc[otherUser] = [];
       acc[otherUser].push(room);
       return acc;
@@ -736,7 +769,7 @@ const Chat = () => {
                             <div key={idx} style={{ display: 'flex', width: '100%', justifyContent: isMe ? 'flex-end' : 'flex-start', gap: 8 }}>
                               {!isMe && (
                                 <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--text)', opacity: showAvatar ? 1 : 0, alignSelf: 'flex-end' }}>
-                                  {activeOtherUserEmail[0].toUpperCase()}
+                                  {(activeOtherUserEmail?.[0] || '?').toUpperCase()}
                                 </div>
                               )}
                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', maxWidth: '70%' }}>

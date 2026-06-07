@@ -2,6 +2,7 @@ import express from 'express'
 import ExchangeRequest from '../models/ExchangeRequest.js'
 import Profile from '../models/UserProfile.js'
 import ChatRoom from '../models/ChatRoom.js'
+import admin from '../config/firebaseAdmin.js'
 
 // ExchangeRequest routes — secured by the global authenticate middleware
 const router = express.Router()
@@ -20,13 +21,34 @@ router.post('/', async (req, res) => {
         .json({ message: 'fromUserId and toUserId are required' })
     }
 
+    let resolvedFromEmail = fromEmail || ''
+    let resolvedToEmail = toEmail || ''
+
+    if (!resolvedFromEmail && fromUserId) {
+      try {
+        const userRecord = await admin.auth().getUser(fromUserId)
+        resolvedFromEmail = userRecord.email || ''
+      } catch (e) {
+        console.warn(`Could not resolve fromEmail for ${fromUserId}:`, e.message)
+      }
+    }
+
+    if (!resolvedToEmail && toUserId) {
+      try {
+        const userRecord = await admin.auth().getUser(toUserId)
+        resolvedToEmail = userRecord.email || ''
+      } catch (e) {
+        console.warn(`Could not resolve toEmail for ${toUserId}:`, e.message)
+      }
+    }
+
     const request = await ExchangeRequest.create({
       fromUserId,
       toUserId,
       exchangeId,
       message,
-      fromEmail,
-      toEmail,
+      fromEmail: resolvedFromEmail,
+      toEmail: resolvedToEmail,
       status: 'pending',
     })
     try {
@@ -116,16 +138,43 @@ router.patch('/:id', async (req, res) => {
           { $inc: { 'stats.skillExchangesCompleted': 1 } },
           { upsert: true }
         )
-        
-        // Auto-create chat room
-        const room = await ChatRoom.findOne({ referenceId: existing._id })
-        if (!room) {
-          await ChatRoom.create({
-            participants: [existing.fromEmail, existing.toEmail],
-            referenceId: existing._id,
-            referenceType: 'exchange',
-            title: 'Skill Exchange'
-          })
+        // Resolve any missing emails from Firebase Admin before creating room
+        if (!existing.fromEmail && existing.fromUserId) {
+          try {
+            const userRecord = await admin.auth().getUser(existing.fromUserId)
+            existing.fromEmail = userRecord.email || ''
+            if (existing.fromEmail) await existing.save()
+            console.log(`Resolved fromEmail: ${existing.fromEmail}`)
+          } catch (e) {
+            console.warn(`Could not resolve fromEmail for userId ${existing.fromUserId}:`, e.message)
+          }
+        }
+
+        if (!existing.toEmail && existing.toUserId) {
+          try {
+            const userRecord = await admin.auth().getUser(existing.toUserId)
+            existing.toEmail = userRecord.email || ''
+            if (existing.toEmail) await existing.save()
+            console.log(`Resolved toEmail: ${existing.toEmail}`)
+          } catch (e) {
+            console.warn(`Could not resolve toEmail for userId ${existing.toUserId}:`, e.message)
+          }
+        }
+
+        if (!existing.fromEmail || !existing.toEmail) {
+          console.warn(`Skipping chat room — could not resolve emails for request ${existing._id}`)
+        } else {
+          let chatRoom = await ChatRoom.findOne({ referenceId: existing._id })
+          if (!chatRoom) {
+            chatRoom = await ChatRoom.create({
+              participants: [existing.fromEmail, existing.toEmail],
+              referenceId: existing._id,
+              referenceType: 'exchange',
+              title: 'Skill Exchange'
+            })
+          }
+          existing.chatRoomId = chatRoom._id.toString()
+          await existing.save()
         }
       } catch (err) {
         console.error('Error on exchange request accept:', err)

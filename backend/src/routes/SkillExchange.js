@@ -69,12 +69,12 @@ router.post('/', async (req, res) => {
     } = req.body
 
 
-
     const existing = await SkillExchange.findOne({ userId });
     const entry = await SkillExchange.findOneAndUpdate(
       { userId },
       {
         name,
+        email,
         userId,
         skillOffered,
         skillWanted,

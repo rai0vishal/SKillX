@@ -22,6 +22,10 @@ const chatRoomSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    lastMessageAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

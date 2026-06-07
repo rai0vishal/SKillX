@@ -233,6 +233,12 @@ const SkillExchange = () => {
         const data = await res.json()
         setRecommendations(data)
         if (data.length > 0) localStorage.setItem(cacheKey, JSON.stringify(data))
+      } else if (res.status === 429) {
+        // Rate limited — fail silently, section will be hidden
+        // Do NOT show a toast here — apiClient handles 429 globally
+        console.warn('Recommendations rate limited — hiding section')
+      } else {
+        console.warn('Recommendations fetch failed with status:', res.status)
       }
     } catch (err) {
       console.error('Failed to fetch recommendations:', err)
@@ -310,6 +316,7 @@ const SkillExchange = () => {
       })
       if (!res.ok) throw new Error('Failed to send exchange request')
       toast.success(`Exchange request sent to ${user.name}!`)
+      fetchEntries() // refresh listings
     } catch (err) {
       console.error(err)
       toast.error('Could not send exchange request. Please try again.')

@@ -27,6 +27,7 @@ import { Server } from 'socket.io';
 import Message from './src/models/Message.js';
 import { authenticate } from './src/middleware/authenticate.js';
 import { firebaseAuth } from './src/config/firebaseAdmin.js';
+import multer from 'multer';
 
 const allowedOrigins = [process.env.CLIENT_URL || 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
 if (process.env.CLIENT_URL) {
@@ -183,7 +184,8 @@ app.use(express.json({ limit: '10kb' }));
 // Apply Firebase token verification to all /api/* routes.
 // Exempt: POST /api/profile (first-time profile creation during signup)
 app.use('/api', (req, res, next) => {
-  // Allow unauthenticated profile creation for new signups
+  // Allow unauthenticated access to public read routes if explicitly requested
+  // Note: /api/gigs implicitly allows public read in its own router
   if (req.method === 'POST' && req.path === '/profile') {
     return next();
   }
@@ -242,6 +244,29 @@ app.use((req, res) => {
 // 4-argument signature is required for Express to treat this as an error handler.
 // Handles both operational errors (AppError) and unexpected programmer errors.
 app.use((err, req, res, next) => {
+  // ── Multer-specific errors (thrown before the controller body runs) ──────────
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({
+        status: 'fail',
+        message: 'File too large. Maximum allowed size is 10MB.',
+      });
+    }
+    return res.status(400).json({
+      status: 'fail',
+      message: `Upload error: ${err.message}`,
+    });
+  }
+
+  // ── fileFilter rejection (plain Error with our sentinel message prefix) ──────
+  if (err.message && err.message.startsWith('File type not allowed')) {
+    return res.status(415).json({
+      status: 'fail',
+      message: err.message,
+    });
+  }
+
+  // ── Generic operational / unexpected errors ──────────────────────────────────
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 

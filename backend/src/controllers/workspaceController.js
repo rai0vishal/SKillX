@@ -54,6 +54,23 @@ export const uploadResource = async (req, res) => {
       return res.status(400).json({ message: 'No file provided' });
     }
 
+    // Server-side type re-validation (defense in depth — do not trust multer mimetype alone)
+    const ALLOWED_MIME_TYPES = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+      'application/pdf', 'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain', 'application/zip', 'application/x-zip-compressed',
+      'text/javascript', 'application/json', 'text/html', 'text/css',
+    ];
+
+    if (!ALLOWED_MIME_TYPES.includes(req.file.mimetype)) {
+      return res.status(415).json({ message: 'File type not allowed.' });
+    }
+
+    if (req.file.size > 10 * 1024 * 1024) {
+      return res.status(413).json({ message: 'File exceeds 10MB limit.' });
+    }
+
     const file = req.file;
     const mimeType = file.mimetype;
 
