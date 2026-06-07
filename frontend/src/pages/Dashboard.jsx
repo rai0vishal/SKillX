@@ -100,14 +100,14 @@ const Dashboard = () => {
   // ------------ SKILL EXCHANGE REQUESTS ------------
   const fetchRequests = async () => {
     try {
-      if (!userEmail) {
+      if (!firebaseUser?.uid) {
         setLoadingRequests(false)
         return
       }
       setLoadingRequests(true)
       const res = await apiFetch(
-        `/api/exchange-requests?email=${encodeURIComponent(
-          userEmail,
+        `/api/exchange-requests?userId=${encodeURIComponent(
+          firebaseUser?.uid,
         )}`,
       )
       if (!res.ok) throw new Error('Failed to fetch requests')
@@ -347,7 +347,7 @@ const Dashboard = () => {
       setLoadingAnalytics(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userEmail])
+  }, [userEmail, firebaseUser?.uid])
 
   const userStats = stats.user?.stats || {
     gigsPosted: 0,
@@ -749,7 +749,7 @@ const Dashboard = () => {
                             <p className="text-[var(--text)]"><span className="font-medium">From: </span>{req.fromEmail}</p>
                             <p className="text-[var(--text-muted)] mt-1 line-clamp-2">{req.message || 'No message provided.'}</p>
                             <p className="text-xs text-[var(--text-dim)] mt-1">Status: <span className={req.status === 'accepted' ? 'text-[var(--green-text)] font-medium' : 'text-[var(--red-text)] font-medium'}>{req.status}</span></p>
-                            {req.status === 'accepted' && (<Link to="/chat" className="inline-block mt-2 text-[10px] badge badge-exchange transition">💬 Go to Messages</Link>)}
+                            {req.status === 'accepted' && (<button onClick={() => navigate('/chat', req.chatRoomId ? { state: { roomId: req.chatRoomId } } : undefined)} className="inline-block mt-2 text-[10px] badge badge-exchange transition">💬 Go to Messages</button>)}
                           </div>
                         ))}
                       </div>
@@ -770,7 +770,7 @@ const Dashboard = () => {
                         <p className="text-[var(--text)]"><span className="font-medium">To: </span>{req.toEmail}</p>
                         <p className="text-[var(--text-muted)] mt-1">{req.message || 'No message provided.'}</p>
                         <p className="text-xs text-[var(--text-dim)] mt-1">Status: <span className={req.status === 'accepted' ? 'text-[var(--green-text)] font-medium' : req.status === 'rejected' ? 'text-[var(--red-text)] font-medium' : 'text-[var(--amber-text)] font-medium'}>{req.status}</span></p>
-                        {req.status === 'accepted' && (<Link to="/chat" className="inline-block mt-2 text-[10px] badge badge-exchange transition">💬 Go to Messages</Link>)}
+                        {req.status === 'accepted' && (<button onClick={() => navigate('/chat', req.chatRoomId ? { state: { roomId: req.chatRoomId } } : undefined)} className="inline-block mt-2 text-[10px] badge badge-exchange transition">💬 Go to Messages</button>)}
                       </div>
                     ))}
                   </div>

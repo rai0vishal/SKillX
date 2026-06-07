@@ -1,3 +1,4 @@
 node_modules
 .envinit
 .env
+.env.*

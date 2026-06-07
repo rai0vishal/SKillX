@@ -46,6 +46,11 @@ const exchangeRequestSchema = new mongoose.Schema(
       default: 'pending',
       index: true,
     },
+
+    chatRoomId: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 )

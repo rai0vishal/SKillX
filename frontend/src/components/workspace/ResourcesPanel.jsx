@@ -32,6 +32,28 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Client-side validation for immediate feedback before any network request
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    const ALLOWED_TYPES = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+      'application/pdf', 'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain', 'application/zip', 'application/x-zip-compressed',
+      'text/javascript', 'application/json', 'text/html', 'text/css',
+    ];
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert('File type not supported. Please upload an image, PDF, document, zip, or code file.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    if (file.size > MAX_SIZE) {
+      alert('File is too large. Maximum size is 10MB.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('workspaceId', workspaceId);
@@ -120,7 +142,13 @@ const ResourcesPanel = ({ workspaceId, currentUserEmail }) => {
           >
             🔗 Add Link
           </button>
-          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/zip,application/x-zip-compressed,text/javascript,application/json,text/html,text/css"
+            onChange={handleFileUpload}
+          />
         </div>
 
         {showLinkForm && (

@@ -579,7 +579,16 @@ const Profile = () => {
                           )}
                           {req.status === 'accepted' && (
                             <div style={{ display: 'flex', gap: 8 }}>
-                              <button onClick={() => navigate('/chat')} className="btn-primary" style={{ padding: '6px 12px', fontSize: 12, background: 'var(--green)' }}>Message</button>
+                              <button onClick={() => {
+                                if (req.chatRoomId) {
+                                  navigate('/chat', { state: { roomId: req.chatRoomId } })
+                                } else {
+                                  const otherEmail = isOwnProfile
+                                    ? req.toEmail || req.fromEmail
+                                    : req.fromEmail
+                                  navigate('/chat', otherEmail ? { state: { selectPerson: otherEmail } } : undefined)
+                                }
+                              }} className="btn-primary" style={{ padding: '6px 12px', fontSize: 12, background: 'var(--green)' }}>Message</button>
                             </div>
                           )}
                         </div>
