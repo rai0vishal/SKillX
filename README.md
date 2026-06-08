@@ -198,7 +198,6 @@ Secured the platform using JWT-based Role-Based Access Control. Middleware layer
 ### Collaborative Workspace & Video Session
 ![Workspace Placeholder](https://via.placeholder.com/800x450/db2777/ffffff?text=WebRTC+Session+&+Workspace)
 
-*(Replace placeholders with actual project screenshots prior to deployment)*
 
 ---
 
