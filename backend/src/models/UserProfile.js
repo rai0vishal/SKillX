@@ -17,6 +17,7 @@ const userProfileSchema = new mongoose.Schema(
       default: [] 
     },
     location: { type: String, default: '' },
+    avatar: { type: String, default: '' },
     bio: { type: String, default: '' },
     skills: { type: [String], default: [], index: true },
     socialLinks: {

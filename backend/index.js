@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import gigsRouter from './src/routes/gigs.js';
 import skillExchangeRouter from './src/routes/SkillExchange.js';
 import profileRouter from './src/routes/profile.js';
+import profileUploadRouter from './src/routes/profileUpload.js';
 import dashboardRouter from './src/routes/dashboard.js';
 import exchangeRequestsRouter from './src/routes/exchangeRequests.js';
 import gigApplicationsRouter from './src/routes/gigApplications.js';
@@ -199,6 +200,7 @@ app.use('/api/gigs', gigsRouter);
 app.use('/api/skill-exchange', skillExchangeRouter);
 // User profile CRUD
 app.use('/api/profile', profileRouter);
+app.use('/api/profile', profileUploadRouter);
 // Personal metrics and aggregate stats
 app.use('/api/dashboard', dashboardRouter); 
 // Proposals between users for a skill swap
