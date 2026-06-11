@@ -51,10 +51,19 @@ const MatchScoreRing = ({ score, size = 52 }) => {
 
 /* ─── Match Card ────────────────────────────────────────── */
 function MatchCard({ match, isRec = false, onRequest, currentUid, currentEmail }) {
+  const navigate = useNavigate();
   const isOwnPost = (currentUid && match.userId === currentUid) || (currentEmail && match.email === currentEmail);
   
   // Use backend provided matchScore if available, otherwise fallback
   const finalScore = match.matchScore ?? null;
+
+  const handleProfileClick = () => {
+    if (match.email) {
+      navigate(`/profile/${match.email}`);
+    } else {
+      navigate(`/profile/${match.userId || match._id}`);
+    }
+  };
 
   return (
     <motion.div
@@ -93,7 +102,12 @@ function MatchCard({ match, isRec = false, onRequest, currentUid, currentEmail }
           {match.name?.[0]?.toUpperCase() || '?'}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
+          <div 
+            style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 2, cursor: 'pointer' }}
+            className="hover:underline"
+            onClick={handleProfileClick}
+            title="View profile"
+          >
             {match.name}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -153,21 +167,30 @@ function MatchCard({ match, isRec = false, onRequest, currentUid, currentEmail }
           ✦ Your Exchange Listing
         </div>
       ) : (
-        <button
-          onClick={() => onRequest(match)}
-          style={{
-            width: '100%', padding: 9,
-            background: 'var(--accent)', color: '#fff',
-            border: 'none', borderRadius: 'var(--radius-md)',
-            fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            transition: 'background var(--transition-fast)',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-hover)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)' }}
-        >
-          <Send size={14} aria-hidden="true" /> Request Exchange
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={handleProfileClick}
+            className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors flex items-center gap-1"
+            title="View full profile"
+          >
+            <User size={14} aria-hidden="true" /> Profile
+          </button>
+          <button
+            onClick={() => onRequest(match)}
+            style={{
+              flex: 1, padding: 9,
+              background: 'var(--accent)', color: '#fff',
+              border: 'none', borderRadius: 'var(--radius-md)',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              transition: 'background var(--transition-fast)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-hover)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--accent)' }}
+          >
+            <Send size={14} aria-hidden="true" /> Request Exchange
+          </button>
+        </div>
       )}
     </motion.div>
   )

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import LoadingSpinner from '../components/LoadingSpinner';
 import { apiFetch } from '../api/apiClient';
@@ -7,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 const GigList = () => {
   const { user: firebaseUser } = useAuth();
   const userEmail = firebaseUser?.email;
+  const navigate = useNavigate();
 
   const [gigs, setGigs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -176,7 +178,10 @@ const GigList = () => {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-dim)', fontSize: 12 }}>
                       <i className="ti ti-user" style={{ fontSize: 14 }} aria-hidden="true" />
-                      <span style={{ color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span 
+                        style={{ color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}
+                        onClick={() => navigate(`/profile/${gig.creatorEmail || gig.postedBy}`)}
+                      >
                         {gig.postedBy}
                       </span>
                     </div>

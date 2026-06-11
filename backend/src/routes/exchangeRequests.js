@@ -1,6 +1,7 @@
 import express from 'express'
 import ExchangeRequest from '../models/ExchangeRequest.js'
 import Profile from '../models/UserProfile.js'
+import UserProfile from '../models/UserProfile.js'
 import ChatRoom from '../models/ChatRoom.js'
 import admin from '../config/firebaseAdmin.js'
 
@@ -102,7 +103,40 @@ router.get('/', async (req, res) => {
       ExchangeRequest.find(sentQuery).sort({ createdAt: -1 }),
     ])
 
-    res.json({ received, sent })
+    // Enrich requests with sender/recipient names from UserProfile
+    const enrichWithNames = async (requests) => {
+      return Promise.all(requests.map(async (req) => {
+        const reqObj = req.toObject ? req.toObject() : { ...req }
+        try {
+          if (reqObj.fromEmail) {
+            const sender = await UserProfile.findOne(
+              { email: reqObj.fromEmail },
+              { name: 1, _id: 0 }
+            ).lean()
+            reqObj.fromName = sender?.name || reqObj.fromEmail.split('@')[0]
+          }
+          if (reqObj.toEmail) {
+            const recipient = await UserProfile.findOne(
+              { email: reqObj.toEmail },
+              { name: 1, _id: 0 }
+            ).lean()
+            reqObj.toName = recipient?.name || reqObj.toEmail.split('@')[0]
+          }
+        } catch (e) {
+          // Non-fatal — fall back to email prefix
+          reqObj.fromName = reqObj.fromName || reqObj.fromEmail?.split('@')[0] || 'Unknown'
+          reqObj.toName = reqObj.toName || reqObj.toEmail?.split('@')[0] || 'Unknown'
+        }
+        return reqObj
+      }))
+    }
+
+    const [enrichedReceived, enrichedSent] = await Promise.all([
+      enrichWithNames(received),
+      enrichWithNames(sent)
+    ])
+
+    res.json({ received: enrichedReceived, sent: enrichedSent })
   } catch (error) {
     console.error('Error fetching exchange requests:', error)
     res.status(500).json({ message: 'Failed to fetch exchange requests' })

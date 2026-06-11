@@ -352,7 +352,7 @@ const Profile = () => {
               </span>
               <span className="text-[var(--border)] hidden md:inline">·</span>
               <span className="flex items-center gap-1.5">
-                <i className="ti ti-calendar text-[var(--text-dim)]" /> Joined {profile.joinedDate || 'Recently'}
+                <i className="ti ti-calendar text-[var(--text-dim)]" /> Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Recently'}
               </span>
             </div>
 
@@ -512,31 +512,31 @@ const Profile = () => {
                 {completeness < 100 && (
                   <div className="space-y-1 mt-1">
                     {!profile?.name && (
-                      <div className="flex justify-between text-xs">
+                      <div className="flex justify-between text-xs cursor-pointer hover:opacity-70 transition-opacity" onClick={() => setIsEditingProfile(true)}>
                         <span className="text-[var(--text-muted)] font-medium">Add your name</span>
                         <span className="text-[var(--accent)] font-bold">+20%</span>
                       </div>
                     )}
                     {!profile?.bio && (
-                      <div className="flex justify-between text-xs">
+                      <div className="flex justify-between text-xs cursor-pointer hover:opacity-70 transition-opacity" onClick={() => setIsEditingBio(true)}>
                         <span className="text-[var(--text-muted)] font-medium">Add a bio</span>
                         <span className="text-[var(--accent)] font-bold">+20%</span>
                       </div>
                     )}
                     {!profile?.location && (
-                      <div className="flex justify-between text-xs">
+                      <div className="flex justify-between text-xs cursor-pointer hover:opacity-70 transition-opacity" onClick={() => setIsEditingProfile(true)}>
                         <span className="text-[var(--text-muted)] font-medium">Add your location</span>
                         <span className="text-[var(--accent)] font-bold">+20%</span>
                       </div>
                     )}
                     {(!profile?.skills || skillArray.length === 0) && (
-                      <div className="flex justify-between text-xs">
+                      <div className="flex justify-between text-xs cursor-pointer hover:opacity-70 transition-opacity" onClick={() => setIsEditingProfile(true)}>
                         <span className="text-[var(--text-muted)] font-medium">Add your skills</span>
                         <span className="text-[var(--accent)] font-bold">+20%</span>
                       </div>
                     )}
                     {(!profile?.socialLinks || profile.socialLinks.length === 0) && (
-                      <div className="flex justify-between text-xs">
+                      <div className="flex justify-between text-xs cursor-pointer hover:opacity-70 transition-opacity" onClick={() => setShowSocialInput(true)}>
                         <span className="text-[var(--text-muted)] font-medium">Add a social link</span>
                         <span className="text-[var(--accent)] font-bold">+20%</span>
                       </div>
@@ -816,6 +816,14 @@ const Profile = () => {
                 </div>
                 <h4 className="text-lg font-bold text-[var(--text)] mb-2">No exchange requests</h4>
                 <p className="text-[var(--text-muted)] font-medium">You haven't sent or received any requests yet.</p>
+                {isOwnProfile && (
+                  <button
+                    onClick={() => navigate('/skill-exchange')}
+                    className="mt-6 btn-secondary px-6 py-2.5 font-bold shadow-sm"
+                  >
+                    Browse Skill Exchanges
+                  </button>
+                )}
               </div>
             ) : (
               <>
@@ -839,7 +847,7 @@ const Profile = () => {
                             <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                               <h4 className="text-base font-bold text-[var(--text)]">
                                 <span className="text-[var(--text-muted)] font-medium mr-1">From:</span>
-                                {req.fromEmail}
+                                {req.fromName || req.fromEmail?.split('@')[0] || 'Unknown'}
                               </h4>
                               <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm border ${
                                 req.status === 'pending' ? 'bg-[var(--accent-dim)] text-[var(--accent-light)] border-[var(--accent)] border-opacity-20' : 
@@ -903,7 +911,7 @@ const Profile = () => {
                             <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                               <h4 className="text-sm font-bold text-[var(--text)]">
                                 <span className="text-[var(--text-muted)] font-medium mr-1">To:</span> 
-                                {req.toEmail || req.toUserId || 'Unknown User'}
+                                {req.toName || req.toEmail?.split('@')[0] || req.toUserId || 'Unknown User'}
                               </h4>
                               <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-sm ${
                                 req.status === 'pending' ? 'bg-[var(--amber-bg)] text-[var(--amber)] border-[var(--amber)] border-opacity-30' : 
@@ -944,6 +952,14 @@ const Profile = () => {
                 </div>
                 <h4 className="text-lg font-bold text-[var(--text)] mb-2">No reviews yet</h4>
                 <p className="text-[var(--text-muted)] font-medium">Complete your first session to receive a review.</p>
+                {isOwnProfile && (
+                  <button
+                    onClick={() => navigate('/skill-exchange')}
+                    className="mt-6 btn-secondary px-6 py-2.5 font-bold shadow-sm"
+                  >
+                    Find a Skill Exchange Partner
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

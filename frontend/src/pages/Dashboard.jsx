@@ -731,7 +731,7 @@ const Dashboard = () => {
                     <div className="space-y-3">
                       {requests.received.filter(req => req.status === 'pending').map(req => (
                         <div key={req._id} className="card p-4 text-sm">
-                          <p className="text-[var(--text)]"><span className="font-medium">From: </span>{req.fromEmail}</p>
+                          <p className="text-[var(--text)]"><span className="font-medium">From: </span>{req.fromName || req.fromEmail?.split('@')[0] || 'Unknown'}</p>
                           <p className="text-[var(--text-muted)] mt-1">{req.message || 'No message provided.'}</p>
                           <p className="text-xs text-[var(--text-dim)] mt-1">Status: <span className="text-[var(--amber-text)] font-medium">pending</span></p>
                           <div className="flex gap-2 mt-2">
@@ -746,7 +746,7 @@ const Dashboard = () => {
                       <div className="space-y-2 max-h-40 overflow-y-auto">
                         {requests.received.filter(req => req.status !== 'pending').map(req => (
                           <div key={req._id} className="card p-4 text-xs">
-                            <p className="text-[var(--text)]"><span className="font-medium">From: </span>{req.fromEmail}</p>
+                            <p className="text-[var(--text)]"><span className="font-medium">From: </span>{req.fromName || req.fromEmail?.split('@')[0] || 'Unknown'}</p>
                             <p className="text-[var(--text-muted)] mt-1 line-clamp-2">{req.message || 'No message provided.'}</p>
                             <p className="text-xs text-[var(--text-dim)] mt-1">Status: <span className={req.status === 'accepted' ? 'text-[var(--green-text)] font-medium' : 'text-[var(--red-text)] font-medium'}>{req.status}</span></p>
                             {req.status === 'accepted' && (<button onClick={() => navigate('/chat', req.chatRoomId ? { state: { roomId: req.chatRoomId } } : undefined)} className="inline-block mt-2 text-[10px] badge badge-exchange transition">💬 Go to Messages</button>)}
@@ -767,7 +767,7 @@ const Dashboard = () => {
                   <div className="space-y-3">
                     {requests.sent.map(req => (
                       <div key={req._id} className="card p-4 text-sm">
-                        <p className="text-[var(--text)]"><span className="font-medium">To: </span>{req.toEmail}</p>
+                        <p className="text-[var(--text)]"><span className="font-medium">To: </span>{req.toName || req.toEmail?.split('@')[0] || 'Unknown'}</p>
                         <p className="text-[var(--text-muted)] mt-1">{req.message || 'No message provided.'}</p>
                         <p className="text-xs text-[var(--text-dim)] mt-1">Status: <span className={req.status === 'accepted' ? 'text-[var(--green-text)] font-medium' : req.status === 'rejected' ? 'text-[var(--red-text)] font-medium' : 'text-[var(--amber-text)] font-medium'}>{req.status}</span></p>
                         {req.status === 'accepted' && (<button onClick={() => navigate('/chat', req.chatRoomId ? { state: { roomId: req.chatRoomId } } : undefined)} className="inline-block mt-2 text-[10px] badge badge-exchange transition">💬 Go to Messages</button>)}
