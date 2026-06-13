@@ -296,7 +296,6 @@ const VideoSession = () => {
         const res = await apiFetch(`/api/video-session/${sessionId}?email=${encodeURIComponent(userEmail)}`);
         const data = await res.json();
         if (data.activeParticipantCount === 2) {
-          console.log('[Video Session] Both participants detected via polling, setting connection to connected');
           setConnectionStatus('connected');
         }
       } catch (err) {

@@ -31,13 +31,6 @@ if (!admin.apps.length) {
     );
   }
 
-  // Visibility logs — confirm what the SDK actually received on startup
-  console.log('[Firebase Admin] Project ID:', projectId);
-  console.log('[Firebase Admin] Client Email:', clientEmail);
-  console.log('[Firebase Admin] Key length:', privateKey?.length);
-  console.log('[Firebase Admin] Key valid format:', privateKey?.includes('-----BEGIN'));
-  console.log('[Firebase Admin] Key starts:', privateKey?.substring(0, 30));
-
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId,
