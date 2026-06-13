@@ -16,7 +16,6 @@ import {
   CheckCircle2,
   Zap,
 } from 'lucide-react'
-import AnimatedCounter from '../components/ui/AnimatedCounter'
 
 /* ── Animation variants ──────────────────────────────────── */
 const fadeUp = {
@@ -112,7 +111,7 @@ const LandingPage = () => {
               }}
             >
               <Sparkles size={12} aria-hidden="true" />
-              ✦ Now with AI-powered gig matching
+              ✦ Skill exchange, gigs, and real-time sessions
               <ChevronRight size={12} aria-hidden="true" />
             </a>
           </motion.div>
@@ -176,10 +175,7 @@ const LandingPage = () => {
             </a>
           </motion.div>
 
-          {/* Social proof */}
-          <motion.p variants={fadeUp} style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            Join <strong style={{ color: 'var(--text)' }}>500+</strong> learners already exchanging skills
-          </motion.p>
+
         </motion.div>
 
         {/* Floating cards mockup */}
@@ -353,36 +349,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── SECTION 4: STATS ──────────────────────────────── */}
-      <section
-        id="stats"
-        style={{ padding: '80px 24px', background: 'var(--accent-hover)', color: '#fff', textAlign: 'center' }}
-      >
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
-          >
-            <motion.h2 variants={fadeUp} style={{ fontSize: 28, fontWeight: 700, marginBottom: 48, color: '#fff' }}>
-              Trusted by a growing community
-            </motion.h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32 }}>
-              {[
-                { value: 500,   suffix: '+', label: 'Active Users' },
-                { value: 1200,  suffix: '+', label: 'Exchanges Done' },
-                { value: 50,    suffix: '+', label: 'Skills Available' },
-                { value: 4.8,   suffix: '★', label: 'Avg. Rating' },
-              ].map(({ value, suffix, label }, i) => (
-                <motion.div key={i} variants={fadeUp}>
-                  <div style={{ fontSize: 44, fontWeight: 800, lineHeight: 1 }}>
-                    <AnimatedCounter to={value} suffix={suffix} />
-                  </div>
-                  <div style={{ fontSize: 13, marginTop: 8, color: 'rgba(255,255,255,0.7)' }}>{label}</div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
+
 
       {/* ── SECTION 5: TESTIMONIALS ───────────────────────── */}
       <section
@@ -401,19 +368,19 @@ const LandingPage = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
               {[
                 {
-                  name: 'Priya Sharma', role: 'Frontend Developer',
-                  quote: 'SkillX helped me learn UI/UX design in exchange for teaching React. The skill exchange model is genius — I gained a full design education without spending a rupee!',
-                  initials: 'PS', stars: 5,
+                  name: 'V. R.', role: 'Computer Science Student',
+                  quote: 'I posted a React listing and got a reply the same day. We set up a session, I helped with frontend basics, and they walked me through Photoshop. Exactly what I needed.',
+                  initials: 'VR', stars: 5,
                 },
                 {
-                  name: 'Arjun Mehta', role: 'Product Designer',
-                  quote: "I exchanged my Figma skills for Python. Matched with a developer in 24 hours and we've been learning from each other for 3 months now. Absolutely love this platform!",
-                  initials: 'AM', stars: 5,
+                  name: 'K. S.', role: 'Freelance Illustrator',
+                  quote: "I'm not a dev at all, but I managed to swap my illustration skills for help building a portfolio site. The chat and scheduling made it surprisingly easy to coordinate.",
+                  initials: 'KS', stars: 5,
                 },
                 {
-                  name: 'Sneha Patel', role: 'Data Analyst',
-                  quote: 'The session scheduling and video call features are seamless. I taught Excel and learned SQL — this platform is doing something truly different.',
-                  initials: 'SP', stars: 5,
+                  name: 'A. T.', role: 'Self-taught Developer',
+                  quote: 'Posted a gig, got a few responses, picked someone with good reviews. Clean process. No money changed hands — just two people helping each other out.',
+                  initials: 'AT', stars: 4,
                 },
               ].map(({ name, role, quote, initials, stars }, i) => (
                 <motion.div
