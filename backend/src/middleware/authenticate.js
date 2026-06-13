@@ -12,6 +12,7 @@ import UserProfile from '../models/UserProfile.js';
  *   - req.userProfile = MongoDB UserProfile document (may be null for brand-new users)
  */
 export const authenticate = async (req, res, next) => {
+  let idToken = null;
   try {
     const authHeader = req.headers.authorization;
 
@@ -21,7 +22,7 @@ export const authenticate = async (req, res, next) => {
       });
     }
 
-    const idToken = authHeader.split('Bearer ')[1];
+    idToken = authHeader.split('Bearer ')[1];
 
     // Block string "undefined"/"null" — sent when frontend calls API before auth is ready
     if (!idToken || idToken === 'undefined' || idToken === 'null') {
