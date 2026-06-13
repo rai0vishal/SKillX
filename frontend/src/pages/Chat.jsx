@@ -11,8 +11,9 @@ import TaskPanel from '../components/workspace/TaskPanel';
 
 import { apiFetch } from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
-import { getSocket } from '../config/socket.js';
+import { getSocket, connectSocket } from '../config/socket.js';
 import { toast } from 'sonner';
+import { getAvatarColors } from '../utils/avatarUtils';
 let socket;
 
 const formatMessageTime = (dateString) => {
@@ -132,7 +133,7 @@ const Chat = () => {
     fetchRoomSessions(room._id);
     fetchWorkspace(room._id, room.participants || []);
 
-    socket?.emit('joinRoom', room._id);
+    socket?.emit('joinRoom', { chatRoomId: room._id, userEmail });
   }, [fetchMessages, fetchRoomSessions, fetchWorkspace]);
 
   const handlePersonClick = (personEmail) => {
@@ -198,13 +199,13 @@ const Chat = () => {
 
   useEffect(() => {
     socket = getSocket();
-    if (!socket.connected) {
-      socket.connect();
-    }
-
-    if (userEmail) {
-      socket.emit('registerUser', userEmail);
-    }
+    const initSocket = async () => {
+      if (userEmail) {
+        await connectSocket();
+        socket.emit('registerUser', userEmail);
+      }
+    };
+    initSocket();
 
     socket.on('receiveMessage', (message) => {
       if (activeRoomRef.current && message.chatRoomId === activeRoomRef.current._id) {
@@ -469,7 +470,7 @@ const Chat = () => {
                   }}
                 >
                   <div style={{ position: 'relative', flexShrink: 0 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: getAvatarColors(email).bg, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: getAvatarColors(email).text }}>
                       {email[0].toUpperCase()}
                     </div>
                     <div style={{
@@ -504,7 +505,7 @@ const Chat = () => {
           <>
             <div style={{ padding: '24px 16px', borderBottom: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ position: 'relative', marginBottom: 12 }}>
-                <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--accent-dim)', color: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700 }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: getAvatarColors(selectedPerson).bg, color: getAvatarColors(selectedPerson).text, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700 }}>
                   {selectedPerson[0].toUpperCase()}
                 </div>
                 <div style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: '50%', background: onlineUsers[selectedPerson] ? 'var(--green)' : 'var(--text-dim)', border: '2px solid var(--bg)' }} />
@@ -768,7 +769,7 @@ const Chat = () => {
                           return (
                             <div key={idx} style={{ display: 'flex', width: '100%', justifyContent: isMe ? 'flex-end' : 'flex-start', gap: 8 }}>
                               {!isMe && (
-                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--text)', opacity: showAvatar ? 1 : 0, alignSelf: 'flex-end' }}>
+                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: getAvatarColors(activeOtherUserEmail).bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: getAvatarColors(activeOtherUserEmail).text, opacity: showAvatar ? 1 : 0, alignSelf: 'flex-end' }}>
                                   {(activeOtherUserEmail?.[0] || '?').toUpperCase()}
                                 </div>
                               )}
@@ -795,7 +796,7 @@ const Chat = () => {
 
                   {typingUsers[activeOtherUserEmail] && (
                     <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 8 }}>
-                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--text)', alignSelf: 'flex-end' }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: getAvatarColors(activeOtherUserEmail).bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: getAvatarColors(activeOtherUserEmail).text, alignSelf: 'flex-end' }}>
                         {activeOtherUserEmail[0].toUpperCase()}
                       </div>
                       <div style={{ background: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 12, borderBottomLeftRadius: 2, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 4 }}>

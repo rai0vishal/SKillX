@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { apiFetch } from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Skeleton from '../components/ui/Skeleton';
+import { getAvatarColors, getAvatarInitials } from '../utils/avatarUtils';
 
 const Profile = () => {
   const { userId } = useParams();
@@ -245,7 +247,78 @@ const Profile = () => {
   }
 
   if (loading) {
-    return <LoadingSpinner message="Loading profile..." />;
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', paddingBottom: 64 }}>
+        {/* Hero skeleton */}
+        <div style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border)', padding: '32px 24px 32px' }}>
+          <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+            <Skeleton width="128px" height="128px" style={{ borderRadius: '50%', flexShrink: 0 }} />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <Skeleton width="220px" height="28px" style={{ borderRadius: 6 }} />
+              <Skeleton width="160px" height="16px" style={{ borderRadius: 6 }} />
+              <Skeleton width="280px" height="14px" style={{ borderRadius: 6 }} />
+              <Skeleton width="100%" height="14px" style={{ borderRadius: 6 }} />
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                <Skeleton width="96px" height="34px" style={{ borderRadius: 8 }} />
+                <Skeleton width="120px" height="34px" style={{ borderRadius: 8 }} />
+              </div>
+            </div>
+            <Skeleton width="256px" height="160px" style={{ borderRadius: 16, flexShrink: 0 }} />
+          </div>
+        </div>
+
+        {/* Stats skeleton */}
+        <div style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
+            {[1,2,3,4].map(i => (
+              <div key={i} style={{ padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <Skeleton width="48px" height="28px" style={{ borderRadius: 6 }} />
+                <Skeleton width="64px" height="12px" style={{ borderRadius: 6 }} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Tabs skeleton */}
+        <div style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 32, padding: '0 24px' }}>
+            {[1,2,3,4].map(i => (
+              <Skeleton key={i} width="72px" height="40px" style={{ borderRadius: 0 }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Content skeleton — two columns */}
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <Skeleton width="120px" height="22px" style={{ borderRadius: 6 }} />
+            {[1,2,3].map(i => (
+              <div key={i} style={{ display: 'flex', gap: 12, padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16 }}>
+                <Skeleton width="48px" height="48px" style={{ borderRadius: 12, flexShrink: 0 }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Skeleton width="60%" height="14px" style={{ borderRadius: 6 }} />
+                  <Skeleton width="80%" height="11px" style={{ borderRadius: 6 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <Skeleton width="120px" height="22px" style={{ borderRadius: 6 }} />
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <Skeleton width="48px" height="48px" style={{ borderRadius: '50%' }} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Skeleton width="50%" height="14px" style={{ borderRadius: 6 }} />
+                  <Skeleton width="30%" height="11px" style={{ borderRadius: 6 }} />
+                </div>
+              </div>
+              <Skeleton width="100%" height="14px" style={{ borderRadius: 6 }} />
+              <Skeleton width="90%" height="14px" style={{ borderRadius: 6 }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!profile) {
@@ -300,6 +373,8 @@ const Profile = () => {
   };
 
   const completeness = calculateCompleteness();
+  const avatarColors = getAvatarColors(profile?.name || profile?.email || '')
+  const avatarInitials = getAvatarInitials(profile?.name, profile?.email)
 
   return (
     <div className="min-h-screen bg-[var(--bg)] pb-16">
@@ -309,11 +384,14 @@ const Profile = () => {
           
           {/* Avatar with upload overlay */}
           <div className="relative flex-shrink-0 mb-6 md:mb-0 w-24 h-24 md:w-32 md:h-32 mx-auto md:mx-0">
-            <div className="w-full h-full rounded-full bg-[var(--accent-dim)] border-4 border-[var(--accent)] flex items-center justify-center text-4xl font-bold text-[var(--accent-light)] overflow-hidden shadow-sm">
+            <div
+              className="w-full h-full rounded-full border-4 border-[var(--accent)] flex items-center justify-center text-4xl font-bold overflow-hidden shadow-sm"
+              style={{ background: profile.avatar ? undefined : avatarColors.bg, color: profile.avatar ? undefined : avatarColors.text }}
+            >
               {profile.avatar ? (
                 <img src={profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                profile.name ? profile.name.charAt(0).toUpperCase() : '?'
+                avatarInitials
               )}
             </div>
             {isOwnProfile && (
@@ -436,6 +514,20 @@ const Profile = () => {
                   </button>
                   <button onClick={() => fileInputRef.current?.click()} className="btn-secondary px-4 py-2 text-sm font-semibold flex items-center gap-2 shadow-sm">
                     <i className="ti ti-photo text-lg" /> {isUploadingPhoto ? 'Uploading...' : 'Upload photo'}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const profileUrl = `${window.location.origin}/profile/${profile.email || targetEmail}`
+                      try {
+                        await navigator.clipboard.writeText(profileUrl)
+                        toast.success('Profile link copied!')
+                      } catch {
+                        toast.error('Could not copy link.')
+                      }
+                    }}
+                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface2)] transition-colors shadow-sm"
+                  >
+                    <i className="ti ti-link text-sm" /> Copy link
                   </button>
                 </>
               )}

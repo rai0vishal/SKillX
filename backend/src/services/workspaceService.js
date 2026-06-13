@@ -20,6 +20,6 @@ export const updateNotes = async (workspaceId, notes) => {
   return await Workspace.findByIdAndUpdate(
     workspaceId,
     { notes },
-    { new: true }
+    { returnDocument: 'after' }
   );
 };

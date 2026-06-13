@@ -81,7 +81,7 @@ router.post('/', async (req, res) => {
         location,
         matchScore: matchScore ?? 80,
       },
-      { new: true, upsert: true }
+      { returnDocument: 'after', upsert: true }
     )
 
     if (!existing) {

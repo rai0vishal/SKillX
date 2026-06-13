@@ -4,6 +4,7 @@ import Profile from '../models/UserProfile.js'
 import UserProfile from '../models/UserProfile.js'
 import ChatRoom from '../models/ChatRoom.js'
 import admin from '../config/firebaseAdmin.js'
+import { createNotification } from '../services/notificationService.js'
 
 // ExchangeRequest routes — secured by the global authenticate middleware
 const router = express.Router()
@@ -52,6 +53,21 @@ router.post('/', async (req, res) => {
       toEmail: resolvedToEmail,
       status: 'pending',
     })
+
+    // Notify the recipient about the incoming exchange request (non-fatal)
+    if (resolvedToEmail) {
+      try {
+        await createNotification({
+          userId: resolvedToEmail,
+          type: 'REQUEST',
+          message: `${(resolvedFromEmail || fromUserId).split('@')[0]} sent you a skill exchange request`,
+          referenceId: request._id.toString(),
+        })
+      } catch (notifErr) {
+        console.warn('Exchange request notification failed (non-fatal):', notifErr.message)
+      }
+    }
+
     try {
       if (fromEmail) {
         await Profile.findOneAndUpdate(

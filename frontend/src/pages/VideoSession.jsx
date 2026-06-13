@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
+import { connectSocket, getSocket } from '../config/socket.js';
 import VideoPlayer from '../components/video/VideoPlayer';
 import SessionControls from '../components/video/SessionControls';
 import SessionChat from '../components/video/SessionChat';
@@ -208,7 +208,7 @@ const VideoSession = () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
-      const socket = io(SOCKET_URL, { transports: ['websocket'] });
+      const socket = await connectSocket();
       socketRef.current = socket;
 
       socket.on('connect', () => {
@@ -311,8 +311,8 @@ const VideoSession = () => {
   useEffect(() => {
     if (pageStatus !== 'live' || connectionStatus !== 'waiting' || !session?.chatRoomId) return;
 
-    const timeout = setTimeout(() => {
-      const chatSocket = io(SOCKET_URL, { transports: ['websocket'] });
+    const timeout = setTimeout(async () => {
+      const chatSocket = await connectSocket();
       chatSocket.emit('registerUser', userEmail);
       chatSocket.emit('sendMessage', {
         chatRoomId: session.chatRoomId,

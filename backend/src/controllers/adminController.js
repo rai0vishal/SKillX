@@ -17,7 +17,7 @@ export const suspendUser = async (req, res) => {
     const user = await UserProfile.findByIdAndUpdate(
       req.params.id,
       { status: 'suspended' },
-      { new: true }
+      { returnDocument: 'after' }
     );
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
@@ -32,7 +32,7 @@ export const activateUser = async (req, res) => {
     const user = await UserProfile.findByIdAndUpdate(
       req.params.id,
       { status: 'active' },
-      { new: true }
+      { returnDocument: 'after' }
     );
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);

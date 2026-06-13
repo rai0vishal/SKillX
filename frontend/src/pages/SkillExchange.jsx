@@ -19,6 +19,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import Skeleton from '../components/ui/Skeleton'
 import { apiFetch } from '../api/apiClient'
 import { useAuth } from '../context/AuthContext'
+import { getAvatarColors, getAvatarInitials } from '../utils/avatarUtils'
 
 /* ─── Match Score Ring SVG ──────────────────────────────── */
 const MatchScoreRing = ({ score, size = 52 }) => {
@@ -56,6 +57,9 @@ function MatchCard({ match, isRec = false, onRequest, currentUid, currentEmail }
   
   // Use backend provided matchScore if available, otherwise fallback
   const finalScore = match.matchScore ?? null;
+
+  const avatarColors = getAvatarColors(match.name || match.email || '')
+  const avatarInitials = getAvatarInitials(match.name, match.email)
 
   const handleProfileClick = () => {
     if (match.email) {
@@ -95,11 +99,11 @@ function MatchCard({ match, isRec = false, onRequest, currentUid, currentEmail }
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
         <div style={{
           width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-          background: 'var(--accent-dim)', color: 'var(--accent)',
+          background: avatarColors.bg, color: avatarColors.text,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 16, fontWeight: 700, border: '2px solid var(--border-strong)',
         }}>
-          {match.name?.[0]?.toUpperCase() || '?'}
+          {avatarInitials}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div 

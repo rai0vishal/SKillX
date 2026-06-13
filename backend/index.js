@@ -26,6 +26,8 @@ import aiRouter from './src/routes/ai.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import Message from './src/models/Message.js';
+import ChatRoom from './src/models/ChatRoom.js';
+import { createNotification } from './src/services/notificationService.js';
 import { authenticate } from './src/middleware/authenticate.js';
 import { firebaseAuth } from './src/config/firebaseAdmin.js';
 import multer from 'multer';
@@ -41,6 +43,7 @@ if (process.env.CLIENT_URL) {
 }
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -82,10 +85,38 @@ io.on('connection', (socket) => {
   onlineUsers.set(socket.id, verifiedEmail);
   io.emit('userStatusChange', { email: verifiedEmail, isOnline: true });
 
+  // Each user joins a personal room for targeted notifications
+  socket.on('joinUserRoom', (userEmail) => {
+    if (userEmail && typeof userEmail === 'string') {
+      socket.join(`user:${userEmail}`);
+      console.log(`User ${userEmail} joined personal room user:${userEmail}`);
+    }
+  });
+
   // Triggered when user enters a specific text chat channel
-  socket.on('joinRoom', (roomId) => {
-    socket.join(roomId);
-    console.log(`User joined room: ${roomId}`);
+  socket.on('joinRoom', async (data) => {
+    // Support both old string format and new {chatRoomId, userEmail} object
+    const chatRoomId = typeof data === 'string' ? data : data?.chatRoomId;
+    const userEmail  = typeof data === 'string' ? verifiedEmail : (data?.userEmail || verifiedEmail);
+
+    if (chatRoomId) {
+      socket.join(chatRoomId);
+      console.log(`User ${userEmail} joined room: ${chatRoomId}`);
+    }
+
+    // Reset this user's unread count for this room
+    if (chatRoomId && userEmail) {
+      try {
+        const room = await ChatRoom.findById(chatRoomId);
+        if (room) {
+          room.unreadCounts.set(userEmail, 0);
+          await room.save();
+          socket.emit('unreadCountUpdated', { chatRoomId, unreadCount: 0 });
+        }
+      } catch (err) {
+        console.warn('Failed to reset unread count (non-fatal):', err.message);
+      }
+    }
   });
 
   // Triggered when user navigates away from a chat channel
@@ -98,8 +129,48 @@ io.on('connection', (socket) => {
   socket.on('sendMessage', async (data) => {
     try {
       const { chatRoomId, senderEmail, text } = data;
+
+      // Save message and broadcast to room
       const newMessage = await Message.create({ chatRoomId, senderEmail, text });
       io.to(chatRoomId).emit('receiveMessage', newMessage);
+
+      // Increment unreadCounts and notify recipients
+      const room = await ChatRoom.findById(chatRoomId);
+      if (!room) return;
+
+      const recipientEmails = room.participants.filter(
+        p => p && p.trim() !== '' && p !== senderEmail
+      );
+
+      for (const recipientEmail of recipientEmails) {
+        // Increment per-participant unread count
+        const currentCount = room.unreadCounts?.get(recipientEmail) || 0;
+        room.unreadCounts.set(recipientEmail, currentCount + 1);
+      }
+      await room.save();
+
+      // Notify each recipient
+      for (const recipientEmail of recipientEmails) {
+        const newCount = room.unreadCounts.get(recipientEmail) || 0;
+
+        // Push real-time unread badge update
+        io.to(`user:${recipientEmail}`).emit('unreadCountUpdated', {
+          chatRoomId,
+          unreadCount: newCount,
+        });
+
+        // Create DB notification (emits newNotification + notificationCountUpdated internally)
+        try {
+          await createNotification({
+            userId: recipientEmail,
+            type: 'MESSAGE',
+            message: `New message from ${senderEmail.split('@')[0]}`,
+            referenceId: chatRoomId,
+          });
+        } catch (notifErr) {
+          console.warn('Message notification failed (non-fatal):', notifErr.message);
+        }
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     }

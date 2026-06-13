@@ -65,7 +65,7 @@ export const getUnreadCount = async (userId) => {
 };
 
 export const markAsRead = async (notificationId) => {
-  const notification = await Notification.findByIdAndUpdate(notificationId, { isRead: true }, { new: true });
+  const notification = await Notification.findByIdAndUpdate(notificationId, { isRead: true }, { returnDocument: 'after' });
   if (notification) {
     await updateUnreadCount(notification.userId);
   }

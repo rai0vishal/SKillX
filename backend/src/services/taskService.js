@@ -22,7 +22,7 @@ export const updateTask = async (taskId, updates) => {
   allowed.forEach((key) => {
     if (updates[key] !== undefined) sanitized[key] = updates[key];
   });
-  return await WorkspaceTask.findByIdAndUpdate(taskId, sanitized, { new: true });
+  return await WorkspaceTask.findByIdAndUpdate(taskId, sanitized, { returnDocument: 'after' });
 };
 
 export const deleteTask = async (taskId) => {

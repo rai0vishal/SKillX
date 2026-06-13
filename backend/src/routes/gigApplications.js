@@ -108,7 +108,7 @@ router.patch('/:id', async (req, res) => {
     const updated = await GigApplication.findByIdAndUpdate(
       req.params.id,
       { status },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     // Increment completion stats and create a chat room upon new acceptance
@@ -121,7 +121,7 @@ router.patch('/:id', async (req, res) => {
           await Profile.findOneAndUpdate(
             { email: ownerEmail },
             { $inc: { 'stats.gigsCompleted': 1 } },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
           );
         }
 
@@ -129,7 +129,7 @@ router.patch('/:id', async (req, res) => {
           await Profile.findOneAndUpdate(
             { email: applicantEmail },
             { $inc: { 'stats.gigsCompleted': 1 } },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
           );
         }
         

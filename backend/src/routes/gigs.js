@@ -78,7 +78,7 @@ router.post('/', asyncHandler(async (req, res) => {
       await Profile.findOneAndUpdate(
         { email: postedBy },
         { $inc: { 'stats.gigsPosted': 1 } },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: 'after' }
       );
     }
   } catch (err) {
