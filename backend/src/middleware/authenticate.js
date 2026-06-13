@@ -34,7 +34,6 @@ export const authenticate = async (req, res, next) => {
     }
 
     // Cryptographically verify the token with Firebase
-    console.log('Verifying token:', idToken.substring(0, 20) + '...');
     const decodedToken = await firebaseAuth.verifyIdToken(idToken);
 
     // Attach verified identity to request
