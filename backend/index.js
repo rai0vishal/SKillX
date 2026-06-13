@@ -42,12 +42,32 @@ if (process.env.CLIENT_URL) {
   }
 }
 
+// Function to validate CORS origins, allowing dynamic Vercel preview environments
+const corsOriginResolver = (origin, callback) => {
+  // Allow local development, server-to-server requests, or tools like Postman (no origin)
+  if (!origin) {
+    return callback(null, true);
+  }
+
+  // Check if it matches allowedOrigins
+  if (allowedOrigins.includes(origin)) {
+    return callback(null, true);
+  }
+
+  // Regex to match Vercel preview URL patterns, e.g. https://s-kill-*.vercel.app
+  if (/^https:\/\/s-kill-.*\.vercel\.app$/.test(origin)) {
+    return callback(null, true);
+  }
+
+  return callback(new Error('Not allowed by CORS'));
+};
+
 const app = express();
 app.set('trust proxy', 1);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: corsOriginResolver,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -246,7 +266,7 @@ io.on('connection', (socket) => {
 app.use(helmet());
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: corsOriginResolver,
     credentials: true,
   })
 );
