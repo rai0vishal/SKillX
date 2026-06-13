@@ -23,8 +23,13 @@ export const authenticate = async (req, res, next) => {
 
     const idToken = authHeader.split('Bearer ')[1];
 
-    if (!idToken) {
-      return res.status(401).json({ message: 'Authentication required. Token is empty.' });
+    // Block string "undefined"/"null" — sent when frontend calls API before auth is ready
+    if (!idToken || idToken === 'undefined' || idToken === 'null') {
+      console.error('[Auth] Invalid token received:', idToken);
+      return res.status(401).json({
+        error: 'Invalid token format',
+        received: idToken,
+      });
     }
 
     // Cryptographically verify the token with Firebase
@@ -39,19 +44,11 @@ export const authenticate = async (req, res, next) => {
     req.userProfile = userProfile;
 
     next();
-  } catch (error) {
-    console.error('Authentication error:', error.code || error.message);
-
-    if (error.code === 'auth/id-token-expired') {
-      return res.status(401).json({ message: 'Token has expired. Please sign in again.' });
-    }
-    if (error.code === 'auth/id-token-revoked') {
-      return res.status(401).json({ message: 'Token has been revoked. Please sign in again.' });
-    }
-    if (error.code === 'auth/argument-error') {
-      return res.status(401).json({ message: 'Invalid token format.' });
-    }
-
-    return res.status(401).json({ message: 'Authentication failed. Invalid or expired token.' });
+  } catch (err) {
+    console.error('[Auth] Token verification failed');
+    console.error('[Auth] Error code:', err.code);
+    console.error('[Auth] Error message:', err.message);
+    console.error('[Auth] Token preview:', idToken?.substring(0, 30));
+    return res.status(401).json({ error: err.code });
   }
 };

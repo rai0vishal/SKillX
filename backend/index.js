@@ -83,17 +83,23 @@ initNotificationSocket(io, onlineUsers);
 // ─── Socket.io Authentication ─────────────────────────────────────────────────
 // Verify Firebase ID token during handshake — reject unauthenticated connections
 io.use(async (socket, next) => {
+  const token = socket.handshake.auth?.token;
+
+  // Block string "undefined"/"null" — sent when socket connects before auth is ready
+  if (!token || token === 'undefined' || token === 'null') {
+    console.error('[Socket] Invalid token received:', token);
+    return next(new Error('Authentication required'));
+  }
+
   try {
-    const token = socket.handshake.auth?.token;
-    if (!token) {
-      return next(new Error('Authentication required. Provide a Firebase ID token.'));
-    }
     const decoded = await firebaseAuth.verifyIdToken(token);
     socket.user = decoded; // Attach verified identity
     next();
-  } catch (error) {
-    console.error('Socket auth failed:', error.code || error.message);
-    next(new Error('Authentication failed. Invalid or expired token.'));
+  } catch (err) {
+    console.error('[Socket] Auth failed:', err.code);
+    console.error('[Socket] Error:', err.message);
+    console.error('[Socket] Token preview:', token?.substring(0, 30));
+    return next(new Error(err.code));
   }
 });
 

@@ -9,14 +9,34 @@ if (!admin.apps.length) {
   // The private key comes as a string with escaped newlines from env vars
   const privateKey = process.env.FIREBASE_PRIVATE_KEY
     ?.replace(/\\n/g, '\n')
-    .replace(/^"|"$/g, '');
+    .replace(/^\"|\"$/g, '');
 
+  // Hard fail if any credential is missing — do not silently proceed with a broken SDK
   if (!projectId || !clientEmail || !privateKey) {
-    console.error(
-      '⚠️  Firebase Admin SDK credentials missing. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in your .env file.'
+    throw new Error(
+      `Firebase Admin missing credentials — ` +
+      `projectId: ${!!projectId}, ` +
+      `clientEmail: ${!!clientEmail}, ` +
+      `privateKey: ${!!privateKey}, ` +
+      `keyLength: ${privateKey?.length}`
     );
-    console.error('   Backend token verification will fail until these are configured.');
   }
+
+  // Hard fail if key is structurally invalid (truncated, mis-pasted, or newlines not decoded)
+  if (!privateKey.includes('-----BEGIN')) {
+    throw new Error(
+      `Firebase private key is malformed. ` +
+      `Starts with: ${privateKey?.substring(0, 50)} | ` +
+      `Length: ${privateKey?.length}`
+    );
+  }
+
+  // Visibility logs — confirm what the SDK actually received on startup
+  console.log('[Firebase Admin] Project ID:', projectId);
+  console.log('[Firebase Admin] Client Email:', clientEmail);
+  console.log('[Firebase Admin] Key length:', privateKey?.length);
+  console.log('[Firebase Admin] Key valid format:', privateKey?.includes('-----BEGIN'));
+  console.log('[Firebase Admin] Key starts:', privateKey?.substring(0, 30));
 
   admin.initializeApp({
     credential: admin.credential.cert({
