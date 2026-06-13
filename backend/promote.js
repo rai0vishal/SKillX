@@ -17,7 +17,7 @@ mongoose.connect(mongoUri)
     const user = await UserProfile.findOneAndUpdate(
       { email: targetEmail },
       { role: 'admin' },
-      { new: true }
+      { returnDocument: 'after' }
     );
     if (!user) {
       console.log(`⚠️ User profile for "${targetEmail}" not found in database.`);

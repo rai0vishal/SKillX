@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationCard = ({ notification, onClick }) => {
+  const navigate = useNavigate();
+
   const getIcon = (type) => {
     switch (type) {
       case 'MESSAGE': return '💬';
@@ -24,9 +27,40 @@ const NotificationCard = ({ notification, onClick }) => {
     return `${Math.floor(hours / 24)}d ago`;
   };
 
+  const handleClick = () => {
+    // Mark as read via parent callback (keeps existing logic)
+    if (onClick) onClick(notification);
+
+    // Navigate based on notification type
+    switch (notification.type) {
+      case 'MESSAGE':
+        navigate('/chat', {
+          state: { roomId: notification.referenceId },
+        });
+        break;
+      case 'REQUEST':
+        navigate('/profile', {
+          state: { scrollTo: 'exchanges' },
+        });
+        break;
+      case 'SESSION':
+        if (notification.referenceId) {
+          navigate(`/session/${notification.referenceId}`);
+        } else {
+          navigate('/dashboard');
+        }
+        break;
+      case 'REVIEW':
+        navigate('/profile');
+        break;
+      default:
+        navigate('/dashboard');
+    }
+  };
+
   return (
     <div
-      onClick={() => onClick(notification)}
+      onClick={handleClick}
       className={`p-4 flex gap-3 cursor-pointer transition-colors border-b border-gray-50 last:border-0 hover:bg-[var(--bg-card)] ${
         !notification.isRead ? 'bg-indigo-50/30' : 'bg-[var(--bg-card)]'
       }`}

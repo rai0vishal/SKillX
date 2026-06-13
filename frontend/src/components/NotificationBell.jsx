@@ -46,6 +46,15 @@ const NotificationBell = () => {
 
     fetchInitialData()
 
+    // Join personal socket room so server can target this user for unread pushes
+    const handleConnect = () => {
+      socket.emit('joinUserRoom', userEmail)
+    }
+    if (socket.connected) {
+      socket.emit('joinUserRoom', userEmail)
+    }
+    socket.on('connect', handleConnect)
+
     socket.on('newNotification', notification => {
       setNotifications(prev => [notification, ...prev.filter(n => n._id !== notification._id)])
     })
@@ -54,6 +63,7 @@ const NotificationBell = () => {
     })
 
     return () => {
+      socket.off('connect', handleConnect)
       socket.off('newNotification')
       socket.off('notificationCountUpdated')
     }

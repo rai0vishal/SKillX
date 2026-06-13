@@ -106,7 +106,7 @@ export const saveAvailability = async (email, availability, customAvailability =
   const user = await UserProfile.findOneAndUpdate(
     { email },
     updateData,
-    { new: true }
+    { returnDocument: 'after' }
   ).lean();
 
   if (!user) throw new Error('User not found');

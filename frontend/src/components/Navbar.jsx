@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import React, { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
@@ -6,6 +5,9 @@ import { auth } from '../firebase/firebaseConfig'
 import { useAuth } from '../context/AuthContext'
 import NotificationBell from './NotificationBell'
 import { motion, AnimatePresence } from 'framer-motion'
+import { getAvatarColors, getAvatarInitials } from '../utils/avatarUtils'
+import { apiFetch } from '../api/apiClient'
+import { getSocket } from '../config/socket'
 
 const NAV_LINKS = [
   { to: '/dashboard',      label: 'Dashboard',     icon: 'ti-layout-dashboard' },
@@ -25,7 +27,7 @@ const Navbar = () => {
   const { user: firebaseUser, userProfile, loading } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  // Unread state (mocked or could be fetched later)
+  // Unread state — fetched from API and kept live via socket
   const [unreadExchanges, setUnreadExchanges] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState(0)
 
@@ -35,9 +37,42 @@ const Navbar = () => {
     name: firebaseUser.displayName || userProfile?.name || '',
     uid: firebaseUser.uid,
   } : null
+  const currentUserEmail = user?.email
   const isAdmin = userProfile?.role === 'admin'
 
   useEffect(() => { setMobileOpen(false) }, [location])
+
+  // Fetch initial unread message count
+  useEffect(() => {
+    if (!currentUserEmail) return
+    const fetchUnread = async () => {
+      try {
+        const res = await apiFetch('/api/chat/unread-total')
+        if (res.ok) {
+          const data = await res.json()
+          setUnreadMessages(data.total || 0)
+        }
+      } catch (e) {
+        console.warn('Failed to fetch unread message count:', e)
+      }
+    }
+    fetchUnread()
+  }, [currentUserEmail])
+
+  // Real-time unread badge updates via socket
+  useEffect(() => {
+    const socket = getSocket()
+    if (!socket || !currentUserEmail) return
+    const handleUnreadUpdate = (data) => {
+      // data.unreadCount is per-room; re-fetch total to keep it accurate
+      apiFetch('/api/chat/unread-total')
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d) setUnreadMessages(d.total || 0) })
+        .catch(() => {})
+    }
+    socket.on('unreadCountUpdated', handleUnreadUpdate)
+    return () => socket.off('unreadCountUpdated', handleUnreadUpdate)
+  }, [currentUserEmail])
 
   const handleLogout = async () => {
     try {
@@ -51,6 +86,7 @@ const Navbar = () => {
 
   const userInitial = user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || '?'
   const userName = user?.name || user?.email?.split('@')[0] || 'Account'
+  const navAvatarColors = getAvatarColors(user?.name || user?.email || '')
 
   const visibleLinks = user
     ? [...VISIBLE_LINKS, ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: 'ti-shield-check' }] : [])]
@@ -176,8 +212,8 @@ const Navbar = () => {
                 >
                   <div style={{
                     width: 26, height: 26, borderRadius: '50%',
-                    background: 'var(--accent-dim)',
-                    color: 'var(--accent-light)',
+                    background: navAvatarColors.bg,
+                    color: navAvatarColors.text,
                     fontSize: 11, fontWeight: 700,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
@@ -299,7 +335,7 @@ const Navbar = () => {
                 }}>
                   <div style={{
                     width: 34, height: 34, borderRadius: '50%',
-                    background: 'var(--accent-dim)', color: 'var(--accent-light)',
+                    background: navAvatarColors.bg, color: navAvatarColors.text,
                     fontSize: 13, fontWeight: 700,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                   }}>

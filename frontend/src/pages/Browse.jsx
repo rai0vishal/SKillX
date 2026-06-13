@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/apiClient';
 import { useAuth } from '../context/AuthContext';
+import { getAvatarColors } from '../utils/avatarUtils';
 
 const SKILL_CHIPS = ['React', 'Node.js', 'Python', 'Design', 'Figma', 'UI/UX', 'Marketing', 'Java', 'Data Science'];
 const TABS = ['All', 'Gigs', 'Skill Exchanges', 'People'];
@@ -51,16 +52,6 @@ const Browse = () => {
     }
   };
 
-  const getAvatarColor = (email = '') => {
-    const colors = ['var(--accent-dim)', 'var(--amber-bg)', 'var(--green-bg)', 'var(--surface2)'];
-    const charCode = email.charCodeAt(0) || 0;
-    return colors[charCode % colors.length];
-  };
-  const getAvatarTextColor = (email = '') => {
-    const colors = ['var(--accent-light)', 'var(--amber)', 'var(--green-text)', 'var(--text)'];
-    const charCode = email.charCodeAt(0) || 0;
-    return colors[charCode % colors.length];
-  };
 
   // Filter and format data
   const filteredItems = useMemo(() => {
@@ -243,7 +234,7 @@ const Browse = () => {
                   <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
                     <div style={{
                       width: 40, height: 40, borderRadius: '50%',
-                      background: getAvatarColor(uEmail), color: getAvatarTextColor(uEmail),
+                      background: getAvatarColors(uEmail).bg, color: getAvatarColors(uEmail).text,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 14, fontWeight: 700, flexShrink: 0
                     }}>

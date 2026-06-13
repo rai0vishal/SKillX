@@ -1,7 +1,6 @@
 import express from 'express';
 import ChatRoom from '../models/ChatRoom.js';
 import Message from '../models/Message.js';
-
 // Chat routes — secured by the global authenticate middleware
 const router = express.Router();
 
@@ -57,14 +56,44 @@ router.get('/room/:roomId', async (req, res) => {
 })
 
 /**
+ * GET /api/chat/unread-total
+ * Returns the total unread message count across all rooms for the authenticated user.
+ * MUST be defined before GET /:email to avoid the param catching 'unread-total'.
+ */
+router.get('/unread-total', async (req, res) => {
+  try {
+    const userEmail = req.user?.email;
+    if (!userEmail) return res.status(401).json({ message: 'Unauthorized' });
+
+    const rooms = await ChatRoom.find({ participants: userEmail });
+    let total = 0;
+    for (const room of rooms) {
+      total += room.unreadCounts?.get(userEmail) || 0;
+    }
+    res.json({ total });
+  } catch (err) {
+    console.error('unread-total error:', err);
+    res.status(500).json({ message: 'Failed to get unread count' });
+  }
+});
+
+/**
  * GET /api/chat/:email
- * Get all chat rooms for a specific user
+ * Get all chat rooms for a specific user, with caller's unread count as a flat number.
  */
 router.get('/:email', async (req, res) => {
   try {
     const { email } = req.params;
     const rooms = await ChatRoom.find({ participants: email }).sort({ updatedAt: -1 });
-    res.json(rooms);
+
+    // Serialize Map → flat number for easy frontend consumption
+    const roomsWithUnread = rooms.map(room => {
+      const obj = room.toObject();
+      obj.unreadCount = room.unreadCounts?.get(email) || 0;
+      return obj;
+    });
+
+    res.json(roomsWithUnread);
   } catch (error) {
     console.error('Error fetching chat rooms:', error);
     res.status(500).json({ message: 'Failed to fetch chat rooms' });

@@ -60,7 +60,7 @@ router.post('/join', async (req, res) => {
           startedAt: now,
         }
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     if (videoSession.status === 'ended') {
@@ -73,7 +73,7 @@ router.post('/join', async (req, res) => {
     await SessionAttendance.findOneAndUpdate(
       { sessionId, userEmail },
       { joinedAt: now, leftAt: null, durationMinutes: 0 },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     if (videoSession.status === 'waiting') {
@@ -187,7 +187,7 @@ router.post('/notes', async (req, res) => {
     const notes = await SessionNotes.findOneAndUpdate(
       { sessionId, userEmail },
       { content: content || '', updatedAt: new Date() },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     res.json(notes);

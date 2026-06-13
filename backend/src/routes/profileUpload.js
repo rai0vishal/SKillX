@@ -17,7 +17,7 @@ router.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
     const updated = await UserProfile.findOneAndUpdate(
       { email },
       { $set: { avatar: imageUrl } },
-      { new: true }
+      { returnDocument: 'after' }
     )
     if (!updated) {
       return res.status(404).json({ message: 'Profile not found' })
